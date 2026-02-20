@@ -1,0 +1,75 @@
+// This is your Prisma schema file
+// Ottimizzato per coerenza con le Server Actions e gestione Float per i voti.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Nota: Se usi Prisma 7 con adapter esterno, puoi rimuovere env("DATABASE_URL") 
+  // ma per l'esecuzione di migrazioni CLI (db push) solitamente è richiesto qui.
+  url      = env("DATABASE_URL")
+}
+
+// ── ENUM ──────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookStatus {
+  TO_READ
+  READING
+  READ
+  WISHLIST
+}
+
+// ── MODELS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  books     Book[]
+}
+
+model Book {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stato e Metadati utente
+  status        BookStatus @default(TO_READ)
+  rating        Float?     // Supporta mezzi voti (es. 7.5)
+  comment       String?    @db.Text
+  tags          String?    // CSV: "fantasy,storico"
+  formats       String?    // CSV: "cartaceo,kindle"
+  
+  // Dati Google Books API
+  googleId      String?
+  title         String
+  author        String?
+  isbn          String?
+  publisher     String?
+  publishedDate String?
+  language      String?
+  pageCount     Int?
+  coverUrl      String?
+  description   String?    @db.Text
+  
+  // Posizionamento UI
+  roomConfig    Json?      // Esempio: { "x": 10, "y": 20, "variant": "amber" }
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
