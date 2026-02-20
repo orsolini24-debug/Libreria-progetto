@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { updateBook, deleteBook } from "@/app/lib/book-actions";
@@ -25,8 +26,8 @@ function SaveButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" disabled={pending}
-      className="flex-1 bg-indigo-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium
-        hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+      className="flex-1 bg-amber-600 text-stone-950 py-2.5 px-4 rounded-xl text-sm font-semibold
+        hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
       {pending ? "Salvataggio…" : "Salva modifiche"}
     </button>
   );
@@ -37,15 +38,15 @@ function TagInput({ name, defaultValue = "" }: { name: string; defaultValue?: st
   const chips = val.split(",").map((t) => t.trim()).filter(Boolean);
   return (
     <div>
-      <input type="hidden" name={name} value={val} readOnly />
+      <input type="hidden" name={name} value={val} />
       <input type="text" value={val} onChange={(e) => setVal(e.target.value)}
         placeholder="fantasy, storico, distopia…"
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm
-          focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-300" />
+        className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2 text-sm
+          placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
       {chips.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1.5">
           {chips.map((tag) => (
-            <span key={tag} className="text-xs px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+            <span key={tag} className="text-xs px-2.5 py-0.5 bg-stone-700 text-stone-300 rounded-full border border-stone-600">
               {tag}
             </span>
           ))}
@@ -60,9 +61,9 @@ function ExpandableText({ text }: { text: string }) {
   const isLong = text.length > 280;
   return (
     <div>
-      <p className={`text-xs text-gray-500 leading-relaxed ${!expanded && isLong ? "line-clamp-5" : ""}`}>{text}</p>
+      <p className={`text-xs text-stone-400 leading-relaxed ${!expanded && isLong ? "line-clamp-5" : ""}`}>{text}</p>
       {isLong && (
-        <button onClick={() => setExpanded((p) => !p)} className="text-xs text-indigo-500 hover:text-indigo-700 mt-1">
+        <button onClick={() => setExpanded((p) => !p)} className="text-xs text-amber-600 hover:text-amber-400 mt-1 transition-colors">
           {expanded ? "Mostra meno ↑" : "Mostra tutto ↓"}
         </button>
       )}
@@ -70,9 +71,8 @@ function ExpandableText({ text }: { text: string }) {
   );
 }
 
-// Link esterni calcolati da ISBN o titolo+autore
 function storeLinks(book: Book) {
-  const q = encodeURIComponent(book.isbn || book.title);
+  const q  = encodeURIComponent(book.isbn || book.title);
   const qa = encodeURIComponent(`${book.title} ${book.author ?? ""}`.trim());
   return {
     ibs:    `https://www.ibs.it/search/?ts=as&query=${q}`,
@@ -90,7 +90,7 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
   );
 
   const boundUpdate = updateBook.bind(null, book.id);
-  const [state, formAction] = useFormState(boundUpdate, null);
+  const [state, formAction] = useActionState(boundUpdate, null);
 
   useEffect(() => {
     if (state?.success) { router.refresh(); onClose(); }
@@ -115,31 +115,31 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
     <div className="flex flex-col gap-6">
 
       {/* Intestazione libro */}
-      <div className="flex gap-4 items-start pb-5 border-b border-gray-100">
+      <div className="flex gap-4 items-start pb-5 border-b border-stone-700/50">
         {book.coverUrl ? (
           <Image src={book.coverUrl} alt={book.title} width={72} height={100}
             className="rounded-lg shadow-md object-cover shrink-0" unoptimized />
         ) : (
-          <div className="w-[72px] h-[100px] rounded-lg bg-gradient-to-b from-gray-200 to-gray-300 shrink-0" />
+          <div className="w-[72px] h-[100px] rounded-lg bg-gradient-to-b from-stone-700 to-stone-900 shrink-0 border border-stone-700" />
         )}
         <div className="min-w-0">
-          <p className="font-bold text-gray-900 text-base leading-snug">{book.title}</p>
-          {book.author      && <p className="text-sm text-gray-500 mt-0.5">{book.author}</p>}
-          {book.publishedDate && <p className="text-xs text-gray-400 mt-1">{book.publishedDate.slice(0, 4)}</p>}
-          {book.pageCount   && <p className="text-xs text-gray-400">{book.pageCount} pagine</p>}
+          <p className="font-bold text-stone-100 text-base leading-snug">{book.title}</p>
+          {book.author      && <p className="text-sm text-stone-400 mt-0.5">{book.author}</p>}
+          {book.publishedDate && <p className="text-xs text-stone-600 mt-1">{book.publishedDate.slice(0, 4)}</p>}
+          {book.pageCount   && <p className="text-xs text-stone-600">{book.pageCount} pagine</p>}
         </div>
       </div>
 
       {/* Form */}
       <form action={formAction} className="flex flex-col gap-5">
-        <input type="hidden" name="formats" value={formats.join(",")} readOnly />
+        <input type="hidden" name="formats" value={formats.join(",")} />
 
         {/* Stato */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Stato</label>
+          <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Stato</label>
           <select name="status" value={status} onChange={(e) => setStatus(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white
-              focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
+              focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700">
             {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -147,12 +147,12 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
         {/* Valutazione condizionale */}
         {showRating && (
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Valutazione</label>
+            <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Valutazione</label>
             <StarRating name="rating" defaultValue={book.rating} size="md" />
           </div>
         )}
         {showReminder && (
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-xl border border-blue-100 text-xs text-blue-700">
+          <div className="flex items-start gap-2 p-3 bg-blue-950/40 rounded-xl border border-blue-900/50 text-xs text-blue-300">
             <span className="text-base">💡</span>
             <span>
               Ricordati di aggiornare la valutazione quando finisci il libro.
@@ -162,16 +162,16 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
         )}
         {!showRating && <input type="hidden" name="rating" value={book.rating ?? ""} />}
 
-        {/* Formati posseduti */}
+        {/* Formati */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Formato posseduto</label>
+          <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Formato posseduto</label>
           <div className="flex flex-wrap gap-2">
             {FORMAT_OPTIONS.map(({ value, label }) => (
               <button key={value} type="button" onClick={() => toggleFormat(value)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all
                   ${formats.includes(value)
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "border-gray-200 text-gray-600 hover:border-indigo-300"}`}>
+                    ? "bg-amber-600 text-stone-950 border-amber-600"
+                    : "border-stone-700 text-stone-400 hover:border-amber-700 hover:text-stone-200"}`}>
                 {label}
               </button>
             ))}
@@ -180,25 +180,29 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
 
         {/* Tag */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tag</label>
+          <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Tag</label>
           <TagInput name="tags" defaultValue={book.tags ?? ""} />
         </div>
 
         {/* Nota */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Nota personale</label>
+          <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Nota personale</label>
           <textarea name="comment" defaultValue={book.comment ?? ""} rows={4}
             placeholder="Le tue impressioni, citazioni, ricordi…"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-300 leading-relaxed" />
+            className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2 text-sm resize-none
+              placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700 leading-relaxed" />
         </div>
 
-        {state?.error && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-xl">{state.error}</p>}
+        {state?.error && (
+          <p className="text-xs text-red-400 bg-red-950/50 border border-red-900/60 px-3 py-2 rounded-xl">
+            {state.error}
+          </p>
+        )}
 
         <div className="flex gap-2">
           <SaveButton />
           <button type="button" onClick={handleDelete}
-            className="px-4 py-2.5 rounded-xl text-sm text-red-500 border border-red-200 hover:bg-red-50 transition-colors">
+            className="px-4 py-2.5 rounded-xl text-sm text-red-400 border border-red-900/60 hover:bg-red-950/50 transition-colors">
             Elimina
           </button>
         </div>
@@ -206,25 +210,25 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
 
       {/* Sinossi */}
       {book.description && (
-        <div className="border-t border-gray-100 pt-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Sinossi</p>
+        <div className="border-t border-stone-700/50 pt-4">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Sinossi</p>
           <ExpandableText text={book.description} />
         </div>
       )}
 
       {/* Link agli store */}
-      <div className="border-t border-gray-100 pt-4">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Acquista o ascolta</p>
+      <div className="border-t border-stone-700/50 pt-4">
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Acquista o ascolta</p>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { href: links.ibs,    label: "IBS",     icon: "📚" },
-            { href: links.amazon, label: "Amazon",   icon: "🛒" },
-            { href: links.kindle, label: "Kindle",   icon: "📱" },
-            { href: links.audible,label: "Audible",  icon: "🎧" },
+            { href: links.ibs,    label: "IBS",    icon: "📚" },
+            { href: links.amazon, label: "Amazon",  icon: "🛒" },
+            { href: links.kindle, label: "Kindle",  icon: "📱" },
+            { href: links.audible,label: "Audible", icon: "🎧" },
           ].map(({ href, label, icon }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-gray-200
-                hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-gray-600 hover:text-indigo-700">
+              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-stone-700
+                hover:border-amber-700 hover:bg-amber-900/20 transition-colors text-stone-400 hover:text-amber-300">
               <span>{icon}</span> {label}
             </a>
           ))}
@@ -233,12 +237,12 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
 
       {/* Metadati edizione */}
       {(book.publisher || book.isbn || book.language) && (
-        <div className="border-t border-gray-100 pt-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Edizione</p>
+        <div className="border-t border-stone-700/50 pt-4">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Edizione</p>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
-            {book.publisher && <><dt className="text-gray-400">Editore</dt><dd className="text-gray-700">{book.publisher}</dd></>}
-            {book.isbn      && <><dt className="text-gray-400">ISBN</dt><dd className="text-gray-700 font-mono">{book.isbn}</dd></>}
-            {book.language  && <><dt className="text-gray-400">Lingua</dt><dd className="text-gray-700 uppercase">{book.language}</dd></>}
+            {book.publisher && <><dt className="text-stone-600">Editore</dt><dd className="text-stone-300">{book.publisher}</dd></>}
+            {book.isbn      && <><dt className="text-stone-600">ISBN</dt><dd className="text-stone-300 font-mono">{book.isbn}</dd></>}
+            {book.language  && <><dt className="text-stone-600">Lingua</dt><dd className="text-stone-300 uppercase">{book.language}</dd></>}
           </dl>
         </div>
       )}

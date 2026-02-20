@@ -8,9 +8,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Nota: Se usi Prisma 7 con adapter esterno, puoi rimuovere env("DATABASE_URL") 
-  // ma per l'esecuzione di migrazioni CLI (db push) solitamente è richiesto qui.
-  url      = env("DATABASE_URL")
+  // Prisma 7 con adapter esterno (PrismaNeon): l'URL è gestito da prisma.config.ts
+  // e dal costruttore PrismaNeon in app/lib/prisma.ts. Non serve qui.
 }
 
 // ── ENUM ──────────────────────────────────────────────────────────────────────
