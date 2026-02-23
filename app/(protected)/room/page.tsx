@@ -10,6 +10,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { redirect } from "next/navigation";
 import { RoomCanvas } from "@/app/components/books/RoomCanvas";
+import type { RoomBook } from "@/app/components/books/RoomCanvas";
 
 const STATUS_LEGEND = [
   { label: "Da leggere", color: "border-stone-500" },
@@ -26,11 +27,8 @@ export default async function RoomPage() {
     where: { userId: session.user.id },
     orderBy: { createdAt: "asc" },
     select: {
-      id: true, title: true, author: true, coverUrl: true,
-      status: true, roomConfig: true, comment: true, description: true,
-      userId: true, googleId: true, isbn: true, publisher: true,
-      publishedDate: true, language: true, pageCount: true,
-      rating: true, tags: true, formats: true, createdAt: true, updatedAt: true,
+      id: true, title: true, author: true,
+      coverUrl: true, status: true, roomConfig: true,
     },
   });
 
@@ -48,7 +46,7 @@ export default async function RoomPage() {
         </span>
       </div>
 
-      <RoomCanvas books={books} />
+      <RoomCanvas books={books as RoomBook[]} />
 
       {/* Legenda stati */}
       <div className="mt-4 flex gap-4 flex-wrap text-xs text-stone-500">

@@ -6,14 +6,8 @@ import { BookCard } from "./books/BookCard";
 import { SlidePanel } from "./SlidePanel";
 import { EditBookForm } from "./books/EditBookForm";
 import AddBookForm from "./books/AddBookForm";
+import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
-
-const STATUS_LABELS: Record<string, string> = {
-  TO_READ: "Da leggere",
-  READING: "In lettura",
-  READ:    "Letti",
-  WISHLIST:"Wishlist",
-};
 
 const STATUS_COLORS_ACTIVE: Record<string, string> = {
   TO_READ:  "bg-stone-700 text-stone-200 border-stone-600",
@@ -78,7 +72,6 @@ function TopTenSection({
                   alt={book.title}
                   fill
                   className="object-cover rounded-lg shadow-lg shadow-black/40 group-hover:shadow-black/60 group-hover:scale-105 transition-all duration-300"
-                  unoptimized
                   sizes="72px"
                 />
               ) : (

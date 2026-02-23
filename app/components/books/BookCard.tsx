@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { RatingDisplay } from "./StarRating";
+import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
 const STATUS_ACCENT: Record<string, string> = {
@@ -25,10 +26,6 @@ const STATUS_COVER_BG: Record<string, string> = {
   WISHLIST: "from-violet-700 to-violet-950",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  TO_READ: "Da leggere", READING: "In lettura", READ: "Letto", WISHLIST: "Wishlist",
-};
-
 const FORMAT_ICONS: Record<string, string> = {
   cartaceo: "📖", kindle: "📱", audible: "🎧",
 };
@@ -50,7 +47,7 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
         {book.coverUrl ? (
           <Image src={book.coverUrl} alt={book.title} fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            unoptimized sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw" />
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-b ${STATUS_COVER_BG[book.status] ?? "from-stone-700 to-stone-900"}
             flex flex-col items-center justify-center p-3 gap-2`}>

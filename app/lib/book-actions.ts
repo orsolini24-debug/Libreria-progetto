@@ -77,7 +77,8 @@ export async function createBook(
     revalidatePath("/dashboard");
     revalidatePath("/room");
     return { success: "Libro aggiunto!" };
-  } catch {
+  } catch (e) {
+    console.error("[createBook]", e);
     return { error: "Errore durante il salvataggio. Riprova." };
   }
 }

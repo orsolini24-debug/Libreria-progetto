@@ -7,21 +7,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createBook } from "@/app/lib/book-actions";
 import type { GoogleBookResult } from "@/app/lib/api/google-books";
+import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 
 import { StarRating } from "./StarRating";
-
-const STATUS_OPTIONS = [
-  { value: "TO_READ",  label: "📚 Da leggere" },
-  { value: "READING",  label: "📖 In lettura"  },
-  { value: "READ",     label: "✅ Letto"        },
-  { value: "WISHLIST", label: "🔖 Wishlist"     },
-];
-
-const FORMAT_OPTIONS = [
-  { value: "cartaceo", label: "📖 Cartaceo" },
-  { value: "kindle",   label: "📱 E-book / Kindle" },
-  { value: "audible",  label: "🎧 Audiolibro / Audible" },
-];
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -42,6 +30,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [results, setResults] = useState<GoogleBookResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [status, setStatus] = useState("TO_READ");
   const [formats, setFormats] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,6 +39,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
     setShowResults(false);
+    setSearchError(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!value.trim()) { setResults([]); return; }
     debounceRef.current = setTimeout(async () => {
@@ -60,8 +50,10 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         const data: GoogleBookResult[] = await res.json();
         setResults(data);
         setShowResults(data.length > 0);
+        if (data.length === 0) setSearchError("noresults");
       } catch {
         setResults([]);
+        setSearchError("Errore di connessione. Controlla la rete e riprova.");
       } finally {
         setSearching(false);
       }
@@ -149,6 +141,13 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
             placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
         {searching && <span className="absolute right-3 top-9 text-xs text-stone-500">Cerco…</span>}
+
+        {!searching && searchError === "noresults" && query.trim() && (
+          <p className="mt-1.5 text-xs text-stone-500 px-1">Nessun libro trovato per &quot;{query}&quot;.</p>
+        )}
+        {!searching && searchError && searchError !== "noresults" && (
+          <p className="mt-1.5 text-xs text-red-400 px-1">{searchError}</p>
+        )}
 
         {showResults && (
           <ul className="absolute z-30 w-full mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-2xl shadow-black/60 max-h-80 overflow-y-auto">

@@ -7,20 +7,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { updateBook, deleteBook } from "@/app/lib/book-actions";
 import { StarRating } from "./StarRating";
+import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
-
-const STATUS_OPTIONS = [
-  { value: "TO_READ",  label: "📚 Da leggere" },
-  { value: "READING",  label: "📖 In lettura"  },
-  { value: "READ",     label: "✅ Letto"        },
-  { value: "WISHLIST", label: "🔖 Wishlist"     },
-];
-
-const FORMAT_OPTIONS = [
-  { value: "cartaceo", label: "📖 Cartaceo" },
-  { value: "kindle",   label: "📱 E-book" },
-  { value: "audible",  label: "🎧 Audiolibro" },
-];
 
 function SaveButton() {
   const { pending } = useFormStatus();
@@ -118,7 +106,7 @@ export function EditBookForm({ book, onClose }: { book: Book; onClose: () => voi
       <div className="flex gap-4 items-start pb-5 border-b border-stone-700/50">
         {book.coverUrl ? (
           <Image src={book.coverUrl} alt={book.title} width={72} height={100}
-            className="rounded-lg shadow-md object-cover shrink-0" unoptimized />
+            className="rounded-lg shadow-md object-cover shrink-0" />
         ) : (
           <div className="w-[72px] h-[100px] rounded-lg bg-gradient-to-b from-stone-700 to-stone-900 shrink-0 border border-stone-700" />
         )}

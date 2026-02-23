@@ -37,6 +37,10 @@ export async function registerAction(
     return { error: "Email e password sono obbligatorie." };
   }
 
+  if (password.length < 8) {
+    return { error: "La password deve essere di almeno 8 caratteri." };
+  }
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return { error: "Email già registrata." };

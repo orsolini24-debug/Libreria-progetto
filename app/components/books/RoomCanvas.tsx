@@ -21,10 +21,12 @@ import Image from "next/image";
 import { updateRoomPosition } from "@/app/lib/book-actions";
 import type { Book } from "@/app/generated/prisma/client";
 
+export type RoomBook = Pick<Book, "id" | "title" | "author" | "coverUrl" | "status" | "roomConfig">;
+
 type RoomConfig = { x: number; y: number; variant?: string };
 type PositionMap = Record<string, { x: number; y: number }>;
 
-function getInitialPositions(books: Book[]): PositionMap {
+function getInitialPositions(books: RoomBook[]): PositionMap {
   return Object.fromEntries(
     books.map((book, i) => {
       const config = book.roomConfig as RoomConfig | null;
@@ -46,7 +48,7 @@ const STATUS_COLORS: Record<string, string> = {
   WISHLIST: "border-violet-400",
 };
 
-export function RoomCanvas({ books }: { books: Book[] }) {
+export function RoomCanvas({ books }: { books: RoomBook[] }) {
   const [positions, setPositions] = useState<PositionMap>(() =>
     getInitialPositions(books)
   );

@@ -79,12 +79,16 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
               className="absolute left-0 top-0 h-full w-1/2 z-10"
               onMouseEnter={() => setHover(star - 0.5)}
               onClick={() => setValue(star - 0.5 === value ? 0 : star - 0.5)}
+              onTouchStart={(e) => { e.preventDefault(); setHover(star - 0.5); }}
+              onTouchEnd={(e) => { e.preventDefault(); setValue(star - 0.5 === value ? 0 : star - 0.5); setHover(0); }}
             />
             {/* Zona destra: voto intero */}
             <span
               className="absolute right-0 top-0 h-full w-1/2 z-10"
               onMouseEnter={() => setHover(star)}
               onClick={() => setValue(star === value ? 0 : star)}
+              onTouchStart={(e) => { e.preventDefault(); setHover(star); }}
+              onTouchEnd={(e) => { e.preventDefault(); setValue(star === value ? 0 : star); setHover(0); }}
             />
           </span>
         );
