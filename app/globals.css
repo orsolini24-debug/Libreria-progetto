@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #1c1917;
-  --foreground: #ede8df;
+  --background: #17110c;
+  --foreground: #e8d9c0;
 }
 
 /* ── Tipografia base ────────────────────────────────────────── */
@@ -14,14 +14,14 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
-/* ── Scrollbar calda e sottile ──────────────────────────────── */
+/* ── Scrollbar ambrata ──────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #1c1917; }
-::-webkit-scrollbar-thumb { background: #4a3828; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #78614a; }
+::-webkit-scrollbar-track { background: #17110c; }
+::-webkit-scrollbar-thumb { background: #5c3d1e; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #8a5a2e; }
 
 /* ── Selezione testo calda ──────────────────────────────────── */
-::selection { background: rgba(200, 134, 10, 0.25); color: #ede8df; }
+::selection { background: rgba(200, 134, 10, 0.3); color: #e8d9c0; }
 
 /* ── Utilities ──────────────────────────────────────────────── */
 @layer utilities {
@@ -76,6 +76,17 @@ body {
   0%   { opacity: 0; transform: translateY(16px) scale(0.95); }
   70%  { transform: translateY(-3px) scale(1.02); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ── Accessibilità: rispetta prefers-reduced-motion ─────────── */

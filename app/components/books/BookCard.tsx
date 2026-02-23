@@ -83,7 +83,7 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
       </div>
 
       {/* Info */}
-      <div className="bg-stone-800/90 border-t border-stone-700/40 px-2.5 py-2.5">
+      <div className="bg-[#221810] border-t border-amber-900/25 px-2.5 py-2.5">
         <div className="flex items-start gap-1.5">
           <span className={`mt-[5px] w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[book.status] ?? "bg-stone-500"}`} />
           <div className="min-w-0">

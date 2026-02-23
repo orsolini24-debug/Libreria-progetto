@@ -6,6 +6,9 @@ import { BookCard } from "./books/BookCard";
 import { SlidePanel } from "./SlidePanel";
 import { EditBookForm } from "./books/EditBookForm";
 import AddBookForm from "./books/AddBookForm";
+import { StatsBar } from "./books/StatsBar";
+import { ReadingChallenge } from "./books/ReadingChallenge";
+import { ConfettiCelebration } from "./ConfettiCelebration";
 import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
@@ -56,7 +59,7 @@ function TopTenSection({
   if (top.length < 3) return null;
 
   return (
-    <section className="mb-10">
+    <section className="mb-8">
       <div className="flex items-baseline gap-2 mb-4">
         <h2 className="font-display text-lg font-semibold text-amber-200/90 tracking-tight">
           Top {top.length < 10 ? top.length : "10"}
@@ -77,35 +80,33 @@ function TopTenSection({
                   src={book.coverUrl}
                   alt={book.title}
                   fill
-                  className="object-cover rounded-lg shadow-lg shadow-black/40 group-hover:shadow-amber-950/60 group-hover:scale-105 transition-all duration-300"
+                  className="object-cover rounded-lg shadow-lg shadow-black/50
+                    group-hover:shadow-amber-950/60 group-hover:scale-105 transition-all duration-300"
                   sizes="72px"
                 />
               ) : (
-                <div className="w-full h-full rounded-lg bg-gradient-to-b from-stone-700 to-stone-900 flex items-center justify-center border border-stone-700">
+                <div className="w-full h-full rounded-lg bg-gradient-to-b from-stone-700 to-stone-900
+                  flex items-center justify-center border border-stone-700">
                   <span className="text-stone-500 text-[10px] text-center px-1 leading-tight">
                     {book.title.slice(0, 20)}
                   </span>
                 </div>
               )}
-
-              {/* Badge posizione */}
-              <span
-                className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shadow-md
-                  ${i === 0 ? "bg-amber-500 text-amber-950"
-                  : i === 1 ? "bg-stone-400 text-stone-900"
-                  : i === 2 ? "bg-orange-700 text-orange-100"
-                  : "bg-stone-700 text-stone-300"}`}
-              >
+              <span className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center
+                text-[11px] font-bold shadow-md
+                ${i === 0 ? "bg-amber-500 text-amber-950"
+                : i === 1 ? "bg-stone-400 text-stone-900"
+                : i === 2 ? "bg-orange-700 text-orange-100"
+                : "bg-stone-700 text-stone-300"}`}>
                 {i < 3 ? MEDALS[i] : i + 1}
               </span>
-
-              {/* Badge voto */}
-              <span className="absolute -bottom-1 -right-1 bg-amber-600 text-stone-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+              <span className="absolute -bottom-1 -right-1 bg-amber-600 text-stone-950 text-[10px]
+                font-bold px-1.5 py-0.5 rounded-full shadow">
                 {book.rating}/10
               </span>
             </div>
-
-            <p className="font-reading text-[10px] text-stone-400 text-center leading-tight line-clamp-2 w-full px-0.5 group-hover:text-stone-200 transition-colors">
+            <p className="font-reading text-[10px] text-stone-400 text-center leading-tight
+              line-clamp-2 w-full px-0.5 group-hover:text-stone-200 transition-colors italic">
               {book.title}
             </p>
           </button>
@@ -116,9 +117,15 @@ function TopTenSection({
 }
 
 export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
-  const [panel, setPanel] = useState<PanelState>(null);
-  const [query, setQuery]         = useState("");
+  const [panel,     setPanel]     = useState<PanelState>(null);
+  const [query,     setQuery]     = useState("");
   const [statusFilter, setStatus] = useState("");
+  const [celebrate, setCelebrate] = useState(false);
+
+  function handleCelebrate() {
+    setCelebrate(true);
+    setTimeout(() => setCelebrate(false), 100);
+  }
 
   const filtered = useMemo(
     () =>
@@ -147,10 +154,18 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
 
   return (
     <>
+      <ConfettiCelebration show={celebrate} />
+
       {/* Top 10 */}
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
 
-      {/* Statistiche */}
+      {/* Stats bar */}
+      <StatsBar books={initialBooks} />
+
+      {/* Reading challenge */}
+      <ReadingChallenge books={initialBooks} />
+
+      {/* Contatori per stato */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {Object.entries(STATUS_LABELS).map(([key, label]) => {
           const active = statusFilter === key;
@@ -161,13 +176,14 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
               className={`group text-left p-4 rounded-xl border transition-all duration-200
                 ${active
                   ? STATUS_COLORS_ACTIVE[key]
-                  : "border-stone-800/80 bg-stone-800/30 hover:bg-stone-800/60 hover:border-stone-700"}`}
+                  : "bg-[#1f1710]/60 border-amber-900/20 hover:bg-[#271d12]/80 hover:border-amber-800/40"}`}
             >
               <div className="flex items-start justify-between mb-1">
-                <p className={`font-display text-2xl font-bold ${active ? STATUS_NUMBER_ACTIVE[key] : "text-stone-300"}`}>
+                <p className={`font-display text-2xl font-bold
+                  ${active ? STATUS_NUMBER_ACTIVE[key] : "text-amber-200/70"}`}>
                   {counts[key]}
                 </p>
-                <span className="text-base opacity-60">{STATUS_ICON[key]}</span>
+                <span className="text-base opacity-50">{STATUS_ICON[key]}</span>
               </div>
               <p className={`text-xs ${active ? "opacity-80" : "text-stone-600"}`}>{label}</p>
             </button>
@@ -182,13 +198,11 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cerca titolo o autore…"
-          className="flex-1 min-w-[180px] border border-stone-700/80 bg-stone-800/60 text-stone-100
+          className="flex-1 min-w-[180px] border border-amber-900/20 bg-[#1f1710]/60 text-stone-200
             placeholder:text-stone-600 rounded-xl px-4 py-2 text-sm
-            focus:outline-none focus:ring-2 focus:ring-amber-600/40 focus:border-amber-700/60
+            focus:outline-none focus:ring-2 focus:ring-amber-700/40 focus:border-amber-700/40
             transition-colors"
         />
-
-        {/* Pills filtro */}
         <div className="flex gap-1.5 flex-wrap">
           {Object.entries(STATUS_LABELS).map(([key, label]) => {
             const active = statusFilter === key;
@@ -199,19 +213,18 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200
                   ${active
                     ? STATUS_COLORS_ACTIVE[key]
-                    : "border-stone-700/60 text-stone-500 hover:bg-stone-800/60 hover:text-stone-300"}`}
+                    : "border-amber-900/20 text-stone-500 hover:bg-amber-950/30 hover:text-stone-300 hover:border-amber-800/40"}`}
               >
                 {label}
               </button>
             );
           })}
         </div>
-
-        {/* Aggiungi */}
         <button
           onClick={() => setPanel({ type: "add" })}
           className="flex items-center gap-2 bg-amber-600 text-stone-950 px-4 py-2 rounded-xl text-sm
-            font-semibold hover:bg-amber-500 active:scale-95 transition-all duration-150 shadow-md shadow-amber-900/30"
+            font-semibold hover:bg-amber-500 active:scale-95 transition-all duration-150
+            shadow-lg shadow-amber-900/40"
         >
           <span className="text-base leading-none">+</span>
           Aggiungi
@@ -256,7 +269,11 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       >
         {panel?.type === "add" && <AddBookForm onSuccess={closePanel} />}
         {panel?.type === "edit" && (
-          <EditBookForm book={panel.book} onClose={closePanel} />
+          <EditBookForm
+            book={panel.book}
+            onClose={closePanel}
+            onCelebrate={handleCelebrate}
+          />
         )}
       </SlidePanel>
     </>
