@@ -6,7 +6,7 @@ import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
 const STATUS_ACCENT: Record<string, string> = {
-  TO_READ:  "after:bg-stone-500",
+  TO_READ:  "after:bg-stone-600",
   READING:  "after:bg-blue-500",
   READ:     "after:bg-emerald-500",
   WISHLIST: "after:bg-violet-500",
@@ -37,10 +37,11 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
   return (
     <div
       onClick={() => onClick(book)}
-      className={`group cursor-pointer relative rounded-xl overflow-hidden shadow-md shadow-black/30
-        hover:shadow-xl hover:shadow-black/50 transition-all duration-300 hover:-translate-y-1
+      className={`group cursor-pointer relative rounded-xl overflow-hidden
+        shadow-md shadow-black/40 hover:shadow-xl hover:shadow-black/60
+        transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02]
         after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5
-        ${STATUS_ACCENT[book.status] ?? "after:bg-stone-500"}`}
+        ${STATUS_ACCENT[book.status] ?? "after:bg-stone-600"}`}
     >
       {/* Cover */}
       <div className="aspect-[2/3] relative overflow-hidden bg-stone-800">
@@ -52,22 +53,24 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
           <div className={`w-full h-full bg-gradient-to-b ${STATUS_COVER_BG[book.status] ?? "from-stone-700 to-stone-900"}
             flex flex-col items-center justify-center p-3 gap-2`}>
             <div className="w-8 h-px bg-white/20" />
-            <p className="text-white/80 text-xs font-medium text-center leading-tight">
+            <p className="font-reading text-white/80 text-xs font-medium text-center leading-tight italic">
               {book.title.length > 40 ? book.title.slice(0, 40) + "…" : book.title}
             </p>
-            {book.author && <p className="text-white/40 text-[10px] text-center">{book.author}</p>}
+            {book.author && (
+              <p className="text-white/40 text-[10px] text-center">{book.author}</p>
+            )}
             <div className="w-8 h-px bg-white/20" />
           </div>
         )}
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent
           opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 gap-1.5">
           {book.rating != null && <RatingDisplay value={book.rating} size="sm" />}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {tags.slice(0, 3).map((tag) => (
-                <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-white/15 text-white rounded-full backdrop-blur-sm border border-white/10">
+                <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-white/15 text-white/90 rounded-full backdrop-blur-sm border border-white/10">
                   {tag}
                 </span>
               ))}
@@ -80,15 +83,17 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
       </div>
 
       {/* Info */}
-      <div className="bg-stone-800 border-t border-stone-700/50 px-2.5 py-2.5">
+      <div className="bg-stone-800/90 border-t border-stone-700/40 px-2.5 py-2.5">
         <div className="flex items-start gap-1.5">
-          <span className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[book.status] ?? "bg-stone-500"}`} />
+          <span className={`mt-[5px] w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[book.status] ?? "bg-stone-500"}`} />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-stone-100 leading-tight line-clamp-2">{book.title}</p>
-            {book.author && <p className="text-[10px] text-stone-500 mt-0.5 truncate">{book.author}</p>}
+            {book.author && (
+              <p className="font-reading text-[10px] text-stone-500 mt-0.5 truncate italic">{book.author}</p>
+            )}
           </div>
         </div>
-        <p className="text-[10px] text-stone-600 mt-1.5">{STATUS_LABELS[book.status]}</p>
+        <p className="text-[10px] text-stone-600 mt-1.5 pl-3">{STATUS_LABELS[book.status]}</p>
       </div>
     </div>
   );

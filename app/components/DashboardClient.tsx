@@ -23,6 +23,13 @@ const STATUS_NUMBER_ACTIVE: Record<string, string> = {
   WISHLIST: "text-violet-300",
 };
 
+const STATUS_ICON: Record<string, string> = {
+  TO_READ:  "📚",
+  READING:  "📖",
+  READ:     "✅",
+  WISHLIST: "🔖",
+};
+
 type PanelState =
   | { type: "add" }
   | { type: "edit"; book: Book }
@@ -50,15 +57,14 @@ function TopTenSection({
 
   return (
     <section className="mb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-base">🏆</span>
-        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+      <div className="flex items-baseline gap-2 mb-4">
+        <h2 className="font-display text-lg font-semibold text-amber-200/90 tracking-tight">
           Top {top.length < 10 ? top.length : "10"}
         </h2>
-        <span className="text-xs text-stone-600">— i tuoi libri più amati</span>
+        <span className="font-reading text-xs text-stone-500 italic">i tuoi libri più amati</span>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
         {top.map((book, i) => (
           <button
             key={book.id}
@@ -71,7 +77,7 @@ function TopTenSection({
                   src={book.coverUrl}
                   alt={book.title}
                   fill
-                  className="object-cover rounded-lg shadow-lg shadow-black/40 group-hover:shadow-black/60 group-hover:scale-105 transition-all duration-300"
+                  className="object-cover rounded-lg shadow-lg shadow-black/40 group-hover:shadow-amber-950/60 group-hover:scale-105 transition-all duration-300"
                   sizes="72px"
                 />
               ) : (
@@ -99,7 +105,7 @@ function TopTenSection({
               </span>
             </div>
 
-            <p className="text-[10px] text-stone-400 text-center leading-tight line-clamp-2 w-full px-0.5 group-hover:text-stone-200 transition-colors">
+            <p className="font-reading text-[10px] text-stone-400 text-center leading-tight line-clamp-2 w-full px-0.5 group-hover:text-stone-200 transition-colors">
               {book.title}
             </p>
           </button>
@@ -152,15 +158,18 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
             <button
               key={key}
               onClick={() => setStatus(active ? "" : key)}
-              className={`text-left p-4 rounded-xl border transition-all
+              className={`group text-left p-4 rounded-xl border transition-all duration-200
                 ${active
                   ? STATUS_COLORS_ACTIVE[key]
-                  : "border-stone-800 bg-stone-800/40 hover:bg-stone-800/70 hover:border-stone-700"}`}
+                  : "border-stone-800/80 bg-stone-800/30 hover:bg-stone-800/60 hover:border-stone-700"}`}
             >
-              <p className={`text-2xl font-bold ${active ? STATUS_NUMBER_ACTIVE[key] : "text-stone-300"}`}>
-                {counts[key]}
-              </p>
-              <p className={`text-xs mt-0.5 ${active ? "opacity-80" : "text-stone-600"}`}>{label}</p>
+              <div className="flex items-start justify-between mb-1">
+                <p className={`font-display text-2xl font-bold ${active ? STATUS_NUMBER_ACTIVE[key] : "text-stone-300"}`}>
+                  {counts[key]}
+                </p>
+                <span className="text-base opacity-60">{STATUS_ICON[key]}</span>
+              </div>
+              <p className={`text-xs ${active ? "opacity-80" : "text-stone-600"}`}>{label}</p>
             </button>
           );
         })}
@@ -173,9 +182,10 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cerca titolo o autore…"
-          className="flex-1 min-w-[180px] border border-stone-700 bg-stone-800 text-stone-100
+          className="flex-1 min-w-[180px] border border-stone-700/80 bg-stone-800/60 text-stone-100
             placeholder:text-stone-600 rounded-xl px-4 py-2 text-sm
-            focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700"
+            focus:outline-none focus:ring-2 focus:ring-amber-600/40 focus:border-amber-700/60
+            transition-colors"
         />
 
         {/* Pills filtro */}
@@ -186,10 +196,10 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
               <button
                 key={key}
                 onClick={() => setStatus(active ? "" : key)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-all
+                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200
                   ${active
                     ? STATUS_COLORS_ACTIVE[key]
-                    : "border-stone-700 text-stone-500 hover:bg-stone-800 hover:text-stone-300"}`}
+                    : "border-stone-700/60 text-stone-500 hover:bg-stone-800/60 hover:text-stone-300"}`}
               >
                 {label}
               </button>
@@ -201,7 +211,7 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
         <button
           onClick={() => setPanel({ type: "add" })}
           className="flex items-center gap-2 bg-amber-600 text-stone-950 px-4 py-2 rounded-xl text-sm
-            font-semibold hover:bg-amber-500 transition-colors shadow-md shadow-amber-900/30"
+            font-semibold hover:bg-amber-500 active:scale-95 transition-all duration-150 shadow-md shadow-amber-900/30"
         >
           <span className="text-base leading-none">+</span>
           Aggiungi
@@ -210,12 +220,12 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
 
       {/* Griglia libri */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="text-5xl mb-4 opacity-30">📚</div>
-          <p className="text-stone-500 font-medium">
+        <div className="flex flex-col items-center justify-center py-24 text-center animate-fade-up">
+          <div className="text-5xl mb-4 opacity-20">📚</div>
+          <p className="font-display text-stone-500 font-medium text-lg">
             {initialBooks.length === 0 ? "La tua libreria è vuota." : "Nessun libro trovato."}
           </p>
-          <p className="text-stone-600 text-sm mt-1">
+          <p className="font-reading text-stone-600 text-sm mt-2 italic">
             {initialBooks.length === 0
               ? "Aggiungi il tuo primo libro con il pulsante in alto."
               : "Prova a cambiare filtro o query di ricerca."}
@@ -224,11 +234,12 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
           {filtered.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onClick={(b) => setPanel({ type: "edit", book: b })}
-            />
+            <div key={book.id} className="book-grid-item">
+              <BookCard
+                book={book}
+                onClick={(b) => setPanel({ type: "edit", book: b })}
+              />
+            </div>
           ))}
         </div>
       )}

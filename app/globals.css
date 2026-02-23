@@ -4,40 +4,84 @@
 
 :root {
   --background: #1c1917;
-  --foreground: #e7e5e4;
+  --foreground: #ede8df;
 }
 
+/* ── Tipografia base ────────────────────────────────────────── */
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+/* ── Scrollbar calda e sottile ──────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #1c1917; }
+::-webkit-scrollbar-thumb { background: #4a3828; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #78614a; }
+
+/* ── Selezione testo calda ──────────────────────────────────── */
+::selection { background: rgba(200, 134, 10, 0.25); color: #ede8df; }
+
+/* ── Utilities ──────────────────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  .font-display { font-family: var(--font-playfair), Georgia, serif; }
+  .font-reading { font-family: var(--font-lora), Georgia, serif; }
 }
 
-/* Scrollbar sottile calda per elementi con overflow */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* ── Stagger griglia libri ──────────────────────────────────── */
+@layer components {
+  .book-grid-item { animation: fadeUp 0.35s ease-out both; }
+  .book-grid-item:nth-child(1)  { animation-delay:   0ms; }
+  .book-grid-item:nth-child(2)  { animation-delay:  50ms; }
+  .book-grid-item:nth-child(3)  { animation-delay: 100ms; }
+  .book-grid-item:nth-child(4)  { animation-delay: 150ms; }
+  .book-grid-item:nth-child(5)  { animation-delay: 200ms; }
+  .book-grid-item:nth-child(6)  { animation-delay: 250ms; }
+  .book-grid-item:nth-child(7)  { animation-delay: 300ms; }
+  .book-grid-item:nth-child(8)  { animation-delay: 350ms; }
+  .book-grid-item:nth-child(9)  { animation-delay: 400ms; }
+  .book-grid-item:nth-child(10) { animation-delay: 450ms; }
+
+  /* Stagger risultati ricerca */
+  .search-result-item { animation: fadeUp 0.22s ease-out both; }
+  .search-result-item:nth-child(1) { animation-delay:   0ms; }
+  .search-result-item:nth-child(2) { animation-delay:  50ms; }
+  .search-result-item:nth-child(3) { animation-delay: 100ms; }
+  .search-result-item:nth-child(4) { animation-delay: 150ms; }
+  .search-result-item:nth-child(5) { animation-delay: 200ms; }
+  .search-result-item:nth-child(6) { animation-delay: 250ms; }
 }
-::-webkit-scrollbar-track {
-  background: #292524;
+
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
-::-webkit-scrollbar-thumb {
-  background: #57534e;
-  border-radius: 9999px;
+
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #78716c;
+
+@keyframes bookIn {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.95); }
+  70%  { transform: translateY(-3px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Accessibilità: rispetta prefers-reduced-motion ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

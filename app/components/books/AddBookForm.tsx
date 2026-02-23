@@ -153,7 +153,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           <ul className="absolute z-30 w-full mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-2xl shadow-black/60 max-h-80 overflow-y-auto">
             {results.map((book) => (
               <li key={book.googleId} onClick={() => handleSelect(book)}
-                className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 cursor-pointer border-b border-stone-800 last:border-0 transition-colors">
+                className="search-result-item flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 cursor-pointer border-b border-stone-800 last:border-0 transition-colors">
                 {book.coverUrl ? (
                   <Image src={book.coverUrl} alt={book.title}
                     width={32} height={44} className="rounded object-cover shrink-0" unoptimized />

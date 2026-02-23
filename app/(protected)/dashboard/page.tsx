@@ -15,9 +15,11 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-stone-100 tracking-tight">La tua libreria</h1>
-        <p className="text-sm text-stone-500 mt-1">
-          {books.length} {books.length === 1 ? "libro" : "libri"} totali
+        <h1 className="font-display text-3xl font-bold text-amber-100 tracking-tight">
+          La tua libreria
+        </h1>
+        <p className="font-reading text-sm text-stone-500 mt-1 italic">
+          {books.length} {books.length === 1 ? "libro" : "libri"} nella collezione
         </p>
       </div>
 

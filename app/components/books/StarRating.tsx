@@ -11,12 +11,6 @@ interface StarRatingProps {
 
 const STAR_SIZES = { sm: 16, md: 22, lg: 28 };
 
-/**
- * Scala 0.5–10 con mezze stelle.
- * Ogni stella è divisa in due zone di click:
- *  - metà sinistra → valore X - 0.5
- *  - metà destra   → valore X
- */
 export function StarRating({ name, defaultValue = 0, readOnly = false, size = "md" }: StarRatingProps) {
   const [value, setValue] = useState<number>(defaultValue ?? 0);
   const [hover, setHover] = useState<number>(0);
@@ -32,7 +26,6 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
 
   return (
     <div className="flex items-center gap-0.5">
-      {/* Hidden input senza readOnly (React 19 non lo richiede) */}
       <input type="hidden" name={name} value={value > 0 ? value : ""} />
 
       {Array.from({ length: 10 }, (_, i) => i + 1).map((star) => {
@@ -57,18 +50,23 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
         return (
           <span
             key={star}
-            className="relative inline-block cursor-pointer"
-            style={{ width: px, height: px, fontSize: px }}
+            className="relative inline-block cursor-pointer transition-transform duration-150"
+            style={{
+              width: px,
+              height: px,
+              fontSize: px,
+              transform: hover === star || hover === star - 0.5 ? "scale(1.25)" : "scale(1)",
+            }}
             onMouseLeave={() => setHover(0)}
           >
             {/* Stella base (vuota) */}
-            <span className="text-stone-700 select-none">★</span>
+            <span className="text-stone-700 select-none" style={{ transition: "color 120ms ease" }}>★</span>
 
             {/* Overlay colorato */}
             {fill > 0 && (
               <span
                 className="absolute inset-0 overflow-hidden text-amber-400 pointer-events-none select-none"
-                style={{ width: `${fill}%` }}
+                style={{ width: `${fill}%`, transition: "width 80ms ease" }}
               >
                 ★
               </span>
@@ -95,7 +93,7 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
       })}
 
       {!readOnly && (
-        <span className="ml-2 text-sm font-semibold text-stone-400 min-w-[32px]">
+        <span className="ml-2 text-sm font-semibold text-amber-500/80 min-w-[32px]">
           {active > 0 ? `${active}/10` : ""}
         </span>
       )}
@@ -113,7 +111,6 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
   );
 }
 
-/** Render statico del valore, usato in BookCard */
 export function RatingDisplay({ value, size = "sm" }: { value: number | null; size?: "sm" | "md" }) {
   if (!value) return null;
   return (

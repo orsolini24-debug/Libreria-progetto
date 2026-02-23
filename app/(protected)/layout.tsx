@@ -9,26 +9,26 @@ export default async function ProtectedLayout({
   const session = await auth();
 
   return (
-    <div className="min-h-screen bg-stone-900">
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
       {/* Topbar */}
-      <header className="bg-stone-950/80 backdrop-blur-md border-b border-stone-800 sticky top-0 z-10">
+      <header className="bg-stone-950/90 backdrop-blur-md border-b border-stone-800/80 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Brand */}
-          <span className="font-bold text-amber-500 text-lg tracking-tight">
-            LibrerIA
+          <span className="font-display font-bold text-amber-500 text-xl tracking-tight">
+            Librer<em className="italic">IA</em>
           </span>
 
           {/* Nav links */}
           <nav className="flex items-center gap-1">
             <Link
               href="/dashboard"
-              className="px-3 py-1.5 text-sm rounded-md text-stone-400 hover:bg-stone-800 hover:text-stone-100 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg text-stone-400 hover:bg-stone-800/80 hover:text-amber-400 transition-all duration-200"
             >
               Libreria
             </Link>
             <Link
               href="/room"
-              className="px-3 py-1.5 text-sm rounded-md text-stone-400 hover:bg-stone-800 hover:text-stone-100 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg text-stone-400 hover:bg-stone-800/80 hover:text-amber-400 transition-all duration-200"
             >
               Stanza
             </Link>
@@ -47,7 +47,7 @@ export default async function ProtectedLayout({
             >
               <button
                 type="submit"
-                className="text-xs px-3 py-1.5 rounded-md border border-stone-700 text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg border border-stone-700/60 text-stone-500 hover:border-amber-800/60 hover:text-amber-400 hover:bg-amber-950/30 transition-all duration-200"
               >
                 Logout
               </button>
