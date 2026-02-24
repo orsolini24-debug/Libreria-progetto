@@ -30,7 +30,7 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
   }, []);
 
   const booksThisYear = books.filter(
-    (b) => b.status === "READ" && new Date((b as any).finishedAt ?? b.updatedAt).getFullYear() === YEAR
+    (b) => b.status === "READ" && new Date(b.finishedAt ?? b.updatedAt).getFullYear() === YEAR
   ).length;
 
   const pct = Math.min(100, Math.round((booksThisYear / goal) * 100));

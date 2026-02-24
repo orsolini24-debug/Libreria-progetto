@@ -10,7 +10,7 @@ export function YearWrapped({ books }: { books: Book[] }) {
   const stats = useMemo(() => {
     // Libri letti quest'anno — usa finishedAt se disponibile, altrimenti updatedAt come fallback
     const readThisYear = books.filter(
-      (b) => b.status === "READ" && new Date((b as any).finishedAt ?? b.updatedAt).getFullYear() === YEAR
+      (b) => b.status === "READ" && new Date(b.finishedAt ?? b.updatedAt).getFullYear() === YEAR
     );
 
     if (readThisYear.length < 3) return null;

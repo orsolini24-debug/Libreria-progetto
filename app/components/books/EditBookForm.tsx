@@ -280,7 +280,7 @@ export function EditBookForm({
             <input
               name="purchasedAt"
               type="date"
-              defaultValue={(book as any).purchasedAt ? new Date((book as any).purchasedAt).toISOString().slice(0, 10) : ""}
+              defaultValue={book.purchasedAt ? new Date(book.purchasedAt).toISOString().slice(0, 10) : ""}
               className={fieldClass}
               style={fieldStyle}
             />
@@ -291,7 +291,7 @@ export function EditBookForm({
               <input
                 name="startedAt"
                 type="date"
-                defaultValue={(book as any).startedAt ? new Date((book as any).startedAt).toISOString().slice(0, 10) : ""}
+                defaultValue={book.startedAt ? new Date(book.startedAt).toISOString().slice(0, 10) : ""}
                 className={fieldClass}
                 style={fieldStyle}
               />
@@ -303,7 +303,7 @@ export function EditBookForm({
               <input
                 name="finishedAt"
                 type="date"
-                defaultValue={(book as any).finishedAt ? new Date((book as any).finishedAt).toISOString().slice(0, 10) : ""}
+                defaultValue={book.finishedAt ? new Date(book.finishedAt).toISOString().slice(0, 10) : ""}
                 className={fieldClass}
                 style={fieldStyle}
               />
