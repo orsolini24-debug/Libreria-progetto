@@ -150,16 +150,16 @@
   --bg-card:     #f3ebdb;
   --bg-elevated: #ece0cc;
   --bg-input:    #f7f0e5;
-  --fg-primary:  #1e1208;
-  --fg-muted:    #6b4520;
-  --fg-subtle:   #9a6a3a;
+  --fg-primary:  #0f0804;
+  --fg-muted:    #3d2010;
+  --fg-subtle:   #5a3818;
   --accent:      #b85e00;
   --accent-hover:#d97706;
   --accent-on:   #ffffff;
   --glow:        rgba(184,94,0,0.12);
   --scrollbar:   #c4a070;
   --background:  #faf5ec;
-  --foreground:  #1e1208;
+  --foreground:  #0f0804;
 }
 
 [data-mode="light"][data-theme="oceano"] {
@@ -167,16 +167,16 @@
   --bg-card:     #e0edf8;
   --bg-elevated: #d3e5f3;
   --bg-input:    #e8f1f9;
-  --fg-primary:  #0a1a2e;
-  --fg-muted:    #2a5070;
-  --fg-subtle:   #4a7090;
+  --fg-primary:  #050d18;
+  --fg-muted:    #153040;
+  --fg-subtle:   #204555;
   --accent:      #9a7830;
   --accent-hover:#c9a84c;
   --accent-on:   #ffffff;
   --glow:        rgba(154,120,48,0.12);
   --scrollbar:   #7090b8;
   --background:  #edf4fb;
-  --foreground:  #0a1a2e;
+  --foreground:  #050d18;
 }
 
 [data-mode="light"][data-theme="foresta"] {
@@ -184,16 +184,16 @@
   --bg-card:     #dff0df;
   --bg-elevated: #d1e8d1;
   --bg-input:    #e8f3e8;
-  --fg-primary:  #081408;
-  --fg-muted:    #28502e;
-  --fg-subtle:   #467848;
+  --fg-primary:  #040a04;
+  --fg-muted:    #183018;
+  --fg-subtle:   #284e2a;
   --accent:      #9a7830;
   --accent-hover:#c9a84c;
   --accent-on:   #ffffff;
   --glow:        rgba(154,120,48,0.12);
   --scrollbar:   #60a860;
   --background:  #ecf6ec;
-  --foreground:  #081408;
+  --foreground:  #040a04;
 }
 
 [data-mode="light"][data-theme="viola"] {
@@ -201,16 +201,16 @@
   --bg-card:     #e9e3f5;
   --bg-elevated: #ddd5ee;
   --bg-input:    #efe9f8;
-  --fg-primary:  #120a20;
-  --fg-muted:    #582080;
-  --fg-subtle:   #785ca0;
+  --fg-primary:  #090510;
+  --fg-muted:    #380c60;
+  --fg-subtle:   #503880;
   --accent:      #9a7830;
   --accent-hover:#c8a86e;
   --accent-on:   #ffffff;
   --glow:        rgba(154,120,48,0.12);
   --scrollbar:   #9060c0;
   --background:  #f3f0fa;
-  --foreground:  #120a20;
+  --foreground:  #090510;
 }
 
 [data-mode="light"][data-theme="rosso"] {
@@ -218,16 +218,16 @@
   --bg-card:     #f2e2e2;
   --bg-elevated: #ebd3d3;
   --bg-input:    #f6ecec;
-  --fg-primary:  #1e0808;
-  --fg-muted:    #7a3030;
-  --fg-subtle:   #a05050;
+  --fg-primary:  #0f0404;
+  --fg-muted:    #4a1818;
+  --fg-subtle:   #602828;
   --accent:      #9a7830;
   --accent-hover:#dbb95e;
   --accent-on:   #ffffff;
   --glow:        rgba(154,120,48,0.12);
   --scrollbar:   #c06060;
   --background:  #faf0f0;
-  --foreground:  #1e0808;
+  --foreground:  #0f0404;
 }
 
 [data-mode="light"][data-theme="ardesia"] {
@@ -235,16 +235,16 @@
   --bg-card:     #e0ecf5;
   --bg-elevated: #d2e4f0;
   --bg-input:    #e8f1f8;
-  --fg-primary:  #080e16;
-  --fg-muted:    #1a5a6a;
-  --fg-subtle:   #357888;
+  --fg-primary:  #040608;
+  --fg-muted:    #0a3040;
+  --fg-subtle:   #164858;
   --accent:      #0a8a7e;
   --accent-hover:#2dd4bf;
   --accent-on:   #ffffff;
   --glow:        rgba(10,138,126,0.12);
   --scrollbar:   #3898b0;
   --background:  #eef4f9;
-  --foreground:  #080e16;
+  --foreground:  #040608;
 }
 
 [data-mode="light"][data-theme="seppia"] {
@@ -252,16 +252,16 @@
   --bg-card:     #f1e6d4;
   --bg-elevated: #e8d9c0;
   --bg-input:    #f5ecdf;
-  --fg-primary:  #1e1408;
-  --fg-muted:    #6a4828;
-  --fg-subtle:   #987040;
+  --fg-primary:  #0f0a04;
+  --fg-muted:    #3a2810;
+  --fg-subtle:   #5a3e18;
   --accent:      #7a5228;
   --accent-hover:#a67c52;
   --accent-on:   #ffffff;
   --glow:        rgba(122,82,40,0.12);
   --scrollbar:   #b08850;
   --background:  #faf3e8;
-  --foreground:  #1e1408;
+  --foreground:  #0f0a04;
 }
 
 [data-mode="light"][data-theme="notte"] {
@@ -269,16 +269,16 @@
   --bg-card:     #e3e3f5;
   --bg-elevated: #d6d6ee;
   --bg-input:    #e9e9f8;
-  --fg-primary:  #080818;
-  --fg-muted:    #3838a0;
-  --fg-subtle:   #5555b8;
+  --fg-primary:  #04040c;
+  --fg-muted:    #201880;
+  --fg-subtle:   #302898;
   --accent:      #4848c8;
   --accent-hover:#a0a0ff;
   --accent-on:   #ffffff;
   --glow:        rgba(72,72,200,0.12);
   --scrollbar:   #8080d0;
   --background:  #f0f0fa;
-  --foreground:  #080818;
+  --foreground:  #04040c;
 }
 
 /* Scrollbar in modalità chiara */
