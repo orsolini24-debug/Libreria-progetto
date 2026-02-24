@@ -9,7 +9,31 @@
       "Bash(npm install:*)",
       "Bash(node -e:*)",
       "Bash(npx tsc:*)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si procedi\" npx prisma db push:*)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si procedi\" npx prisma db push:*)",
+      "Bash(npx next build:*)",
+      "Bash(curl:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git rm:*)",
+      "Bash(npx vercel --version)",
+      "WebFetch(domain:libreria-progetto.vercel.app)",
+      "WebFetch(domain:libreria-progetto-orsolini24-debugs-projects.vercel.app)",
+      "Bash(npx vercel inspect:*)",
+      "Bash(npx vercel logs:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel:*)",
+      "Bash(cd:*)",
+      "Bash(cd \"C:\\\\Users\\\\g.orsolini\\\\Desktop\\\\Giorgio\\\\Libreria-progetto\" && git push origin main 2>&1)",
+      "Bash(grep AUTH_URL:*)",
+      "WebSearch",
+      "Bash(cd \"C:\\\\Users\\\\g.orsolini\\\\Desktop\\\\Giorgio\\\\Libreria-progetto\" && git add app/globals.css \"app/\\(protected\\)/layout.tsx\" app/components/DashboardClient.tsx app/components/ConfettiCelebration.tsx app/components/books/StatsBar.tsx app/components/books/ReadingChallenge.tsx app/components/books/EditBookForm.tsx app/components/books/BookCard.tsx && git commit -m \"$\\(cat <<'EOF'\nfeat: Tier 2 — palette calda, StatsBar, ReadingChallenge, confetti completamento\n\nPalette:\n- Background: #17110c \\(marrone caldo profondo vs grigio freddo\\)\n- Layout: radial-gradient ellipse warm amber-950 → #17110c\n- Topbar: bordo amber-900/35, bg #140d07/92 semitrasparente\n- Cards stat: bg-[#1f1710], bordi amber-900/20 invece di stone freddo\n- BookCard info: bg-[#221810], bordo amber-900/25\n- EditBookForm: campi con border amber-900/20, tag chip amber-tinted\n\nStatsBar \\(nuovo componente\\):\n- Riga metrica: totale libri, letti, autori unici, media voti, pagine lette\n- Font Playfair per i numeri, palette amber-300\n\nReadingChallenge \\(nuovo componente\\):\n- Obiettivo annuale configurabile \\(localStorage\\)\n- Barra progresso amber con gradient + shimmer animato\n- Messaggio motivazionale dinamico basato sulla percentuale\n- Idration-safe \\(mounted check\\)\n\nConfettiCelebration \\(nuovo componente\\):\n- 50 particelle pure CSS \\(rect + circle\\), colori amber/gold/orange\n- z-index 200, pointer-events-none, auto-dismiss dopo 4s\n- Trigger: DashboardClient.handleCelebrate\\(\\) → EditBookForm.onCelebrate\\(\\)\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push origin main 2>&1)",
+      "Bash(head:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(cat \"C:\\\\Users\\\\g.orsolini\\\\.claude\\\\projects\\\\C--Users-g-orsolini-Desktop-Giorgio-Libreria-progetto\\\\c3a9993e-ac62-45dc-af21-ea699f698d52.jsonl\" | python3 -c \"\nimport sys, json\nlines = sys.stdin.readlines\\(\\)\nmessages = []\nfor line in lines:\n    try:\n        obj = json.loads\\(line\\)\n        if obj.get\\('type'\\) in ['user', 'assistant']:\n            messages.append\\(obj\\)\n    except:\n        pass\n# Print all messages to find phases\nfor msg in messages:\n    role = msg.get\\('type', ''\\)\n    content = msg.get\\('message', {}\\)\n    if isinstance\\(content, dict\\):\n        c = content.get\\('content', ''\\)\n        if isinstance\\(c, list\\):\n            for item in c:\n                if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'text':\n                    text = item['text']\n                    if 'fase' in text.lower\\(\\) or 'phase' in text.lower\\(\\) or 'piano' in text.lower\\(\\) or 'step' in text.lower\\(\\):\n                        print\\(f'--- {role} ---'\\)\n                        print\\(text[:1000]\\)\n                        print\\(\\)\n\" 2>/dev/null)",
+      "Bash(cat \"C:\\\\Users\\\\g.orsolini\\\\.claude\\\\projects\\\\C--Users-g-orsolini-Desktop-Giorgio-Libreria-progetto\\\\c3a9993e-ac62-45dc-af21-ea699f698d52.jsonl\" | python3 -c \"\nimport sys, json\nlines = sys.stdin.readlines\\(\\)\nmessages = []\nfor line in lines:\n    try:\n        obj = json.loads\\(line\\)\n        if obj.get\\('type'\\) in ['user', 'assistant']:\n            messages.append\\(obj\\)\n    except:\n        pass\n# Print all messages to find phases - look for numbered lists\nfor msg in messages:\n    role = msg.get\\('type', ''\\)\n    content = msg.get\\('message', {}\\)\n    if isinstance\\(content, dict\\):\n        c = content.get\\('content', ''\\)\n        if isinstance\\(c, list\\):\n            for item in c:\n                if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'text':\n                    text = item['text']\n                    if \\('### 3' in text or '## 3' in text or 'Fase 3' in text or 'fase 3' in text or \n                        'RoomCanvas' in text or 'stanza' in text.lower\\(\\)\\):\n                        print\\(f'--- {role} ---'\\)\n                        print\\(text[:2000]\\)\n                        print\\(\\)\n\" 2>/dev/null)",
+      "Bash(cat \"C:\\\\Users\\\\g.orsolini\\\\.claude\\\\projects\\\\C--Users-g-orsolini-Desktop-Giorgio-Libreria-progetto\\\\c3a9993e-ac62-45dc-af21-ea699f698d52.jsonl\" | python3 -c \"\nimport sys, json\nlines = sys.stdin.readlines\\(\\)\nmessages = []\nfor line in lines:\n    try:\n        obj = json.loads\\(line\\)\n        if obj.get\\('type'\\) in ['user', 'assistant']:\n            messages.append\\(obj\\)\n    except:\n        pass\n# Print messages from start, looking for the plan/phases\nfor i, msg in enumerate\\(messages\\):\n    role = msg.get\\('type', ''\\)\n    content = msg.get\\('message', {}\\)\n    if isinstance\\(content, dict\\):\n        c = content.get\\('content', ''\\)\n        if isinstance\\(c, list\\):\n            for item in c:\n                if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'text':\n                    text = item['text']\n                    # Look for numbered phases/steps\n                    if \\('**Fase' in text or 'Fase 1' in text or '### Fase' in text or \n                        'implementiamo' in text.lower\\(\\) or 'procediamo' in text.lower\\(\\) or\n                        'piano di lavoro' in text.lower\\(\\)\\):\n                        print\\(f'=== MSG {i} {role} ==='\\)\n                        print\\(text[:3000]\\)\n                        print\\(\\)\n\" 2>/dev/null)",
+      "Bash(python3:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ]
   }
 }

@@ -38,11 +38,11 @@ export default async function ProtectedLayout({
               Libreria
             </Link>
             <Link
-              href="/room"
+              href="/suggestions"
               className="px-3 py-1.5 text-sm rounded-lg transition-all duration-200"
               style={{ color: "var(--fg-muted)" }}
             >
-              Stanza
+              Idee
             </Link>
           </nav>
 

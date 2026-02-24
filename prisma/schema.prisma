@@ -26,6 +26,22 @@ enum BookStatus {
   WISHLIST
 }
 
+enum SuggestionCategory {
+  FEATURE
+  UI_UX
+  BUG
+  PERFORMANCE
+  OTHER
+}
+
+enum SuggestionStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  IMPLEMENTED
+}
+
 // ── MODELS ────────────────────────────────────────────────────────────────────
 
 model User {
@@ -36,7 +52,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  books     Book[]
+  books       Book[]
+  suggestions Suggestion[]
 }
 
 model Book {
@@ -71,6 +88,24 @@ model Book {
   purchasedAt   DateTime?
   startedAt     DateTime?
   finishedAt    DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Suggestion {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String             @db.Text
+  category    SuggestionCategory @default(OTHER)
+  status      SuggestionStatus   @default(PENDING)
+  adminNote   String?            @db.Text
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([userId])
   @@index([status])
