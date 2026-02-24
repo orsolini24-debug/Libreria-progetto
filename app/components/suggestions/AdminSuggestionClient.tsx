@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateSuggestionStatus, deleteSuggestion } from "@/app/lib/suggestion-actions";
 import type { Suggestion, User } from "@/app/generated/prisma/client";
 
@@ -148,15 +149,12 @@ function SuggestionCard({ s, onUpdated }: { s: SuggestionWithUser; onUpdated: ()
   );
 }
 
-export function AdminSuggestionClient({ suggestions: initial }: { suggestions: SuggestionWithUser[] }) {
-  const [tab,         setTab]         = useState("");
-  const [suggestions, setSuggestions] = useState(initial);
+export function AdminSuggestionClient({ suggestions }: { suggestions: SuggestionWithUser[] }) {
+  const router = useRouter();
+  const [tab, setTab] = useState("");
 
-  // Aggiornamento ottimistico: rilegge dal server al prossimo render (revalidatePath)
   function onUpdated() {
-    // Il revalidatePath nel server action trigghera un refresh automatico
-    // La lista si aggiorna al prossimo full-page navigation o router.refresh()
-    // Per ora manteniamo lo stato locale — il server è già aggiornato
+    router.refresh();
   }
 
   const counts = Object.keys(STATUS_CONFIG).reduce((acc, k) => {
