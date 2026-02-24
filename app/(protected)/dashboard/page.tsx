@@ -15,10 +15,10 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-amber-100 tracking-tight">
+        <h1 className="font-display text-3xl font-bold tracking-tight" style={{ color: "var(--fg-primary)" }}>
           La tua libreria
         </h1>
-        <p className="font-reading text-sm text-stone-500 mt-1 italic">
+        <p className="font-reading text-sm mt-1 italic" style={{ color: "var(--fg-muted)" }}>
           {books.length} {books.length === 1 ? "libro" : "libri"} nella collezione
         </p>
       </div>
