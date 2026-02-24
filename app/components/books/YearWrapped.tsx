@@ -8,9 +8,9 @@ const YEAR = new Date().getFullYear();
 
 export function YearWrapped({ books }: { books: Book[] }) {
   const stats = useMemo(() => {
-    // Libri letti quest'anno (updatedAt come ReadingChallenge — momento del cambio stato)
+    // Libri letti quest'anno — usa finishedAt se disponibile, altrimenti updatedAt come fallback
     const readThisYear = books.filter(
-      (b) => b.status === "READ" && new Date(b.updatedAt).getFullYear() === YEAR
+      (b) => b.status === "READ" && new Date((b as any).finishedAt ?? b.updatedAt).getFullYear() === YEAR
     );
 
     if (readThisYear.length < 3) return null;
@@ -70,9 +70,8 @@ export function YearWrapped({ books }: { books: Book[] }) {
       </div>
 
       <div
-        className="rounded-2xl border overflow-hidden"
+        className="glass rounded-2xl overflow-hidden backdrop-blur-sm"
         style={{
-          background: "var(--bg-card)",
           borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
         }}
       >
@@ -86,7 +85,7 @@ export function YearWrapped({ books }: { books: Book[] }) {
           {/* Stat grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {statCards.map(({ value, label, italic }, i) => (
-              <div key={i} className="text-center">
+              <div key={i} className="glass-sm rounded-xl py-4 text-center">
                 <p
                   className={`font-display font-bold leading-none ${typeof value === "string" && value.length > 6 ? "text-xl" : "text-4xl"} ${italic ? "italic" : ""}`}
                   style={{ color: "var(--accent)" }}
@@ -103,8 +102,7 @@ export function YearWrapped({ books }: { books: Book[] }) {
           {/* Best book */}
           {stats.bestBook && (
             <div
-              className="flex items-center gap-4 p-3.5 rounded-xl"
-              style={{ background: "var(--bg-elevated)" }}
+              className="glass-sm flex items-center gap-4 p-3.5 rounded-xl backdrop-blur-sm"
             >
               <span className="text-2xl shrink-0 select-none">🏆</span>
 

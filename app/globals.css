@@ -170,6 +170,17 @@ body {
 
   .font-display { font-family: var(--font-playfair), Georgia, serif; }
   .font-reading { font-family: var(--font-lora), Georgia, serif; }
+
+  .glass {
+    @apply backdrop-blur-md;
+    background: color-mix(in srgb, var(--bg-card) 75%, transparent);
+    border: 1px solid color-mix(in srgb, var(--fg-subtle) 15%, transparent);
+  }
+  .glass-sm {
+    @apply backdrop-blur-sm;
+    background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--fg-subtle) 12%, transparent);
+  }
 }
 
 /* ── Stagger griglia libri ──────────────────────────────────── */

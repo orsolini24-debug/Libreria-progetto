@@ -357,6 +357,48 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         />
       </div>
 
+      {/* Date */}
+      <div className="flex flex-col gap-3 pt-1">
+        <p className="text-xs font-semibold uppercase" style={{ color: "var(--fg-subtle)", letterSpacing: "0.08em" }}>Date</p>
+        <div>
+          <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
+            Data acquisto
+          </label>
+          <input
+            name="purchasedAt"
+            type="date"
+            className={fieldClass}
+            style={fieldStyle}
+          />
+        </div>
+        {status !== "TO_READ" && status !== "WISHLIST" && (
+          <div>
+            <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
+              Inizio lettura
+            </label>
+            <input
+              name="startedAt"
+              type="date"
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+        )}
+        {status === "READ" && (
+          <div>
+            <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
+              Fine lettura
+            </label>
+            <input
+              name="finishedAt"
+              type="date"
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+        )}
+      </div>
+
       {state?.error && (
         <p
           className="text-xs px-3 py-2 rounded-xl border"

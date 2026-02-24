@@ -272,6 +272,45 @@ export function EditBookForm({
           />
         </div>
 
+        {/* Date */}
+        <div className="flex flex-col gap-3 pt-1">
+          <p className="text-xs font-semibold uppercase" style={{ color: "var(--fg-subtle)", letterSpacing: "0.08em" }}>Date</p>
+          <div>
+            <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Data acquisto</label>
+            <input
+              name="purchasedAt"
+              type="date"
+              defaultValue={(book as any).purchasedAt ? new Date((book as any).purchasedAt).toISOString().slice(0, 10) : ""}
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+          {status !== "TO_READ" && status !== "WISHLIST" && (
+            <div>
+              <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Inizio lettura</label>
+              <input
+                name="startedAt"
+                type="date"
+                defaultValue={(book as any).startedAt ? new Date((book as any).startedAt).toISOString().slice(0, 10) : ""}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+          )}
+          {status === "READ" && (
+            <div>
+              <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Fine lettura</label>
+              <input
+                name="finishedAt"
+                type="date"
+                defaultValue={(book as any).finishedAt ? new Date((book as any).finishedAt).toISOString().slice(0, 10) : ""}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+          )}
+        </div>
+
         {state?.error && (
           <p className="text-xs px-3 py-2 rounded-xl border"
             style={{ color: "#f87171", background: "color-mix(in srgb, #ef4444 8%, var(--bg-elevated))", borderColor: "color-mix(in srgb, #ef4444 30%, transparent)" }}>

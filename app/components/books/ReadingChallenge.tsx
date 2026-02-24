@@ -30,7 +30,7 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
   }, []);
 
   const booksThisYear = books.filter(
-    (b) => b.status === "READ" && new Date(b.updatedAt).getFullYear() === YEAR
+    (b) => b.status === "READ" && new Date((b as any).finishedAt ?? b.updatedAt).getFullYear() === YEAR
   ).length;
 
   const pct = Math.min(100, Math.round((booksThisYear / goal) * 100));
@@ -48,10 +48,9 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
 
   return (
     <div
-      className="mb-6 px-4 py-3.5 rounded-xl border"
+      className="glass mb-6 px-4 py-3.5 rounded-xl backdrop-blur-sm"
       style={{
-        background: "color-mix(in srgb, var(--accent) 5%, var(--bg-card))",
-        borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+        background: "color-mix(in srgb, var(--accent) 5%, color-mix(in srgb, var(--bg-card) 80%, transparent))",
       }}
     >
       {/* Header */}

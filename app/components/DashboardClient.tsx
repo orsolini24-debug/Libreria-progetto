@@ -246,10 +246,9 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
                 key={key}
                 onClick={() => setStatus(active ? "" : key)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200
-                  ${active ? STATUS_COLORS_ACTIVE[key] : ""}`}
+                  ${active ? STATUS_COLORS_ACTIVE[key] : "glass-sm"}`}
                 style={!active ? {
                   color: "var(--fg-muted)",
-                  borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
                 } : undefined}
               >
                 {label}

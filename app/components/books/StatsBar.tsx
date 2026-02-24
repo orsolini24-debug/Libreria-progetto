@@ -34,13 +34,7 @@ export function StatsBar({ books }: { books: Book[] }) {
   ];
 
   return (
-    <div
-      className="flex flex-wrap gap-x-6 gap-y-3 mb-6 px-4 py-3.5 rounded-xl border"
-      style={{
-        background: "color-mix(in srgb, var(--accent) 5%, var(--bg-card))",
-        borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
-      }}
-    >
+    <div className="glass flex flex-wrap gap-x-6 gap-y-3 mb-6 px-4 py-3.5 rounded-xl">
       {stats.map((s, i) => (
         <div key={i} className="flex items-center gap-2.5">
           <span className="text-lg leading-none">{s.icon}</span>

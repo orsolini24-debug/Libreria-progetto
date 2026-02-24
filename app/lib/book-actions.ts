@@ -38,6 +38,13 @@ function str(raw: FormDataEntryValue | null): string | null {
   return s || null;
 }
 
+function parseDateOrNull(raw: FormDataEntryValue | null): Date | null {
+  const s = (raw as string)?.trim();
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 // ── createBook ────────────────────────────────────────────────────────────────
 // BUG FIX: rating, comment, tags e formats erano assenti dalla create → ora inclusi
 export async function createBook(
@@ -71,6 +78,9 @@ export async function createBook(
         comment:       str(formData.get("comment")),
         tags:          str(formData.get("tags")),
         formats:       str(formData.get("formats")),
+        purchasedAt:   parseDateOrNull(formData.get("purchasedAt")),
+        startedAt:     parseDateOrNull(formData.get("startedAt")),
+        finishedAt:    parseDateOrNull(formData.get("finishedAt")),
       },
     });
 
@@ -100,13 +110,16 @@ export async function updateBook(
     await prisma.book.update({
       where: { id },
       data: {
-        title:   str(formData.get("title"))  ?? existing.title,
-        author:  str(formData.get("author")),
-        status:  parseStatus(formData.get("status"), existing.status),
-        rating:  parseFloatOrNull(formData.get("rating")),
-        comment: str(formData.get("comment")),
-        tags:    str(formData.get("tags")),
-        formats: str(formData.get("formats")),
+        title:       str(formData.get("title"))  ?? existing.title,
+        author:      str(formData.get("author")),
+        status:      parseStatus(formData.get("status"), existing.status),
+        rating:      parseFloatOrNull(formData.get("rating")),
+        comment:     str(formData.get("comment")),
+        tags:        str(formData.get("tags")),
+        formats:     str(formData.get("formats")),
+        purchasedAt: parseDateOrNull(formData.get("purchasedAt")),
+        startedAt:   parseDateOrNull(formData.get("startedAt")),
+        finishedAt:  parseDateOrNull(formData.get("finishedAt")),
       },
     });
 
