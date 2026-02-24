@@ -15,12 +15,18 @@ const THEMES = [
 ] as const;
 
 type ThemeId = (typeof THEMES)[number]["id"] | "custom";
+type Mode = "dark" | "light";
 
 function applyPreset(id: string) {
   /* Rimuove eventuali override inline lasciati dal customizer */
   document.documentElement.removeAttribute("style");
   document.documentElement.setAttribute("data-theme", id);
   localStorage.setItem("theme", id);
+}
+
+function applyMode(m: Mode) {
+  document.documentElement.setAttribute("data-mode", m);
+  localStorage.setItem("mode", m);
 }
 
 function applyCustom() {
@@ -36,6 +42,7 @@ function applyCustom() {
 
 export function ThemeSwitcher() {
   const [current,       setCurrent]      = useState<ThemeId>("ambra");
+  const [mode,          setMode]         = useState<Mode>("dark");
   const [open,          setOpen]         = useState(false);
   const [customize,     setCustomize]    = useState(false);
   const [customAccent,  setCustomAccent] = useState<string | null>(null);
@@ -45,6 +52,10 @@ export function ThemeSwitcher() {
   /* Ripristina tema salvato all'avvio — solo client */
   useEffect(() => {
     setMounted(true);
+    const savedMode = (localStorage.getItem("mode") ?? "dark") as Mode;
+    setMode(savedMode);
+    applyMode(savedMode);
+
     const saved = (localStorage.getItem("theme") ?? "ambra") as ThemeId;
     setCurrent(saved);
     if (saved === "custom") {
@@ -59,6 +70,12 @@ export function ThemeSwitcher() {
       applyPreset(saved);
     }
   }, []);
+
+  function toggleMode() {
+    const next = mode === "dark" ? "light" : "dark";
+    setMode(next);
+    applyMode(next);
+  }
 
   /* Chiude il dropdown al click esterno */
   useEffect(() => {
@@ -142,6 +159,30 @@ export function ThemeSwitcher() {
               border: "1px solid color-mix(in srgb, var(--fg-subtle) 25%, transparent)",
             }}
           >
+            {/* Toggle chiaro / scuro */}
+            <div
+              className="flex items-center gap-1 p-1 rounded-lg mb-3"
+              style={{ background: "color-mix(in srgb, var(--fg-subtle) 12%, transparent)" }}
+            >
+              {(["dark", "light"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={toggleMode}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200"
+                  style={mode === m ? {
+                    background: "var(--bg-card)",
+                    color: "var(--fg-primary)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                  } : {
+                    color: "var(--fg-subtle)",
+                  }}
+                >
+                  <span>{m === "dark" ? "🌙" : "☀️"}</span>
+                  <span>{m === "dark" ? "Scuro" : "Chiaro"}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Griglia temi preset */}
             <div className="grid grid-cols-4 gap-1.5 mb-2">
               {THEMES.map((t) => (

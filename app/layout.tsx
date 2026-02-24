@@ -47,6 +47,8 @@ export default function RootLayout({
       for(var k in c) document.documentElement.style.setProperty(k,c[k]);
     }catch(e){}
   }
+  var m=localStorage.getItem('mode')||'dark';
+  document.documentElement.setAttribute('data-mode',m);
 })();`,
           }}
         />
