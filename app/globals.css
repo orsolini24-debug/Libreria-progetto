@@ -146,6 +146,11 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% 25%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 60% at 85% 70%, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 55% at 55% 5%,  color-mix(in srgb, var(--fg-subtle) 10%, transparent) 0%, transparent 55%);
+  background-attachment: fixed;
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
@@ -173,13 +178,19 @@ body {
 
   .glass {
     @apply backdrop-blur-md;
-    background: color-mix(in srgb, var(--bg-card) 75%, transparent);
-    border: 1px solid color-mix(in srgb, var(--fg-subtle) 15%, transparent);
+    background: color-mix(in srgb, white 6%, color-mix(in srgb, var(--bg-card) 80%, transparent));
+    border: 1px solid color-mix(in srgb, white 10%, transparent);
+    box-shadow:
+      0 4px 24px color-mix(in srgb, black 35%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
   }
   .glass-sm {
     @apply backdrop-blur-sm;
-    background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--fg-subtle) 12%, transparent);
+    background: color-mix(in srgb, white 4%, color-mix(in srgb, var(--bg-elevated) 75%, transparent));
+    border: 1px solid color-mix(in srgb, white 7%, transparent);
+    box-shadow:
+      0 2px 12px color-mix(in srgb, black 25%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
   }
 }
 
