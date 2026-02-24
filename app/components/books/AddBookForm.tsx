@@ -11,12 +11,33 @@ import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 
 import { StarRating } from "./StarRating";
 
+const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
+  focus:outline-none focus:ring-2 transition-colors`;
+
+const fieldStyle = {
+  background: "var(--bg-input)",
+  borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+  color: "var(--fg-primary)",
+};
+
+const labelStyle = {
+  color: "var(--fg-subtle)",
+  letterSpacing: "0.08em",
+};
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending}
-      className="w-full bg-amber-600 text-stone-950 py-2.5 px-4 rounded-xl text-sm font-semibold
-        hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-amber-900/20">
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold
+        disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+      style={{
+        background: "var(--accent)",
+        color: "var(--accent-on)",
+      }}
+    >
       {pending ? "Salvataggio…" : "Aggiungi alla libreria"}
     </button>
   );
@@ -100,23 +121,33 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Anteprima libro selezionato */}
       {selected && (
-        <div className="flex gap-3 items-start p-3 bg-amber-900/20 rounded-xl border border-amber-800/40">
+        <div
+          className="flex gap-3 items-start p-3 rounded-xl border"
+          style={{
+            background: "color-mix(in srgb, var(--accent) 8%, var(--bg-elevated))",
+            borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+          }}
+        >
           {selected.coverUrl && (
             <Image src={selected.coverUrl} alt={selected.title}
               width={44} height={62} className="rounded object-cover shrink-0" unoptimized />
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-amber-200 truncate">{selected.title}</p>
-            <p className="text-xs text-amber-400/80 truncate">{selected.author}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: "var(--accent)" }}>{selected.title}</p>
+            <p className="text-xs truncate" style={{ color: "var(--fg-muted)" }}>{selected.author}</p>
             {selected.publisher && (
-              <p className="text-[10px] text-stone-500 mt-0.5">
+              <p className="text-[10px] mt-0.5" style={{ color: "var(--fg-subtle)" }}>
                 {selected.publisher}{selected.publishedDate ? `, ${selected.publishedDate.slice(0, 4)}` : ""}
                 {selected.language && ` · ${selected.language.toUpperCase()}`}
               </p>
             )}
           </div>
-          <button type="button" onClick={() => { setSelected(null); setQuery(""); }}
-            className="text-stone-500 hover:text-stone-200 text-lg leading-none shrink-0 transition-colors">×</button>
+          <button
+            type="button"
+            onClick={() => { setSelected(null); setQuery(""); }}
+            className="text-lg leading-none shrink-0 transition-colors"
+            style={{ color: "var(--fg-subtle)" }}
+          >×</button>
         </div>
       )}
 
@@ -133,37 +164,61 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Ricerca */}
       <div ref={containerRef} className="relative">
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
           Cerca su Google Books
         </label>
-        <input type="text" value={query} onChange={(e) => handleQueryChange(e.target.value)}
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => handleQueryChange(e.target.value)}
           placeholder="Titolo, autore, ISBN…"
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
-            placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
-        {searching && <span className="absolute right-3 top-9 text-xs text-stone-500">Cerco…</span>}
+          className={fieldClass}
+          style={fieldStyle}
+        />
+        {searching && (
+          <span className="absolute right-3 top-9 text-xs" style={{ color: "var(--fg-subtle)" }}>
+            Cerco…
+          </span>
+        )}
 
         {!searching && searchError === "noresults" && query.trim() && (
-          <p className="mt-1.5 text-xs text-stone-500 px-1">Nessun libro trovato per &quot;{query}&quot;.</p>
+          <p className="mt-1.5 text-xs px-1" style={{ color: "var(--fg-subtle)" }}>
+            Nessun libro trovato per &quot;{query}&quot;.
+          </p>
         )}
         {!searching && searchError && searchError !== "noresults" && (
-          <p className="mt-1.5 text-xs text-red-400 px-1">{searchError}</p>
+          <p className="mt-1.5 text-xs px-1" style={{ color: "#f87171" }}>{searchError}</p>
         )}
 
         {showResults && (
-          <ul className="absolute z-30 w-full mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-2xl shadow-black/60 max-h-80 overflow-y-auto">
+          <ul
+            className="absolute z-30 w-full mt-1 rounded-xl shadow-2xl shadow-black/60 max-h-80 overflow-y-auto"
+            style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid color-mix(in srgb, var(--fg-subtle) 25%, transparent)",
+            }}
+          >
             {results.map((book) => (
-              <li key={book.googleId} onClick={() => handleSelect(book)}
-                className="search-result-item flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 cursor-pointer border-b border-stone-800 last:border-0 transition-colors">
+              <li
+                key={book.googleId}
+                onClick={() => handleSelect(book)}
+                className="search-result-item flex items-center gap-3 px-3 py-2.5 cursor-pointer border-b last:border-0 transition-colors"
+                style={{
+                  borderColor: "color-mix(in srgb, var(--fg-subtle) 15%, transparent)",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+              >
                 {book.coverUrl ? (
                   <Image src={book.coverUrl} alt={book.title}
                     width={32} height={44} className="rounded object-cover shrink-0" unoptimized />
                 ) : (
-                  <div className="w-8 h-11 rounded bg-stone-700 shrink-0" />
+                  <div className="w-8 h-11 rounded shrink-0" style={{ background: "var(--bg-card)" }} />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-stone-100 truncate">{book.title}</p>
-                  <p className="text-xs text-stone-400 truncate">{book.author}</p>
-                  <p className="text-[10px] text-stone-600 mt-0.5">
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--fg-primary)" }}>{book.title}</p>
+                  <p className="text-xs truncate" style={{ color: "var(--fg-muted)" }}>{book.author}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: "var(--fg-subtle)" }}>
                     {[book.publisher, book.publishedDate?.slice(0, 4), book.language?.toUpperCase()]
                       .filter(Boolean).join(" · ")}
                   </p>
@@ -179,30 +234,45 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Titolo */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
           Titolo <span className="text-red-500 normal-case font-normal">*</span>
         </label>
-        <input name="title" type="text" required key={key} defaultValue={selected?.title ?? ""}
+        <input
+          name="title"
+          type="text"
+          required
+          key={key}
+          defaultValue={selected?.title ?? ""}
           placeholder="Titolo del libro"
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
-            placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
+          className={fieldClass}
+          style={fieldStyle}
+        />
       </div>
 
       {/* Autore */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Autore</label>
-        <input name="author" type="text" key={key + "-a"} defaultValue={selected?.author ?? ""}
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Autore</label>
+        <input
+          name="author"
+          type="text"
+          key={key + "-a"}
+          defaultValue={selected?.author ?? ""}
           placeholder="Nome autore"
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
-            placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
+          className={fieldClass}
+          style={fieldStyle}
+        />
       </div>
 
       {/* Stato */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Stato</label>
-        <select name="status" value={status} onChange={(e) => setStatus(e.target.value)}
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
-            focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700">
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Stato</label>
+        <select
+          name="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className={fieldClass}
+          style={fieldStyle}
+        >
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
@@ -210,14 +280,21 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
       {/* Valutazione — solo per READ */}
       {showRating && (
         <div>
-          <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
             Valutazione
           </label>
           <StarRating name="rating" size="md" />
         </div>
       )}
       {showReminder && (
-        <div className="flex items-start gap-2 p-3 bg-blue-950/40 rounded-xl border border-blue-900/50 text-xs text-blue-300">
+        <div
+          className="flex items-start gap-2 p-3 rounded-xl border text-xs"
+          style={{
+            background: "color-mix(in srgb, #3b82f6 8%, var(--bg-elevated))",
+            borderColor: "color-mix(in srgb, #3b82f6 30%, transparent)",
+            color: "#93c5fd",
+          }}
+        >
           <span className="text-base">💡</span>
           <span>Potrai aggiungere la valutazione una volta completata la lettura.</span>
         </div>
@@ -226,30 +303,40 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Tag */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
           Tag{" "}
-          <span className="font-normal normal-case text-stone-600 tracking-normal">
+          <span className="font-normal normal-case tracking-normal" style={{ color: "var(--fg-subtle)" }}>
             {autoTags ? "(pre-compilati, modificabili)" : "(separati da virgola)"}
           </span>
         </label>
-        <input name="tags" type="text" key={key + "-tags"} defaultValue={autoTags}
+        <input
+          name="tags"
+          type="text"
+          key={key + "-tags"}
+          defaultValue={autoTags}
           placeholder="fantasy, storico, classici…"
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2.5 text-sm
-            placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700" />
+          className={fieldClass}
+          style={fieldStyle}
+        />
       </div>
 
       {/* Formati */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>
           Formato posseduto
         </label>
         <div className="flex flex-wrap gap-2">
           {FORMAT_OPTIONS.map(({ value, label }) => (
-            <button key={value} type="button" onClick={() => toggleFormat(value)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all
-                ${formats.includes(value)
-                  ? "bg-amber-600 text-stone-950 border-amber-600 shadow-sm"
-                  : "border-stone-700 text-stone-400 hover:border-amber-700 hover:text-stone-200"}`}>
+            <button
+              key={value}
+              type="button"
+              onClick={() => toggleFormat(value)}
+              className="text-xs px-3 py-1.5 rounded-full border transition-all"
+              style={formats.includes(value)
+                ? { background: "var(--accent)", color: "var(--accent-on)", borderColor: "var(--accent)" }
+                : { background: "transparent", color: "var(--fg-muted)", borderColor: "color-mix(in srgb, var(--accent) 25%, transparent)" }
+              }
+            >
               {label}
             </button>
           ))}
@@ -258,16 +345,27 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Nota */}
       <div>
-        <label className="block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
           Nota iniziale
         </label>
-        <textarea name="comment" rows={2} placeholder="Impressioni, perché vuoi leggerlo…"
-          className="w-full border border-stone-700 bg-stone-800 text-stone-100 rounded-xl px-3 py-2 text-sm resize-none
-            placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-700 leading-relaxed" />
+        <textarea
+          name="comment"
+          rows={2}
+          placeholder="Impressioni, perché vuoi leggerlo…"
+          className={`${fieldClass} resize-none leading-relaxed`}
+          style={fieldStyle}
+        />
       </div>
 
       {state?.error && (
-        <p className="text-xs text-red-400 bg-red-950/50 border border-red-900/60 px-3 py-2 rounded-xl">
+        <p
+          className="text-xs px-3 py-2 rounded-xl border"
+          style={{
+            color: "#f87171",
+            background: "color-mix(in srgb, #ef4444 8%, var(--bg-elevated))",
+            borderColor: "color-mix(in srgb, #ef4444 30%, transparent)",
+          }}
+        >
           {state.error}
         </p>
       )}

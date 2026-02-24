@@ -35,16 +35,27 @@ export function SlidePanel({ isOpen, onClose, title, children }: SlidePanelProps
 
       {/* Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-stone-900 border-l border-stone-800/80
+        className={`fixed top-0 right-0 h-full w-full max-w-md border-l
           shadow-2xl shadow-black/60 z-50 flex flex-col transform transition-transform duration-300 ease-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "color-mix(in srgb, var(--fg-subtle) 25%, transparent)",
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800/60 shrink-0 bg-stone-950/50">
-          <h2 className="font-display font-semibold text-amber-200/90 text-base tracking-tight">{title}</h2>
+        <div
+          className="flex items-center justify-between px-5 py-4 border-b shrink-0"
+          style={{
+            background: "var(--bg-elevated)",
+            borderColor: "color-mix(in srgb, var(--fg-subtle) 20%, transparent)",
+          }}
+        >
+          <h2 className="font-display font-semibold text-base tracking-tight" style={{ color: "var(--fg-primary)" }}>{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-800 text-stone-500 hover:text-stone-200 transition-colors text-xl leading-none"
+            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors text-xl leading-none"
+            style={{ color: "var(--fg-muted)" }}
             aria-label="Chiudi"
           >
             ×

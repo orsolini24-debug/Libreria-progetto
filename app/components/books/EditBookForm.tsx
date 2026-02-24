@@ -10,19 +10,30 @@ import { StarRating } from "./StarRating";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
-const fieldClass = `w-full border border-amber-900/20 bg-[#1f1710]/60 text-stone-200 rounded-xl px-3 py-2.5 text-sm
-  placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-700/40 focus:border-amber-700/40
-  transition-colors`;
+const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
+  focus:outline-none focus:ring-2 transition-colors`;
 
-const labelClass = "block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2";
+const fieldStyle = {
+  background: "var(--bg-input)",
+  borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+  color: "var(--fg-primary)",
+};
 
 function SaveButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending}
-      className="flex-1 bg-amber-600 text-stone-950 py-2.5 px-4 rounded-xl text-sm font-semibold
-        hover:bg-amber-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
-        transition-all duration-150 shadow-md shadow-amber-900/30">
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold
+        active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
+        transition-all duration-150 shadow-md"
+      style={{
+        background: "var(--accent)",
+        color: "var(--accent-on)",
+        boxShadow: "0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent)",
+      }}
+    >
       {pending ? "Salvataggio…" : "Salva modifiche"}
     </button>
   );
@@ -34,14 +45,26 @@ function TagInput({ name, defaultValue = "" }: { name: string; defaultValue?: st
   return (
     <div>
       <input type="hidden" name={name} value={val} />
-      <input type="text" value={val} onChange={(e) => setVal(e.target.value)}
+      <input
+        type="text"
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
         placeholder="fantasy, storico, distopia…"
-        className={fieldClass} />
+        className={fieldClass}
+        style={{ ...fieldStyle, "--tw-ring-color": "color-mix(in srgb, var(--accent) 40%, transparent)" } as React.CSSProperties}
+      />
       {chips.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1.5">
           {chips.map((tag) => (
-            <span key={tag} className="text-xs px-2.5 py-0.5 bg-amber-950/40 text-amber-300/80
-              rounded-full border border-amber-800/30">
+            <span
+              key={tag}
+              className="text-xs px-2.5 py-0.5 rounded-full border"
+              style={{
+                background: "color-mix(in srgb, var(--accent) 10%, var(--bg-elevated))",
+                color: "var(--accent)",
+                borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+              }}
+            >
               {tag}
             </span>
           ))}
@@ -56,11 +79,18 @@ function ExpandableText({ text }: { text: string }) {
   const isLong = text.length > 280;
   return (
     <div>
-      <p className={`font-reading text-xs text-stone-400 leading-relaxed italic
-        ${!expanded && isLong ? "line-clamp-5" : ""}`}>{text}</p>
+      <p
+        className={`font-reading text-xs leading-relaxed italic ${!expanded && isLong ? "line-clamp-5" : ""}`}
+        style={{ color: "var(--fg-muted)" }}
+      >
+        {text}
+      </p>
       {isLong && (
-        <button onClick={() => setExpanded((p) => !p)}
-          className="text-xs text-amber-600 hover:text-amber-400 mt-1 transition-colors">
+        <button
+          onClick={() => setExpanded((p) => !p)}
+          className="text-xs mt-1 transition-colors"
+          style={{ color: "var(--accent)" }}
+        >
           {expanded ? "Mostra meno ↑" : "Mostra tutto ↓"}
         </button>
       )}
@@ -120,23 +150,42 @@ export function EditBookForm({
   const showReminder = status === "READING";
   const links = storeLinks(book);
 
+  const labelStyle = { color: "var(--fg-subtle)", letterSpacing: "0.08em" };
+  const sectionBorder = { borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" };
+
   return (
     <div className="flex flex-col gap-6">
 
       {/* Intestazione libro */}
-      <div className="flex gap-4 items-start pb-5 border-b border-amber-900/20">
+      <div className="flex gap-4 items-start pb-5 border-b" style={sectionBorder}>
         {book.coverUrl ? (
           <Image src={book.coverUrl} alt={book.title} width={72} height={100}
             className="rounded-lg shadow-lg shadow-black/50 object-cover shrink-0" />
         ) : (
-          <div className="w-[72px] h-[100px] rounded-lg bg-gradient-to-b from-stone-700
-            to-stone-900 shrink-0 border border-stone-700" />
+          <div
+            className="w-[72px] h-[100px] rounded-lg shrink-0 border"
+            style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--fg-subtle) 25%, transparent)" }}
+          />
         )}
         <div className="min-w-0">
-          <p className="font-display font-bold text-amber-100/90 text-base leading-snug">{book.title}</p>
-          {book.author      && <p className="font-reading text-sm text-stone-400 mt-0.5 italic">{book.author}</p>}
-          {book.publishedDate && <p className="text-xs text-stone-600 mt-1">{book.publishedDate.slice(0, 4)}</p>}
-          {book.pageCount   && <p className="text-xs text-stone-600">{book.pageCount} pagine</p>}
+          <p className="font-display font-bold text-base leading-snug" style={{ color: "var(--fg-primary)" }}>
+            {book.title}
+          </p>
+          {book.author && (
+            <p className="font-reading text-sm mt-0.5 italic" style={{ color: "var(--fg-muted)" }}>
+              {book.author}
+            </p>
+          )}
+          {book.publishedDate && (
+            <p className="text-xs mt-1" style={{ color: "var(--fg-subtle)" }}>
+              {book.publishedDate.slice(0, 4)}
+            </p>
+          )}
+          {book.pageCount && (
+            <p className="text-xs" style={{ color: "var(--fg-subtle)" }}>
+              {book.pageCount} pagine
+            </p>
+          )}
         </div>
       </div>
 
@@ -146,9 +195,14 @@ export function EditBookForm({
 
         {/* Stato */}
         <div>
-          <label className={labelClass}>Stato</label>
-          <select name="status" value={status} onChange={(e) => setStatus(e.target.value)}
-            className={fieldClass}>
+          <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Stato</label>
+          <select
+            name="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className={fieldClass}
+            style={fieldStyle}
+          >
             {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -156,12 +210,19 @@ export function EditBookForm({
         {/* Valutazione condizionale */}
         {showRating && (
           <div>
-            <label className={labelClass}>Valutazione</label>
+            <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Valutazione</label>
             <StarRating name="rating" defaultValue={book.rating} size="md" />
           </div>
         )}
         {showReminder && (
-          <div className="flex items-start gap-2 p-3 bg-blue-950/30 rounded-xl border border-blue-900/40 text-xs text-blue-300">
+          <div
+            className="flex items-start gap-2 p-3 rounded-xl border text-xs"
+            style={{
+              background: "color-mix(in srgb, #3b82f6 8%, var(--bg-elevated))",
+              borderColor: "color-mix(in srgb, #3b82f6 30%, transparent)",
+              color: "#93c5fd",
+            }}
+          >
             <span className="text-base">💡</span>
             <span>
               Ricordati di aggiornare la valutazione quando finisci il libro.
@@ -173,14 +234,19 @@ export function EditBookForm({
 
         {/* Formati */}
         <div>
-          <label className={labelClass}>Formato posseduto</label>
+          <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Formato posseduto</label>
           <div className="flex flex-wrap gap-2">
             {FORMAT_OPTIONS.map(({ value, label }) => (
-              <button key={value} type="button" onClick={() => toggleFormat(value)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-150
-                  ${formats.includes(value)
-                    ? "bg-amber-600 text-stone-950 border-amber-600"
-                    : "border-amber-900/25 text-stone-400 hover:border-amber-700/50 hover:text-stone-200"}`}>
+              <button
+                key={value}
+                type="button"
+                onClick={() => toggleFormat(value)}
+                className="text-xs px-3 py-1.5 rounded-full border transition-all duration-150"
+                style={formats.includes(value)
+                  ? { background: "var(--accent)", color: "var(--accent-on)", borderColor: "var(--accent)" }
+                  : { background: "transparent", color: "var(--fg-muted)", borderColor: "color-mix(in srgb, var(--accent) 25%, transparent)" }
+                }
+              >
                 {label}
               </button>
             ))}
@@ -189,29 +255,38 @@ export function EditBookForm({
 
         {/* Tag */}
         <div>
-          <label className={labelClass}>Tag</label>
+          <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Tag</label>
           <TagInput name="tags" defaultValue={book.tags ?? ""} />
         </div>
 
         {/* Nota */}
         <div>
-          <label className={labelClass}>Nota personale</label>
-          <textarea name="comment" defaultValue={book.comment ?? ""} rows={4}
+          <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Nota personale</label>
+          <textarea
+            name="comment"
+            defaultValue={book.comment ?? ""}
+            rows={4}
             placeholder="Le tue impressioni, citazioni, ricordi…"
-            className={`${fieldClass} resize-none leading-relaxed`} />
+            className={`${fieldClass} resize-none leading-relaxed`}
+            style={{ ...fieldStyle, placeholderColor: "var(--fg-subtle)" } as React.CSSProperties}
+          />
         </div>
 
         {state?.error && (
-          <p className="text-xs text-red-400 bg-red-950/50 border border-red-900/60 px-3 py-2 rounded-xl">
+          <p className="text-xs px-3 py-2 rounded-xl border"
+            style={{ color: "#f87171", background: "color-mix(in srgb, #ef4444 8%, var(--bg-elevated))", borderColor: "color-mix(in srgb, #ef4444 30%, transparent)" }}>
             {state.error}
           </p>
         )}
 
         <div className="flex gap-2">
           <SaveButton />
-          <button type="button" onClick={handleDelete}
-            className="px-4 py-2.5 rounded-xl text-sm text-red-400 border border-red-900/40
-              hover:bg-red-950/40 transition-colors">
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="px-4 py-2.5 rounded-xl text-sm border transition-colors"
+            style={{ color: "#f87171", borderColor: "color-mix(in srgb, #ef4444 30%, transparent)" }}
+          >
             Elimina
           </button>
         </div>
@@ -219,15 +294,19 @@ export function EditBookForm({
 
       {/* Sinossi */}
       {book.description && (
-        <div className="border-t border-amber-900/15 pt-4">
-          <p className="text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2">Sinossi</p>
+        <div className="border-t pt-4" style={sectionBorder}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--fg-subtle)" }}>
+            Sinossi
+          </p>
           <ExpandableText text={book.description} />
         </div>
       )}
 
       {/* Link agli store */}
-      <div className="border-t border-amber-900/15 pt-4">
-        <p className="text-xs font-semibold text-stone-600 uppercase tracking-wider mb-3">Acquista o ascolta</p>
+      <div className="border-t pt-4" style={sectionBorder}>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--fg-subtle)" }}>
+          Acquista o ascolta
+        </p>
         <div className="grid grid-cols-2 gap-2">
           {[
             { href: links.ibs,     label: "IBS",     icon: "📚" },
@@ -235,10 +314,17 @@ export function EditBookForm({
             { href: links.kindle,  label: "Kindle",  icon: "📱" },
             { href: links.audible, label: "Audible", icon: "🎧" },
           ].map(({ href, label, icon }) => (
-            <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg
-                border border-amber-900/20 hover:border-amber-700/50 hover:bg-amber-950/30
-                transition-all duration-150 text-stone-500 hover:text-amber-300">
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-all duration-150"
+              style={{
+                color: "var(--fg-muted)",
+                borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
+              }}
+            >
               <span>{icon}</span> {label}
             </a>
           ))}
@@ -247,12 +333,29 @@ export function EditBookForm({
 
       {/* Metadati edizione */}
       {(book.publisher || book.isbn || book.language) && (
-        <div className="border-t border-amber-900/15 pt-4">
-          <p className="text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2">Edizione</p>
+        <div className="border-t pt-4" style={sectionBorder}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--fg-subtle)" }}>
+            Edizione
+          </p>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
-            {book.publisher && <><dt className="text-stone-600">Editore</dt><dd className="text-stone-400">{book.publisher}</dd></>}
-            {book.isbn      && <><dt className="text-stone-600">ISBN</dt><dd className="text-stone-400 font-mono">{book.isbn}</dd></>}
-            {book.language  && <><dt className="text-stone-600">Lingua</dt><dd className="text-stone-400 uppercase">{book.language}</dd></>}
+            {book.publisher && (
+              <>
+                <dt style={{ color: "var(--fg-subtle)" }}>Editore</dt>
+                <dd style={{ color: "var(--fg-muted)" }}>{book.publisher}</dd>
+              </>
+            )}
+            {book.isbn && (
+              <>
+                <dt style={{ color: "var(--fg-subtle)" }}>ISBN</dt>
+                <dd className="font-mono" style={{ color: "var(--fg-muted)" }}>{book.isbn}</dd>
+              </>
+            )}
+            {book.language && (
+              <>
+                <dt style={{ color: "var(--fg-subtle)" }}>Lingua</dt>
+                <dd className="uppercase" style={{ color: "var(--fg-muted)" }}>{book.language}</dd>
+              </>
+            )}
           </dl>
         </div>
       )}

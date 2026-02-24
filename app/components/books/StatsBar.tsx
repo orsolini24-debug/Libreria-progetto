@@ -34,13 +34,23 @@ export function StatsBar({ books }: { books: Book[] }) {
   ];
 
   return (
-    <div className="flex flex-wrap gap-x-6 gap-y-3 mb-6 px-4 py-3.5 rounded-xl border border-amber-900/25 bg-amber-950/10">
+    <div
+      className="flex flex-wrap gap-x-6 gap-y-3 mb-6 px-4 py-3.5 rounded-xl border"
+      style={{
+        background: "color-mix(in srgb, var(--accent) 5%, var(--bg-card))",
+        borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+      }}
+    >
       {stats.map((s, i) => (
         <div key={i} className="flex items-center gap-2.5">
           <span className="text-lg leading-none">{s.icon}</span>
           <div>
-            <p className="font-display text-lg font-bold text-amber-300 leading-none">{s.value}</p>
-            <p className="text-[10px] text-stone-500 mt-0.5 uppercase tracking-wide">{s.label}</p>
+            <p className="font-display text-lg font-bold leading-none" style={{ color: "var(--accent)" }}>
+              {s.value}
+            </p>
+            <p className="text-[10px] mt-0.5 uppercase tracking-wide" style={{ color: "var(--fg-subtle)" }}>
+              {s.label}
+            </p>
           </div>
         </div>
       ))}

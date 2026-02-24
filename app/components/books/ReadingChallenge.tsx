@@ -6,11 +6,11 @@ import type { Book } from "@/app/generated/prisma/client";
 const YEAR = new Date().getFullYear();
 
 function motivation(pct: number): string {
-  if (pct === 0)   return "Inizia la tua avventura letteraria!";
-  if (pct < 25)   return "Ottimo inizio — continua così.";
-  if (pct < 50)   return "Buon ritmo, sei sulla strada giusta.";
-  if (pct < 75)   return "Più della metà completata!";
-  if (pct < 100)  return "Quasi arrivato/a — un ultimo sforzo.";
+  if (pct === 0)  return "Inizia la tua avventura letteraria!";
+  if (pct < 25)  return "Ottimo inizio — continua così.";
+  if (pct < 50)  return "Buon ritmo, sei sulla strada giusta.";
+  if (pct < 75)  return "Più della metà completata!";
+  if (pct < 100) return "Quasi arrivato/a — un ultimo sforzo.";
   return "Obiettivo raggiunto! 🎉";
 }
 
@@ -44,16 +44,21 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
     setEditing(false);
   }
 
-  // Evita hydration mismatch (localStorage lato client)
   if (!mounted) return null;
 
   return (
-    <div className="mb-6 px-4 py-3.5 rounded-xl border border-amber-900/25 bg-amber-950/10">
+    <div
+      className="mb-6 px-4 py-3.5 rounded-xl border"
+      style={{
+        background: "color-mix(in srgb, var(--accent) 5%, var(--bg-card))",
+        borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2">
           <span className="text-base">🎯</span>
-          <h3 className="font-display text-sm font-semibold text-amber-200/80">
+          <h3 className="font-display text-sm font-semibold" style={{ color: "var(--fg-primary)" }}>
             Obiettivo {YEAR}
           </h3>
         </div>
@@ -70,16 +75,21 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
                   if (e.key === "Escape") setEditing(false);
                 }}
                 autoFocus
-                className="w-14 text-center text-sm bg-stone-800 border border-amber-700/60
-                  text-amber-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-600/40"
+                className="w-14 text-center text-sm rounded-lg px-2 py-1 focus:outline-none focus:ring-2"
+                style={{
+                  background: "var(--bg-input)",
+                  border: "1px solid var(--accent)",
+                  color: "var(--accent)",
+                }}
               />
-              <button onClick={saveGoal}           className="text-xs text-amber-500 hover:text-amber-300 transition-colors">✓</button>
-              <button onClick={() => setEditing(false)} className="text-xs text-stone-600 hover:text-stone-400 transition-colors">✕</button>
+              <button onClick={saveGoal} className="text-xs transition-colors" style={{ color: "var(--accent)" }}>✓</button>
+              <button onClick={() => setEditing(false)} className="text-xs transition-colors" style={{ color: "var(--fg-subtle)" }}>✕</button>
             </>
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="text-xs text-stone-600 hover:text-amber-500 transition-colors flex items-center gap-1"
+              className="text-xs transition-colors flex items-center gap-1"
+              style={{ color: "var(--fg-subtle)" }}
               title="Modifica obiettivo"
             >
               <span>✏️</span> {goal} libri
@@ -89,14 +99,17 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
       </div>
 
       {/* Barra progresso */}
-      <div className="relative h-2.5 bg-stone-800/80 rounded-full overflow-hidden mb-2">
+      <div
+        className="relative h-2.5 rounded-full overflow-hidden mb-2"
+        style={{ background: "var(--bg-elevated)" }}
+      >
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{
             width: `${pct}%`,
             background: pct >= 100
-              ? "linear-gradient(90deg, #d97706, #f59e0b, #fbbf24)"
-              : "linear-gradient(90deg, #92400e, #c8860a, #d97706)",
+              ? "linear-gradient(90deg, var(--accent), var(--accent-hover), var(--accent))"
+              : "linear-gradient(90deg, color-mix(in srgb, var(--accent) 50%, black), var(--accent))",
           }}
         />
         {pct > 5 && pct < 100 && (
@@ -115,8 +128,10 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <p className="font-reading text-xs text-stone-500 italic">{motivation(pct)}</p>
-        <p className="text-xs font-semibold text-amber-500/70 tabular-nums">
+        <p className="font-reading text-xs italic" style={{ color: "var(--fg-subtle)" }}>
+          {motivation(pct)}
+        </p>
+        <p className="text-xs font-semibold tabular-nums" style={{ color: "var(--accent)" }}>
           {booksThisYear}/{goal} — {pct}%
         </p>
       </div>

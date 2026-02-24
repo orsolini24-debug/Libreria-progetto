@@ -16,6 +16,16 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "th-page":   "var(--bg-page)",
+        "th-card":   "var(--bg-card)",
+        "th-elev":   "var(--bg-elevated)",
+        "th-input":  "var(--bg-input)",
+        "th-accent": "var(--accent)",
+        "th-acch":   "var(--accent-hover)",
+        "th-on":     "var(--accent-on)",
+        "th-fg":     "var(--fg-primary)",
+        "th-muted":  "var(--fg-muted)",
+        "th-subtle": "var(--fg-subtle)",
       },
       animation: {
         "fade-up":  "fadeUp 0.3s ease-out both",

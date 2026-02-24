@@ -41,6 +41,7 @@ function getInitialPositions(books: RoomBook[]): PositionMap {
   );
 }
 
+// Colori semantici di stato — invarianti rispetto al tema
 const STATUS_COLORS: Record<string, string> = {
   TO_READ:  "border-stone-500",
   READING:  "border-blue-400",
@@ -107,8 +108,13 @@ export function RoomCanvas({ books }: { books: RoomBook[] }) {
 
   if (books.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96 text-stone-500 text-sm
-        border-2 border-dashed border-stone-700 rounded-xl">
+      <div
+        className="flex items-center justify-center h-96 text-sm rounded-xl border-2 border-dashed"
+        style={{
+          color: "var(--fg-subtle)",
+          borderColor: "color-mix(in srgb, var(--fg-subtle) 30%, transparent)",
+        }}
+      >
         Nessun libro nella stanza. Aggiungine uno dalla Dashboard.
       </div>
     );
@@ -117,21 +123,31 @@ export function RoomCanvas({ books }: { books: RoomBook[] }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-xl border border-stone-700/50 overflow-hidden"
+      className="relative w-full rounded-xl border overflow-hidden"
       style={{
         height: "75vh",
         minHeight: "500px",
-        background: "radial-gradient(ellipse at 50% 100%, #1c1410 0%, #0c0a08 70%)",
+        background: "radial-gradient(ellipse at 50% 100%, var(--bg-elevated) 0%, var(--bg-page) 70%)",
+        borderColor: "color-mix(in srgb, var(--fg-subtle) 20%, transparent)",
       }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
     >
       {/* Scaffali decorativi */}
-      <div className="absolute bottom-[30%] left-0 right-0 h-2 bg-amber-900/50 rounded shadow-sm shadow-amber-950" />
-      <div className="absolute bottom-[58%] left-0 right-0 h-2 bg-amber-900/50 rounded shadow-sm shadow-amber-950" />
+      <div
+        className="absolute bottom-[30%] left-0 right-0 h-2 rounded shadow-sm"
+        style={{ background: "color-mix(in srgb, var(--accent) 25%, var(--bg-elevated))" }}
+      />
+      <div
+        className="absolute bottom-[58%] left-0 right-0 h-2 rounded shadow-sm"
+        style={{ background: "color-mix(in srgb, var(--accent) 25%, var(--bg-elevated))" }}
+      />
       {/* Riflesso pavimento */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-950/20 to-transparent pointer-events-none" />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+        style={{ background: "linear-gradient(to top, color-mix(in srgb, var(--accent) 8%, transparent), transparent)" }}
+      />
 
       {books.map((book) => {
         const pos = positions[book.id] ?? { x: 5, y: 5 };
@@ -164,10 +180,13 @@ export function RoomCanvas({ books }: { books: RoomBook[] }) {
               />
             ) : (
               <div
-                className={`w-10 h-16 bg-stone-800 rounded border-2 ${colorClass} shadow-md flex items-center justify-center`}
-                style={{ writingMode: "vertical-lr" }}
+                className={`w-10 h-16 rounded border-2 ${colorClass} shadow-md flex items-center justify-center`}
+                style={{ background: "var(--bg-card)", writingMode: "vertical-lr" }}
               >
-                <span className="text-[9px] text-stone-400 overflow-hidden whitespace-nowrap text-ellipsis max-h-14 px-0.5">
+                <span
+                  className="text-[9px] overflow-hidden whitespace-nowrap text-ellipsis max-h-14 px-0.5"
+                  style={{ color: "var(--fg-muted)" }}
+                >
                   {book.title}
                 </span>
               </div>
@@ -175,7 +194,14 @@ export function RoomCanvas({ books }: { books: RoomBook[] }) {
 
             {/* Tooltip al hover */}
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
-              <div className="bg-stone-950 border border-stone-700 text-stone-200 text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap max-w-[180px] truncate shadow-xl">
+              <div
+                className="text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap max-w-[180px] truncate shadow-xl border"
+                style={{
+                  background: "var(--bg-elevated)",
+                  color: "var(--fg-primary)",
+                  borderColor: "color-mix(in srgb, var(--fg-subtle) 25%, transparent)",
+                }}
+              >
                 {book.title}
               </div>
             </div>

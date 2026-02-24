@@ -44,7 +44,7 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
         ${STATUS_ACCENT[book.status] ?? "after:bg-stone-600"}`}
     >
       {/* Cover */}
-      <div className="aspect-[2/3] relative overflow-hidden bg-stone-800">
+      <div className="aspect-[2/3] relative overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
         {book.coverUrl ? (
           <Image src={book.coverUrl} alt={book.title} fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -83,17 +83,23 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
       </div>
 
       {/* Info */}
-      <div className="bg-[#221810] border-t border-amber-900/25 px-2.5 py-2.5">
+      <div
+        className="border-t px-2.5 py-2.5"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "color-mix(in srgb, var(--accent) 15%, transparent)",
+        }}
+      >
         <div className="flex items-start gap-1.5">
           <span className={`mt-[5px] w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[book.status] ?? "bg-stone-500"}`} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-stone-100 leading-tight line-clamp-2">{book.title}</p>
+            <p className="text-xs font-semibold leading-tight line-clamp-2" style={{ color: "var(--fg-primary)" }}>{book.title}</p>
             {book.author && (
-              <p className="font-reading text-[10px] text-stone-500 mt-0.5 truncate italic">{book.author}</p>
+              <p className="font-reading text-[10px] mt-0.5 truncate italic" style={{ color: "var(--fg-muted)" }}>{book.author}</p>
             )}
           </div>
         </div>
-        <p className="text-[10px] text-stone-600 mt-1.5 pl-3">{STATUS_LABELS[book.status]}</p>
+        <p className="text-[10px] mt-1.5 pl-3" style={{ color: "var(--fg-subtle)" }}>{STATUS_LABELS[book.status]}</p>
       </div>
     </div>
   );

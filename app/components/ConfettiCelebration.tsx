@@ -30,12 +30,24 @@ export function ConfettiCelebration({ show }: { show: boolean }) {
   useEffect(() => {
     if (!show) return;
 
+    // Legge il colore accento del tema corrente dal DOM
+    const accentColor = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent").trim() || "#d97706";
+    const accentHover = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent-hover").trim() || "#f59e0b";
+
+    const themeColors = [
+      accentColor, accentHover, accentColor, "#ffffff",
+      accentColor, "#fde68a", accentHover, "#ffffff",
+      accentColor, accentHover,
+    ];
+
     setParticles(
       Array.from({ length: 50 }, (_, i) => ({
         id: i,
         x: rand(2, 98),
         size: rand(6, 13),
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        color: themeColors[Math.floor(Math.random() * themeColors.length)],
         duration: rand(1.8, 3.2),
         delay: rand(0, 1.0),
         rotation: rand(0, 360),

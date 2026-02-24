@@ -34,11 +34,11 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
         if (readOnly) {
           return (
             <span key={star} className="relative inline-block" style={{ width: px, height: px, fontSize: px }}>
-              <span className="text-stone-700 select-none">★</span>
+              <span style={{ color: "var(--fg-subtle)", userSelect: "none" }}>★</span>
               {fill > 0 && (
                 <span
-                  className="absolute inset-0 overflow-hidden text-amber-400 select-none"
-                  style={{ width: `${fill}%` }}
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ width: `${fill}%`, color: "var(--accent)", userSelect: "none" }}
                 >
                   ★
                 </span>
@@ -60,13 +60,13 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
             onMouseLeave={() => setHover(0)}
           >
             {/* Stella base (vuota) */}
-            <span className="text-stone-700 select-none" style={{ transition: "color 120ms ease" }}>★</span>
+            <span style={{ color: "var(--fg-subtle)", userSelect: "none", transition: "color 120ms ease" }}>★</span>
 
             {/* Overlay colorato */}
             {fill > 0 && (
               <span
-                className="absolute inset-0 overflow-hidden text-amber-400 pointer-events-none select-none"
-                style={{ width: `${fill}%`, transition: "width 80ms ease" }}
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{ width: `${fill}%`, color: "var(--accent)", userSelect: "none", transition: "width 80ms ease" }}
               >
                 ★
               </span>
@@ -93,7 +93,7 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
       })}
 
       {!readOnly && (
-        <span className="ml-2 text-sm font-semibold text-amber-500/80 min-w-[32px]">
+        <span className="ml-2 text-sm font-semibold min-w-[32px]" style={{ color: "var(--accent)" }}>
           {active > 0 ? `${active}/10` : ""}
         </span>
       )}
@@ -101,7 +101,8 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
         <button
           type="button"
           onClick={() => setValue(0)}
-          className="ml-1 text-xs text-stone-600 hover:text-stone-400 transition-colors"
+          className="ml-1 text-xs transition-colors"
+          style={{ color: "var(--fg-subtle)" }}
           title="Rimuovi valutazione"
         >
           ×
@@ -116,7 +117,10 @@ export function RatingDisplay({ value, size = "sm" }: { value: number | null; si
   return (
     <span className="flex items-center gap-1">
       <StarRating name="_display" defaultValue={value} readOnly size={size} />
-      <span className={`font-semibold ${size === "sm" ? "text-xs" : "text-sm"} text-amber-400`}>
+      <span
+        className={`font-semibold ${size === "sm" ? "text-xs" : "text-sm"}`}
+        style={{ color: "var(--accent)" }}
+      >
         {value}/10
       </span>
     </span>

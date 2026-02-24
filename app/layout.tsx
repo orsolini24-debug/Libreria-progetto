@@ -34,6 +34,23 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="it">
+      <head>
+        {/* Applica il tema salvato prima del render per evitare flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  var t=localStorage.getItem('theme');
+  if(t) document.documentElement.setAttribute('data-theme',t);
+  if(t==='custom'){
+    try{
+      var c=JSON.parse(localStorage.getItem('customTheme')||'{}');
+      for(var k in c) document.documentElement.style.setProperty(k,c[k]);
+    }catch(e){}
+  }
+})();`,
+          }}
+        />
+      </head>
       <body className={`${playfair.variable} ${lora.variable} ${inter.variable} antialiased font-sans`}>
         {children}
       </body>
