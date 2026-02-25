@@ -3,6 +3,7 @@
 import { useState, useActionState, useEffect, useCallback } from "react";
 import { useFormStatus } from "react-dom";
 import { createLoan, returnLoan, deleteLoan } from "@/app/lib/loan-actions";
+import { FormField, Input } from "@/app/components/ui/FormField";
 
 type Loan = {
   id: string;
@@ -12,22 +13,13 @@ type Loan = {
   note: string | null;
 };
 
-const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
-  focus:outline-none focus:ring-2 transition-colors`;
-const fieldStyle = {
-  background:  "var(--bg-input)",
-  borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
-  color:       "var(--fg-primary)",
-};
-
 function AddButton() {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      className="w-full py-2 rounded-xl text-sm font-semibold transition-all duration-150
-        active:scale-95 disabled:opacity-50"
+      className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"
       style={{ background: "var(--accent)", color: "var(--accent-on)" }}
     >
       {pending ? "Registrando…" : "Registra prestito"}
@@ -69,6 +61,7 @@ export function LoanSection({ bookId }: { bookId: string }) {
   }
 
   async function handleDelete(id: string) {
+    if (!confirm("Eliminare record prestito?")) return;
     await deleteLoan(id);
     setLoans((prev) => prev.filter((l) => l.id !== id));
   }
@@ -76,167 +69,79 @@ export function LoanSection({ bookId }: { bookId: string }) {
   const active   = loans.filter((l) => !l.returnedAt);
   const returned = loans.filter((l) => l.returnedAt);
 
-  const labelStyle    = { color: "var(--fg-subtle)", letterSpacing: "0.08em" };
-  const sectionBorder = { borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" };
-
   return (
-    <div className="border-t pt-4" style={sectionBorder}>
-      <button
-        onClick={() => setOpen((p) => !p)}
-        className="flex items-center justify-between w-full text-left mb-3"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--fg-subtle)" }}>
-          Prestiti
-          {active.length > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px]"
-              style={{ background: "color-mix(in srgb,#f59e0b 20%,transparent)", color: "#f59e0b" }}>
-              {active.length} attivi
-            </span>
-          )}
+    <div className="border-t pt-6" style={{ borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" }}>
+      <button onClick={() => setOpen((p) => !p)} className="flex items-center justify-between w-full mb-4 group">
+        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
+          Gestione Prestiti
+          {active.length > 0 && <span className="ml-2 text-amber-500">({active.length} attivi)</span>}
         </p>
-        <span
-          className="text-xs transition-transform duration-200"
-          style={{ color: "var(--fg-subtle)", display: "inline-block", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-        >
-          ▾
-        </span>
+        <span className={`text-xs transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
 
       {open && (
-        <div className="flex flex-col gap-4">
-          {loading && (
-            <p className="text-xs text-center py-2" style={{ color: "var(--fg-subtle)" }}>Caricamento…</p>
-          )}
-
-          {/* Prestiti attivi */}
-          {!loading && active.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-subtle)" }}>
-                In prestito
-              </p>
+        <div className="flex flex-col gap-6 animate-fade-in">
+          {active.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Attivi</p>
               {active.map((loan) => (
-                <div
-                  key={loan.id}
-                  className="flex items-start gap-3 p-3 rounded-xl border"
-                  style={{
-                    background:  "color-mix(in srgb, #f59e0b 6%, var(--bg-elevated))",
-                    borderColor: "color-mix(in srgb, #f59e0b 25%, transparent)",
-                  }}
-                >
+                <div key={loan.id} className="flex items-start gap-4 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: "var(--fg-primary)" }}>{loan.borrower}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "var(--fg-subtle)" }}>
-                      dal {new Date(loan.loanedAt).toLocaleDateString("it-IT")}
-                    </p>
-                    {loan.note && (
-                      <p className="text-xs mt-1 italic" style={{ color: "var(--fg-muted)" }}>{loan.note}</p>
-                    )}
+                    <p className="text-sm font-bold text-amber-500">{loan.borrower}</p>
+                    <p className="text-[10px] opacity-50 mt-0.5">dal {new Date(loan.loanedAt).toLocaleDateString("it-IT")}</p>
+                    {loan.note && <p className="text-xs mt-2 italic opacity-70 border-l-2 border-amber-500/20 pl-2">{loan.note}</p>}
                   </div>
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <button
-                      onClick={() => handleReturn(loan.id)}
-                      className="text-xs px-2.5 py-1 rounded-lg font-medium transition-colors"
-                      style={{ background: "color-mix(in srgb,#22c55e 20%,transparent)", color: "#4ade80" }}
-                    >
-                      Restituito
-                    </button>
-                    <button
-                      onClick={() => handleDelete(loan.id)}
-                      className="text-[10px] text-center transition-colors"
-                      style={{ color: "var(--fg-subtle)" }}
-                    >
-                      Elimina
-                    </button>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={() => handleReturn(loan.id)} className="text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg bg-amber-500 text-black hover:bg-amber-400 transition-all">Restituito</button>
+                    <button onClick={() => handleDelete(loan.id)} className="text-[10px] font-bold uppercase opacity-40 hover:opacity-100 transition-all">Elimina</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Prestiti restituiti */}
-          {!loading && returned.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-subtle)" }}>
-                Restituiti
-              </p>
-              {returned.map((loan) => (
-                <div
-                  key={loan.id}
-                  className="flex items-start gap-3 p-2.5 rounded-lg border"
-                  style={{
-                    background:  "var(--bg-elevated)",
-                    borderColor: "color-mix(in srgb, var(--fg-subtle) 15%, transparent)",
-                  }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs" style={{ color: "var(--fg-muted)" }}>
-                      <span className="line-through">{loan.borrower}</span>
-                    </p>
-                    <p className="text-[10px]" style={{ color: "var(--fg-subtle)" }}>
-                      {new Date(loan.loanedAt).toLocaleDateString("it-IT")} →{" "}
-                      {loan.returnedAt ? new Date(loan.returnedAt).toLocaleDateString("it-IT") : ""}
-                    </p>
+          {returned.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Storico</p>
+              <div className="flex flex-col gap-2">
+                {returned.map((loan) => (
+                  <div key={loan.id} className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold opacity-60 line-through">{loan.borrower}</p>
+                      <p className="text-[10px] opacity-40">Reso il {new Date(loan.returnedAt!).toLocaleDateString("it-IT")}</p>
+                    </div>
+                    <button onClick={() => handleDelete(loan.id)} className="p-1 opacity-0 group-hover:opacity-100 hover:text-red-400 text-xs">✕</button>
                   </div>
-                  <button
-                    onClick={() => handleDelete(loan.id)}
-                    className="text-[10px] shrink-0"
-                    style={{ color: "var(--fg-subtle)" }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
           {!loading && loans.length === 0 && (
-            <p className="text-xs text-center italic py-1" style={{ color: "var(--fg-subtle)" }}>
-              Nessun prestito registrato.
-            </p>
+            <p className="text-xs text-center py-4 opacity-40 italic">Nessun prestito registrato.</p>
           )}
 
-          {/* Form nuovo prestito */}
-          <form action={formAction} className="flex flex-col gap-3">
+          <form action={formAction} className="p-4 rounded-2xl bg-black/20 border border-white/5 flex flex-col gap-4">
             <input type="hidden" name="bookId" value={bookId} />
-            <div>
-              <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Prestato a *</label>
-              <input
-                name="borrower"
-                type="text"
-                required
-                placeholder="Nome o cognome"
-                className={fieldClass}
-                style={fieldStyle}
-              />
-            </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Data prestito</label>
-                <input
-                  name="loanedAt"
-                  type="date"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                  className={fieldClass}
-                  style={fieldStyle}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Nota</label>
-              <input
-                name="note"
-                type="text"
-                placeholder="Es. da restituire entro aprile"
-                className={fieldClass}
-                style={fieldStyle}
-              />
-            </div>
+            
+            <FormField label="Prestato a *" error={state?.fieldErrors?.borrower}>
+              <Input name="borrower" placeholder="Nome" error={state?.fieldErrors?.borrower} />
+            </FormField>
+
+            <FormField label="Data prestito" error={state?.fieldErrors?.loanedAt}>
+              <Input name="loanedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} error={state?.fieldErrors?.loanedAt} />
+            </FormField>
+
+            <FormField label="Nota" error={state?.fieldErrors?.note}>
+              <Input name="note" placeholder="Note aggiuntive..." error={state?.fieldErrors?.note} />
+            </FormField>
+
             {state?.error && (
-              <p className="text-xs px-3 py-1.5 rounded-lg border"
-                style={{ color: "#f87171", background: "color-mix(in srgb,#ef4444 8%,var(--bg-elevated))", borderColor: "color-mix(in srgb,#ef4444 30%,transparent)" }}>
+              <p className="text-xs p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
                 {state.error}
               </p>
             )}
+            
             <AddButton />
           </form>
         </div>

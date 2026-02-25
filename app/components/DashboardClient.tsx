@@ -134,13 +134,26 @@ function TopTenSection({
   );
 }
 
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+
+// ... (dentro DashboardClient) ...
 export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
-  const [panel,       setPanel]   = useState<PanelState>(null);
-  const [query,       setQuery]   = useState("");
-  const [statusFilter, setStatus] = useState("");
-  const [celebrate,  setCelebrate] = useState(false);
-  const [exporting,  setExporting] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const [panel, setPanel] = useState<PanelState>(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [statsModal, setStatsModal] = useState<string | null>(null);
+
+  const query = searchParams.get("q") ?? "";
+  const statusFilter = searchParams.get("status") ?? "";
+  const sort = searchParams.get("sort") ?? "updatedAt";
+
+  function handleCelebrate() {
+    setCelebrate(true);
+    setTimeout(() => setCelebrate(false), 100);
+  }
 
   async function handleExport(format: "csv" | "json") {
     setExporting(true);
@@ -150,7 +163,7 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement("a");
       a.href     = url;
-      a.download = `libreria-${new Date().toISOString().slice(0, 10)}.${format}`;
+      a.download = `libreria-full-${new Date().toISOString().slice(0, 10)}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -158,25 +171,16 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
     }
   }
 
-  function handleCelebrate() {
-    setCelebrate(true);
-    setTimeout(() => setCelebrate(false), 100);
+  function updateFilters(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    });
+    router.push(`${pathname}?${params.toString()}`);
   }
 
-  const filtered = useMemo(
-    () =>
-      initialBooks.filter((b) => {
-        const q = query.toLowerCase();
-        const matchText =
-          !q ||
-          b.title.toLowerCase().includes(q) ||
-          b.author?.toLowerCase().includes(q);
-        const matchStatus = !statusFilter || b.status === statusFilter;
-        return matchText && matchStatus;
-      }),
-    [initialBooks, query, statusFilter]
-  );
-
+  // Rimossa logica locale filtered/counts perché ora gestita server-side o derivata da initialBooks
   const counts = useMemo(
     () =>
       Object.keys(STATUS_LABELS).reduce((acc, s) => {
@@ -227,7 +231,7 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
           return (
             <button
               key={key}
-              onClick={() => setStatus(active ? "" : key)}
+              onClick={() => updateFilters({ status: active ? null : key })}
               className={`group text-left p-4 rounded-xl border transition-all duration-200
                 ${active ? STATUS_COLORS_ACTIVE[key] : "border"}`}
               style={!active ? {
@@ -240,7 +244,7 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
                   ${active ? STATUS_NUMBER_ACTIVE[key] : ""}`}
                   style={!active ? { color: "var(--fg-primary)" } : undefined}
                 >
-                  {counts[key]}
+                  {counts[key] ?? 0}
                 </p>
                 <span className="text-base opacity-50">{STATUS_ICON[key]}</span>
               </div>
@@ -259,9 +263,11 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       <div className="flex gap-2 mb-6 flex-wrap items-center">
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cerca titolo o autore…"
+          defaultValue={query}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") updateFilters({ q: e.currentTarget.value });
+          }}
+          placeholder="Cerca titolo, autore, tag..."
           className="flex-1 min-w-[180px] rounded-xl px-4 py-2 text-sm border
             focus:outline-none focus:ring-2 transition-colors"
           style={{
@@ -270,54 +276,17 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
             borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
           }}
         />
-        <div className="flex gap-1.5 flex-wrap">
-          {Object.entries(STATUS_LABELS).map(([key, label]) => {
-            const active = statusFilter === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setStatus(active ? "" : key)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200
-                  ${active ? STATUS_COLORS_ACTIVE[key] : "glass-sm"}`}
-                style={!active ? {
-                  color: "var(--fg-muted)",
-                } : undefined}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        {/* Export dropdown */}
-        <div className="relative group/export">
-          <button
-            disabled={exporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border
-              transition-all duration-150 disabled:opacity-50"
-            style={{
-              background: "var(--bg-card)",
-              color: "var(--fg-muted)",
-              borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
-            }}
-          >
-            {exporting ? "…" : "↓"} Esporta
-          </button>
-          <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover/export:flex flex-col
-            min-w-[120px] rounded-xl overflow-hidden shadow-xl border"
-            style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)" }}
-          >
-            {(["csv", "json"] as const).map((fmt) => (
-              <button
-                key={fmt}
-                onClick={() => handleExport(fmt)}
-                className="px-4 py-2.5 text-sm text-left hover:bg-white/5 transition-colors"
-                style={{ color: "var(--fg-primary)" }}
-              >
-                .{fmt.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
+        
+        <select
+          value={sort}
+          onChange={(e) => updateFilters({ sort: e.target.value })}
+          className="rounded-xl px-3 py-2 text-xs border bg-transparent font-bold uppercase"
+          style={{ borderColor: "var(--bg-input)", color: "var(--fg-muted)" }}
+        >
+          <option value="updatedAt">Recenti</option>
+          <option value="title">Titolo</option>
+          <option value="rating">Voto</option>
+        </select>
 
         <button
           onClick={() => setPanel({ type: "add" })}
@@ -335,21 +304,16 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       </div>
 
       {/* Griglia libri */}
-      {filtered.length === 0 ? (
+      {initialBooks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center animate-fade-up">
           <div className="text-5xl mb-4 opacity-20">📚</div>
           <p className="font-display font-medium text-lg" style={{ color: "var(--fg-muted)" }}>
-            {initialBooks.length === 0 ? "La tua libreria è vuota." : "Nessun libro trovato."}
-          </p>
-          <p className="font-reading text-sm mt-2 italic" style={{ color: "var(--fg-subtle)" }}>
-            {initialBooks.length === 0
-              ? "Aggiungi il tuo primo libro con il pulsante in alto."
-              : "Prova a cambiare filtro o query di ricerca."}
+            Nessun libro trovato.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filtered.map((book) => (
+          {initialBooks.map((book) => (
             <div key={book.id} className="book-grid-item">
               <BookCard
                 book={book}

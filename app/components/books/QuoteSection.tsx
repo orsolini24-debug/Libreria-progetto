@@ -3,6 +3,7 @@
 import { useState, useActionState, useEffect, useCallback } from "react";
 import { useFormStatus } from "react-dom";
 import { createQuote, deleteQuote } from "@/app/lib/quote-actions";
+import { FormField, Input, Textarea } from "@/app/components/ui/FormField";
 
 type NoteType = "QUOTE" | "NOTE";
 
@@ -15,22 +16,13 @@ type QuoteItem = {
   createdAt: string;
 };
 
-const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
-  focus:outline-none focus:ring-2 transition-colors`;
-const fieldStyle = {
-  background:  "var(--bg-input)",
-  borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
-  color:       "var(--fg-primary)",
-};
-
 function AddButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      className="w-full py-2 rounded-xl text-sm font-semibold transition-all duration-150
-        active:scale-95 disabled:opacity-50"
+      className="w-full py-2 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"
       style={{ background: "var(--accent)", color: "var(--accent-on)" }}
     >
       {pending ? "Salvataggio…" : label}
@@ -39,7 +31,7 @@ function AddButton({ label }: { label: string }) {
 }
 
 export function QuoteSection({ bookId }: { bookId: string }) {
-  const [open,    setOpen]    = useState(true);
+  const [open,    setOpen]    = useState(false);
   const [tab,     setTab]     = useState<NoteType>("QUOTE");
   const [items,   setItems]   = useState<QuoteItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -66,6 +58,7 @@ export function QuoteSection({ bookId }: { bookId: string }) {
   }, [state?.success, open, loadItems]);
 
   async function handleDelete(id: string) {
+    if (!confirm("Eliminare?")) return;
     await deleteQuote(id);
     setItems((prev) => prev.filter((q) => q.id !== id));
   }
@@ -74,133 +67,70 @@ export function QuoteSection({ bookId }: { bookId: string }) {
   const notes  = items.filter((i) => i.type === "NOTE");
   const visible = tab === "QUOTE" ? quotes : notes;
 
-  const labelStyle    = { color: "var(--fg-subtle)", letterSpacing: "0.08em" };
-  const sectionBorder = { borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" };
-
   return (
-    <div className="border-t pt-4" style={sectionBorder}>
-      <button
-        onClick={() => setOpen((p) => !p)}
-        className="flex items-center justify-between w-full text-left mb-3"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--fg-subtle)" }}>
+    <div className="border-t pt-6" style={{ borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" }}>
+      <button onClick={() => setOpen((p) => !p)} className="flex items-center justify-between w-full mb-4 group">
+        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
           Citazioni & Appunti
-          {items.length > 0 && !loading && (
-            <span style={{ color: "var(--accent)" }}> ({items.length})</span>
-          )}
+          {items.length > 0 && <span className="ml-2 text-amber-500">({items.length})</span>}
         </p>
-        <span
-          className="text-xs transition-transform duration-200"
-          style={{ color: "var(--fg-subtle)", display: "inline-block", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-        >
-          ▾
-        </span>
+        <span className={`text-xs transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
 
       {open && (
-        <div className="flex flex-col gap-4">
-          {/* Tab selector */}
-          <div className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--bg-elevated)" }}>
+        <div className="flex flex-col gap-6 animate-fade-in">
+          <div className="flex gap-1 p-1 rounded-xl bg-white/5 border border-white/5">
             {(["QUOTE", "NOTE"] as NoteType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-all duration-150"
-                style={tab === t
-                  ? { background: "var(--accent)", color: "var(--accent-on)" }
-                  : { color: "var(--fg-muted)" }
-                }
-              >
-                {t === "QUOTE" ? `📝 Citazioni (${quotes.length})` : `✏️ Appunti (${notes.length})`}
+              <button key={t} onClick={() => setTab(t)}
+                className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-lg transition-all
+                  ${tab === t ? 'bg-amber-500 text-black' : 'opacity-40 hover:opacity-100'}`}>
+                {t === "QUOTE" ? `Citazioni (${quotes.length})` : `Appunti (${notes.length})`}
               </button>
             ))}
           </div>
 
-          {loading && (
-            <p className="text-xs text-center py-2" style={{ color: "var(--fg-subtle)" }}>Caricamento…</p>
-          )}
-
-          {/* Lista */}
-          {!loading && visible.length > 0 && (
-            <div className="flex flex-col gap-2.5">
-              {visible.map((q) => (
-                <div
-                  key={q.id}
-                  className="relative group/item rounded-xl p-3 border"
-                  style={{
-                    background:  tab === "QUOTE"
-                      ? "color-mix(in srgb, var(--accent) 5%, var(--bg-elevated))"
-                      : "color-mix(in srgb, #f59e0b 5%, var(--bg-elevated))",
-                    borderColor: tab === "QUOTE"
-                      ? "color-mix(in srgb, var(--accent) 15%, transparent)"
-                      : "color-mix(in srgb, #f59e0b 20%, transparent)",
-                  }}
-                >
-                  <p
-                    className={`text-sm leading-relaxed pr-5 ${tab === "QUOTE" ? "italic" : ""}`}
-                    style={{ color: "var(--fg-primary)" }}
-                  >
-                    {tab === "QUOTE" ? `"${q.text}"` : q.text}
+          <div className="flex flex-col gap-3 max-h-60 overflow-y-auto scrollbar-hide">
+            {visible.map((q) => (
+              <div key={q.id} className="group/item relative rounded-xl p-4 border border-white/5 bg-white/5">
+                <p className={`text-sm leading-relaxed pr-6 ${tab === "QUOTE" ? "italic font-serif" : ""}`}>
+                  {tab === "QUOTE" ? `"${q.text}"` : q.text}
+                </p>
+                {(q.page || q.chapter) && (
+                  <p className="text-[10px] mt-2 opacity-40 font-bold uppercase tracking-wider">
+                    {q.chapter ?? ""}{q.page && q.chapter ? " · " : ""}{q.page ? `p. ${q.page}` : ""}
                   </p>
-                  {(q.page || q.chapter) && (
-                    <p className="text-[10px] mt-1.5" style={{ color: "var(--fg-subtle)" }}>
-                      {q.chapter ?? ""}{q.page && q.chapter ? " · " : ""}{q.page ? `p. ${q.page}` : ""}
-                    </p>
-                  )}
-                  <button
-                    onClick={() => handleDelete(q.id)}
-                    className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100
-                      text-xs px-1 transition-opacity"
-                    style={{ color: "#f87171" }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+                <button onClick={() => handleDelete(q.id)} className="absolute top-3 right-3 opacity-0 group-hover/item:opacity-100 text-xs hover:text-red-400 transition-all">✕</button>
+              </div>
+            ))}
+            {!loading && visible.length === 0 && (
+              <p className="text-xs text-center py-4 opacity-40 italic">Nessun elemento presente.</p>
+            )}
+          </div>
 
-          {!loading && visible.length === 0 && (
-            <p className="text-xs text-center italic py-1" style={{ color: "var(--fg-subtle)" }}>
-              {tab === "QUOTE" ? "Nessuna citazione ancora." : "Nessun appunto ancora."}
-            </p>
-          )}
-
-          {/* Form */}
-          <form action={formAction} className="flex flex-col gap-3">
+          <form action={formAction} className="p-4 rounded-2xl bg-black/20 border border-white/5 flex flex-col gap-4">
             <input type="hidden" name="bookId" value={bookId} />
             <input type="hidden" name="type" value={tab} />
-            <div>
-              <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
-                {tab === "QUOTE" ? "Testo citazione *" : "Appunto *"}
-              </label>
-              <textarea
-                name="text"
-                rows={3}
-                required
-                placeholder={tab === "QUOTE"
-                  ? "Inserisci la citazione dell'autore…"
-                  : "Scrivi il tuo appunto, riflessione o commento…"}
-                className={`${fieldClass} resize-none`}
-                style={fieldStyle}
-              />
+            
+            <FormField label={tab === "QUOTE" ? "Citazione *" : "Appunto *"} error={state?.fieldErrors?.text}>
+              <Textarea name="text" placeholder="..." error={state?.fieldErrors?.text} />
+            </FormField>
+
+            <div className="flex gap-4">
+              <FormField label="Capitolo" error={state?.fieldErrors?.chapter} className="flex-[2]">
+                <Input name="chapter" placeholder="Cap. I" error={state?.fieldErrors?.chapter} />
+              </FormField>
+              <FormField label="Pagina" error={state?.fieldErrors?.page} className="flex-1">
+                <Input name="page" type="number" placeholder="42" error={state?.fieldErrors?.page} />
+              </FormField>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Capitolo</label>
-                <input name="chapter" type="text" placeholder="Es. Cap. III" className={fieldClass} style={fieldStyle} />
-              </div>
-              <div className="w-20">
-                <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>Pagina</label>
-                <input name="page" type="number" min={1} placeholder="42" className={fieldClass} style={fieldStyle} />
-              </div>
-            </div>
+
             {state?.error && (
-              <p className="text-xs px-3 py-1.5 rounded-lg border"
-                style={{ color: "#f87171", background: "color-mix(in srgb,#ef4444 8%,var(--bg-elevated))", borderColor: "color-mix(in srgb,#ef4444 30%,transparent)" }}>
+              <p className="text-xs p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
                 {state.error}
               </p>
             )}
+            
             <AddButton label={tab === "QUOTE" ? "Aggiungi citazione" : "Salva appunto"} />
           </form>
         </div>
