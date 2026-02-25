@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { updateBook, deleteBook } from "@/app/lib/book-actions";
 import { StarRating } from "./StarRating";
+import { QuoteSection } from "./QuoteSection";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
@@ -466,6 +467,9 @@ export function EditBookForm({
           </dl>
         </div>
       )}
+
+      {/* Citazioni */}
+      <QuoteSection bookId={book.id} />
     </div>
   );
 }
