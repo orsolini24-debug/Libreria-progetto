@@ -1,0 +1,8 @@
+# [GEMINI-ARCH] - Normalizzazione fine riga (APEX v3.0)
+* text=auto eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.prisma text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+*.ps1 text eol=lf

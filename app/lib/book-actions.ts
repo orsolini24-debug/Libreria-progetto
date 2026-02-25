@@ -3,7 +3,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { BookStatus } from "@/app/generated/prisma/client";
 import { CreateBookSchema, UpdateBookSchema } from "./validation/schemas";
 import { mapZodError } from "./validation/errors";
 
@@ -25,35 +24,6 @@ async function requireUserId(): Promise<string> {
  */
 function formDataToObject(formData: FormData): Record<string, unknown> {
   return Object.fromEntries(formData.entries());
-}
-
-const VALID_STATUSES = Object.values(BookStatus) as string[];
-
-function parseStatus(raw: FormDataEntryValue | null, fallback: BookStatus): BookStatus {
-  if (raw && VALID_STATUSES.includes(raw as string)) return raw as BookStatus;
-  return fallback;
-}
-
-function parseIntOrNull(raw: FormDataEntryValue | null): number | null {
-  const n = parseInt(raw as string, 10);
-  return isNaN(n) ? null : n;
-}
-
-function parseFloatOrNull(raw: FormDataEntryValue | null): number | null {
-  const n = parseFloat(raw as string);
-  return isNaN(n) ? null : Math.round(n * 2) / 2;
-}
-
-function str(raw: FormDataEntryValue | null): string | null {
-  const s = (raw as string)?.trim();
-  return s || null;
-}
-
-function parseDateOrNull(raw: FormDataEntryValue | null): Date | null {
-  const s = (raw as string)?.trim();
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
 }
 
 // ── createBook ────────────────────────────────────────────────────────────────
