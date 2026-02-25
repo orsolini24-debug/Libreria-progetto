@@ -1,6 +1,8 @@
 import { auth, signOut } from "@/auth";
 import Link from "next/link";
 import { ThemeSwitcher } from "@/app/components/ThemeSwitcher";
+import { GentleCheckIn } from "@/app/components/ai/GentleCheckIn";
+import { SanctuaryChat } from "@/app/components/ai/SanctuaryChat";
 
 export default async function ProtectedLayout({
   children,
@@ -74,6 +76,10 @@ export default async function ProtectedLayout({
 
       {/* Page content */}
       <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+
+      {/* AI Components */}
+      <GentleCheckIn />
+      <SanctuaryChat />
     </div>
   );
 }
