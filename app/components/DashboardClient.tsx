@@ -12,6 +12,7 @@ import { ReadingChallenge } from "./books/ReadingChallenge";
 import { YearWrapped } from "./books/YearWrapped";
 import { ActivityHeatMap } from "./books/ActivityHeatMap";
 import { ConfettiCelebration } from "./ConfettiCelebration";
+import { AICompanion } from "./AICompanion";
 import { STATUS_LABELS } from "@/app/lib/constants";
 import { StatsModal } from "./books/StatsModal";
 import type { Book } from "@/app/generated/prisma/client";
@@ -192,6 +193,9 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
 
       {/* Top 10 */}
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
+
+      {/* AI Proactive Insights & Streaks */}
+      <AICompanion />
 
       {/* Stats bar — cliccabile */}
       <StatsBar books={initialBooks} onStatClick={(f) => setStatsModal(f)} />

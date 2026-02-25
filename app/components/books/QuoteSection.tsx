@@ -4,6 +4,8 @@ import { useState, useActionState, useEffect, useCallback } from "react";
 import { useFormStatus } from "react-dom";
 import { createQuote, deleteQuote } from "@/app/lib/quote-actions";
 import { FormField, Input, Textarea } from "@/app/components/ui/FormField";
+import { Share2 } from "lucide-react";
+import { ShareableQuote } from "./ShareableQuote";
 
 type NoteType = "QUOTE" | "NOTE";
 
@@ -30,11 +32,12 @@ function AddButton({ label }: { label: string }) {
   );
 }
 
-export function QuoteSection({ bookId }: { bookId: string }) {
+export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: string; bookTitle: string; author?: string; coverUrl?: string }) {
   const [open,    setOpen]    = useState(false);
   const [tab,     setTab]     = useState<NoteType>("QUOTE");
   const [items,   setItems]   = useState<QuoteItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sharing, setSharing] = useState<QuoteItem | null>(null);
 
   const [state, formAction] = useActionState(createQuote, null);
 
@@ -100,13 +103,28 @@ export function QuoteSection({ bookId }: { bookId: string }) {
                     {q.chapter ?? ""}{q.page && q.chapter ? " · " : ""}{q.page ? `p. ${q.page}` : ""}
                   </p>
                 )}
-                <button onClick={() => handleDelete(q.id)} className="absolute top-3 right-3 opacity-0 group-hover/item:opacity-100 text-xs hover:text-red-400 transition-all">✕</button>
+                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover/item:opacity-100 transition-all">
+                  {tab === "QUOTE" && (
+                    <button onClick={() => setSharing(q)} className="text-xs hover:text-amber-500"><Share2 className="w-3.5 h-3.5" /></button>
+                  )}
+                  <button onClick={() => handleDelete(q.id)} className="text-xs hover:text-red-400">✕</button>
+                </div>
               </div>
             ))}
             {!loading && visible.length === 0 && (
               <p className="text-xs text-center py-4 opacity-40 italic">Nessun elemento presente.</p>
             )}
           </div>
+
+          {sharing && (
+            <ShareableQuote 
+              text={sharing.text} 
+              bookTitle={bookTitle}
+              author={author}
+              bookCover={coverUrl}
+              onClose={() => setSharing(null)} 
+            />
+          )}
 
           <form action={formAction} className="p-4 rounded-2xl bg-black/20 border border-white/5 flex flex-col gap-4">
             <input type="hidden" name="bookId" value={bookId} />
