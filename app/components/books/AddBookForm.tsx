@@ -5,11 +5,18 @@ import { useFormStatus } from "react-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { createBook } from "@/app/lib/book-actions";
 import type { GoogleBookResult } from "@/app/lib/api/google-books";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 
 import { StarRating } from "./StarRating";
+
+// Lazy — evita errori SSR con le API webcam del browser
+const BarcodeScanner = dynamic(
+  () => import("./BarcodeScanner").then((m) => ({ default: m.BarcodeScanner })),
+  { ssr: false }
+);
 
 const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
   focus:outline-none focus:ring-2 transition-colors`;
@@ -52,8 +59,9 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [searching, setSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [status, setStatus] = useState("TO_READ");
+  const [status, setStatus]   = useState("TO_READ");
   const [formats, setFormats] = useState<string[]>([]);
+  const [showScanner, setShowScanner] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -116,7 +124,19 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const showReminder = status === "READING";
   const autoTags     = selected?.categories?.slice(0, 5).join(", ") ?? "";
 
+  function handleIsbnDetected(isbn: string) {
+    setShowScanner(false);
+    handleQueryChange(isbn);
+  }
+
   return (
+    <>
+    {showScanner && (
+      <BarcodeScanner
+        onDetected={handleIsbnDetected}
+        onClose={() => setShowScanner(false)}
+      />
+    )}
     <form action={formAction} className="flex flex-col gap-4">
 
       {/* Anteprima libro selezionato */}
@@ -164,9 +184,25 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Ricerca */}
       <div ref={containerRef} className="relative">
-        <label className="block text-xs font-semibold uppercase mb-1.5" style={labelStyle}>
-          Cerca su Google Books
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-semibold uppercase" style={labelStyle}>
+            Cerca su Google Books
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowScanner(true)}
+            title="Scansiona barcode ISBN"
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border
+              transition-all duration-150 active:scale-95"
+            style={{
+              borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+              color: "var(--accent)",
+              background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+            }}
+          >
+            <span className="text-sm leading-none">⬛</span> Barcode
+          </button>
+        </div>
         <input
           type="text"
           value={query}
@@ -413,5 +449,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
       )}
       <SubmitButton />
     </form>
+    </>
   );
 }
