@@ -33,7 +33,9 @@
       "Bash(cat \"C:\\\\Users\\\\g.orsolini\\\\.claude\\\\projects\\\\C--Users-g-orsolini-Desktop-Giorgio-Libreria-progetto\\\\c3a9993e-ac62-45dc-af21-ea699f698d52.jsonl\" | python3 -c \"\nimport sys, json\nlines = sys.stdin.readlines\\(\\)\nmessages = []\nfor line in lines:\n    try:\n        obj = json.loads\\(line\\)\n        if obj.get\\('type'\\) in ['user', 'assistant']:\n            messages.append\\(obj\\)\n    except:\n        pass\n# Print messages from start, looking for the plan/phases\nfor i, msg in enumerate\\(messages\\):\n    role = msg.get\\('type', ''\\)\n    content = msg.get\\('message', {}\\)\n    if isinstance\\(content, dict\\):\n        c = content.get\\('content', ''\\)\n        if isinstance\\(c, list\\):\n            for item in c:\n                if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'text':\n                    text = item['text']\n                    # Look for numbered phases/steps\n                    if \\('**Fase' in text or 'Fase 1' in text or '### Fase' in text or \n                        'implementiamo' in text.lower\\(\\) or 'procediamo' in text.lower\\(\\) or\n                        'piano di lavoro' in text.lower\\(\\)\\):\n                        print\\(f'=== MSG {i} {role} ==='\\)\n                        print\\(text[:3000]\\)\n                        print\\(\\)\n\" 2>/dev/null)",
       "Bash(python3:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cd /c/Users/g.orsolini/Desktop/Giorgio/Libreria-progetto && node prisma/update-suggestions.mjs 2>&1)"
     ]
   }
 }

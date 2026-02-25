@@ -34,6 +34,11 @@ enum SuggestionCategory {
   OTHER
 }
 
+enum NoteType {
+  QUOTE  // Citazione testuale dall'autore
+  NOTE   // Appunto personale per pagina
+}
+
 enum SuggestionStatus {
   PENDING
   UNDER_REVIEW
@@ -45,12 +50,13 @@ enum SuggestionStatus {
 // ── MODELS ────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  role        Role     @default(USER)
+  displayName String?  // Nome scelto dall'utente per i saluti
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   books       Book[]
   suggestions Suggestion[]
@@ -106,12 +112,13 @@ model Book {
 
 // ── Citazioni salvate da un libro ─────────────────────────────────────────────
 model Quote {
-  id      String @id @default(cuid())
+  id      String   @id @default(cuid())
   bookId  String
-  book    Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book    Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   userId  String
 
-  text    String  @db.Text
+  type    NoteType @default(QUOTE) // QUOTE = citazione autore, NOTE = appunto personale
+  text    String   @db.Text
   page    Int?
   chapter String?
 

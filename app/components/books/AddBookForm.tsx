@@ -113,6 +113,37 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
     setShowResults(false);
   }
 
+  // Barcode: cerca per ISBN, auto-seleziona se trovato, altrimenti mostra risultati
+  async function handleIsbnDetected(isbn: string) {
+    setShowScanner(false);
+    setSearching(true);
+    setSearchError(null);
+    setQuery(isbn);
+    setShowResults(false);
+    try {
+      const res  = await fetch(`/api/search?q=${encodeURIComponent(`isbn:${isbn}`)}`);
+      const data: GoogleBookResult[] = res.ok ? await res.json() : [];
+      if (data.length >= 1) {
+        // Auto-seleziona il primo risultato — ISBN è quasi sempre univoco
+        handleSelect(data[0]);
+      } else {
+        // Nessun risultato con ISBN, prova ricerca libera
+        const res2  = await fetch(`/api/search?q=${encodeURIComponent(isbn)}`);
+        const data2: GoogleBookResult[] = res2.ok ? await res2.json() : [];
+        if (data2.length >= 1) {
+          handleSelect(data2[0]);
+        } else {
+          setResults([]);
+          setSearchError("ISBN non trovato. Inserisci titolo manualmente.");
+        }
+      }
+    } catch {
+      setSearchError("Errore di rete. Riprova.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
   function toggleFormat(fmt: string) {
     setFormats((prev) =>
       prev.includes(fmt) ? prev.filter((f) => f !== fmt) : [...prev, fmt]
@@ -123,11 +154,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const showRating   = status === "READ";
   const showReminder = status === "READING";
   const autoTags     = selected?.categories?.slice(0, 5).join(", ") ?? "";
-
-  function handleIsbnDetected(isbn: string) {
-    setShowScanner(false);
-    handleQueryChange(isbn);
-  }
 
   return (
     <>

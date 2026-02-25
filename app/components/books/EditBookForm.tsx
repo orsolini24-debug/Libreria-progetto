@@ -106,8 +106,8 @@ function storeLinks(book: Book) {
   const qa = encodeURIComponent(`${book.title} ${book.author ?? ""}`.trim());
   return {
     ibs:     `https://www.ibs.it/search/?ts=as&query=${q}`,
-    amazon:  `https://www.amazon.it/s?k=${q}`,
-    kindle:  `https://www.amazon.it/s?k=${qa}&rh=n%3A827080031`,
+    amazon:  `https://www.amazon.it/s?k=${qa}&i=stripbooks`,
+    kindle:  `https://www.amazon.it/s?k=${qa}&i=digital-text`,
     audible: `https://www.audible.it/search?keywords=${qa}`,
   };
 }

@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { NoteType } from "@/app/generated/prisma/client";
 
 export type QuoteActionState = { error?: string; success?: string } | null;
 
@@ -32,11 +33,15 @@ export async function createQuote(
   const pageRaw = formData.get("page") as string;
   const page    = pageRaw ? parseInt(pageRaw, 10) : null;
 
+  const typeRaw = formData.get("type") as string;
+  const type    = typeRaw === "NOTE" ? NoteType.NOTE : NoteType.QUOTE;
+
   try {
     await prisma.quote.create({
       data: {
         bookId,
         userId,
+        type,
         text,
         page:    page && !isNaN(page) ? page : null,
         chapter: (formData.get("chapter") as string)?.trim() || null,

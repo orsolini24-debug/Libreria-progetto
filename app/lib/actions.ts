@@ -1,9 +1,10 @@
 "use server";
 
-import { signIn } from "@/auth";
+import { signIn, auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
+import { revalidatePath } from "next/cache";
 
 type ActionState = { error: string } | null;
 
@@ -58,5 +59,25 @@ export async function registerAction(
     throw error;
   }
 
+  return null;
+}
+
+export async function setDisplayName(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Non autenticato." };
+
+  const name = (formData.get("displayName") as string)?.trim();
+  if (!name || name.length < 2) return { error: "Inserisci almeno 2 caratteri." };
+  if (name.length > 40)         return { error: "Nome troppo lungo (max 40 caratteri)." };
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data:  { displayName: name },
+  });
+
+  revalidatePath("/dashboard");
   return null;
 }
