@@ -57,6 +57,20 @@ export async function createBook(
   const data = validated.data;
 
   try {
+    // [GEMINI-ARCH] - Controllo duplicati prima della creazione
+    const existing = await prisma.book.findFirst({
+      where: {
+        userId,
+        title: data.title,
+        author: data.author,
+        isbn: data.isbn || undefined,
+      },
+    });
+
+    if (existing) {
+      return { error: "Questo libro (stessa edizione/titolo) è già presente nella tua libreria." };
+    }
+
     await prisma.book.create({
       data: {
         userId,
