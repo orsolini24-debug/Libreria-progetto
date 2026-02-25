@@ -143,7 +143,6 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   const pathname = usePathname();
   const [panel, setPanel] = useState<PanelState>(null);
   const [celebrate, setCelebrate] = useState(false);
-  const [exporting, setExporting] = useState(false);
   const [statsModal, setStatsModal] = useState<string | null>(null);
 
   const query = searchParams.get("q") ?? "";
@@ -153,22 +152,6 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   function handleCelebrate() {
     setCelebrate(true);
     setTimeout(() => setCelebrate(false), 100);
-  }
-
-  async function handleExport(format: "csv" | "json") {
-    setExporting(true);
-    try {
-      const res = await fetch(`/api/export?format=${format}`);
-      const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href     = url;
-      a.download = `libreria-full-${new Date().toISOString().slice(0, 10)}.${format}`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setExporting(false);
-    }
   }
 
   function updateFilters(updates: Record<string, string | null>) {

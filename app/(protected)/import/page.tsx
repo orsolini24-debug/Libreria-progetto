@@ -34,7 +34,7 @@ export default function ImportPage() {
         const res = await createBook(null, formData);
         if (res?.success) successCount++;
         else errorList.push(`Riga ${idx + 2}: ${res?.error || "Errore di validazione"}`);
-      } catch (e) {
+      } catch {
         errorList.push(`Riga ${idx + 2}: Errore di sistema`);
       }
     }

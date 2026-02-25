@@ -56,8 +56,23 @@ async function fetchWithTimeout(url: string, timeoutMs = 6000): Promise<Response
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractIsbn(ids: any[]): string {
+interface GoogleVolume {
+  id: string;
+  volumeInfo: {
+    title?: string;
+    authors?: string[];
+    imageLinks?: { thumbnail?: string; smallThumbnail?: string };
+    industryIdentifiers?: { type: string; identifier: string }[];
+    pageCount?: number;
+    publishedDate?: string;
+    publisher?: string;
+    language?: string;
+    description?: string;
+    categories?: string[];
+  };
+}
+
+function extractIsbn(ids: GoogleVolume["volumeInfo"]["industryIdentifiers"]): string {
   if (!Array.isArray(ids)) return "";
   return (
     ids.find((i) => i.type === "ISBN_13")?.identifier ??
@@ -66,8 +81,7 @@ function extractIsbn(ids: any[]): string {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapGoogleVolume(item: any): GoogleBookResult {
+function mapGoogleVolume(item: GoogleVolume): GoogleBookResult {
   const info = item.volumeInfo ?? {};
   const rawCats: string[] = Array.isArray(info.categories) ? info.categories : [];
   const flatCats = rawCats

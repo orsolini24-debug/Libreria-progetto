@@ -28,7 +28,6 @@ const updates = [
 ];
 
 const all = await prisma.suggestion.findMany();
-console.log(`Trovati ${all.length} suggerimenti:`);
 
 for (const s of all) {
   const match = updates.find((u) =>
@@ -40,9 +39,6 @@ for (const s of all) {
       where: { id: s.id },
       data:  { status: match.status, adminNote: match.note },
     });
-    console.log(`  ✓ "${s.title}" → ${match.status}`);
-  } else {
-    console.log(`  - "${s.title}" → non modificato`);
   }
 }
 
