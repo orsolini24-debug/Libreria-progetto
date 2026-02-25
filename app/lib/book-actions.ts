@@ -106,14 +106,17 @@ export async function updateBook(
   try { userId = await requireUserId(); }
   catch { return { error: "Sessione scaduta." }; }
 
+  const title = str(formData.get("title"));
+  if (!title) return { error: "Il titolo è obbligatorio." };
+
   try {
     // [GEMINI-ARCH] - Motivo: Query singola atomica (filtro userId in where) - Fine ultimo: Riduzione latenza
     const result = await prisma.book.update({
       where: { id, userId },
       data: {
-        title:       str(formData.get("title")),
+        title, // Ora garantito come string (non null)
         author:      str(formData.get("author")),
-        status:      parseStatus(formData.get("status"), BookStatus.TO_READ), // fallback sicuro
+        status:      parseStatus(formData.get("status"), BookStatus.TO_READ),
         rating:      parseFloatOrNull(formData.get("rating")),
         comment:     str(formData.get("comment")),
         tags:        str(formData.get("tags")),
