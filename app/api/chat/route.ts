@@ -5,13 +5,21 @@ import { getUserEmotionalContext } from "@/app/lib/emotional-actions";
 
 export const maxDuration = 30;
 
-// Inizializza il provider Google mappando esplicitamente la nostra variabile d'ambiente
-const googleProvider = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_AI_API_KEY || "",
-});
-
 export async function POST(req: Request) {
   try {
+    // 1. FORZIAMO LA LETTURA DELLA CHIAVE A RUNTIME (DENTRO LA RICHIESTA)
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    
+    if (!apiKey) {
+      console.error("CRITICAL ERROR: GOOGLE_AI_API_KEY risulta undefined a runtime sul server!");
+      return new Response(JSON.stringify({ error: "API Key mancante nel server." }), { status: 500 });
+    }
+
+    // Inizializziamo il provider QUI DENTRO
+    const googleProvider = createGoogleGenerativeAI({
+      apiKey: apiKey,
+    });
+
     const session = await auth();
     if (!session?.user?.id) {
       return new Response("Unauthorized", { status: 401 });
@@ -29,23 +37,21 @@ export async function POST(req: Request) {
       4. Ecco il contesto emotivo e letterario attuale dell'utente:
       ${emotionalContext}
       
-      Usa queste informazioni per personalizzare le tue risposte e fargli capire che lo conosci bene. Sii conciso.
+      Usa queste informazioni per personalizzare le tue risposte. Sii conciso.
     `;
 
-    // Utilizziamo gemini-1.5-pro: è il modello di ragionamento top-tier attualmente stabile al pubblico
     const result = await streamText({
       model: googleProvider('gemini-1.5-pro'),
       system: systemPrompt,
       messages,
     });
 
-    // Ritorna lo stream compatibile con la nostra versione dell'SDK
     return result.toDataStreamResponse();
     
   } catch (error) {
     console.error("API Chat Error:", error);
     return new Response(
-      JSON.stringify({ error: "Errore di connessione all'AI. Verifica i log." }), 
+      JSON.stringify({ error: "Errore interno durante la connessione." }), 
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
