@@ -36,12 +36,12 @@ export async function getProactiveInsights() {
 
     if (topBooks.length === 0) return null;
 
-    // 2. Utilizzo di Gemini 1.5 Pro per ragionamento superiore e precisione JSON
+    // 2. Utilizzo del modello di punta assoluto: Gemini 2.0 Pro Experimental
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-pro-exp-02-05",
       generationConfig: { 
         responseMimeType: "application/json",
-        temperature: 0.7 
+        temperature: 0.5 
       }
     });
     
