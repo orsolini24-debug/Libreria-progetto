@@ -10,7 +10,6 @@ import { createBook, createBooksBulk } from "@/app/lib/book-actions";
 import type { GoogleBookResult } from "@/app/lib/api/google-books";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import { BookStatus } from "@/app/generated/prisma/client";
-import { FormField, Input, Select, Textarea } from "@/app/components/ui/FormField";
 import { StarRating } from "./StarRating";
 
 const BarcodeScanner = dynamic(
@@ -18,17 +17,35 @@ const BarcodeScanner = dynamic(
   { ssr: false }
 );
 
+/* ── STILI PREMIUM ORIGINALI ─────────────────────────────────────────── */
+const fieldClass = `w-full border rounded-xl px-3 py-2.5 text-sm
+  focus:outline-none focus:ring-2 transition-all duration-200`;
+
+const fieldStyle = {
+  background: "var(--bg-input)",
+  borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+  color: "var(--fg-primary)",
+};
+
+const labelStyle = {
+  color: "var(--fg-subtle)",
+  letterSpacing: "0.08em",
+};
+
 function SubmitButton({ label, disabled }: { label: string; disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending || disabled}
-      className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-widest
-        disabled:opacity-50 transition-all shadow-lg active:scale-95 mt-2"
-      style={{ background: "var(--accent)", color: "var(--accent-on)" }}
+      className="w-full py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest
+        disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95 mt-4"
+      style={{
+        background: "var(--accent)",
+        color: "var(--accent-on)",
+      }}
     >
-      {pending ? "Salvataggio…" : label}
+      {pending ? "Salvataggio in corso…" : label}
     </button>
   );
 }
@@ -42,28 +59,36 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [results, setResults] = useState<GoogleBookResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [status, setStatus]   = useState("TO_READ");
   const [formats, setFormats] = useState<string[]>([]);
   const [showScanner, setShowScanner] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleQueryChange = useCallback(async (value: string) => {
+  const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
-    if (value.length < 2) { setResults([]); setShowResults(false); return; }
-    
-    setSearching(true);
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
-      const data = await res.json();
-      setResults(data);
-      setShowResults(data.length > 0);
-    } catch {
-      setResults([]);
-    } finally {
-      setSearching(false);
-    }
+    setShowResults(false);
+    setSearchError(null);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!value.trim()) { setResults([]); return; }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
+        const data: GoogleBookResult[] = res.ok ? await res.json() : [];
+        setResults(data);
+        setShowResults(data.length > 0);
+        if (data.length === 0) setSearchError("noresults");
+      } catch {
+        setSearchError("Errore di connessione.");
+      } finally {
+        setSearching(false);
+      }
+    }, 500);
   }, []);
 
   useEffect(() => {
@@ -78,6 +103,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   useEffect(() => {
     if (state?.success) {
       setSelection([]); setQuery(""); setResults([]);
+      setStatus("TO_READ"); setFormats([]);
       router.refresh();
       onSuccess?.();
     }
@@ -85,13 +111,27 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
   function addToSelection(book: GoogleBookResult) {
     if (selection.find(s => s.googleId === book.googleId)) return;
-    setSelection(prev => [...prev, book]);
+    setSelection([book, ...selection.slice(0, 9)]); // Limita a 10 per UI
     setShowResults(false);
     setQuery("");
   }
 
   function removeFromSelection(id: string) {
     setSelection(prev => prev.filter(s => s.googleId !== id));
+  }
+
+  async function handleIsbnDetected(isbn: string) {
+    setShowScanner(false);
+    setSearching(true);
+    setQuery(isbn);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(`isbn:${isbn}`)}`);
+      const data: GoogleBookResult[] = res.ok ? await res.json() : [];
+      if (data.length >= 1) addToSelection(data[0]);
+      else setSearchError("ISBN non trovato.");
+    } finally {
+      setSearching(false);
+    }
   }
 
   async function handleBulkAdd() {
@@ -119,81 +159,104 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
     handleQueryChange(seriesQuery);
   }
 
+  const toggleFormat = (fmt: string) => {
+    setFormats(prev => prev.includes(fmt) ? prev.filter(f => f !== fmt) : [...prev, fmt]);
+  };
+
   const selected = selection[0];
   const key = selected?.googleId ?? "manual";
+  const showRating = status === "READ";
+  const showReminder = status === "READING";
   const autoTags = selected?.categories?.slice(0, 5).join(", ") ?? "";
 
   return (
     <>
-    {showScanner && <BarcodeScanner onDetected={(i) => { setQuery(i); handleQueryChange(i); setShowScanner(false); }} onClose={() => setShowScanner(false)} />}
+    {showScanner && <BarcodeScanner onDetected={handleIsbnDetected} onClose={() => setShowScanner(false)} />}
     
-    <div className="flex flex-col gap-6 pb-8">
-      {/* Ricerca */}
+    <div className="flex flex-col gap-6 pb-12">
+      
+      {/* ── RICERCA E SCANNER ─────────────────────────────────────────── */}
       <div ref={containerRef} className="relative">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-60">Cerca Libro o Serie</label>
+          <label className="text-[10px] font-bold uppercase tracking-[0.12em]" style={labelStyle}>
+            Cerca Libro o Serie
+          </label>
           <div className="flex gap-3">
-            <button type="button" onClick={() => setShowScanner(true)} className="text-[10px] font-bold text-amber-500 uppercase">Barcode</button>
+            <button type="button" onClick={() => setShowScanner(true)} 
+              className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter border-b border-amber-500/30">
+              Barcode Scan
+            </button>
             {selection.length > 0 && (
-              <button type="button" onClick={expandSeries} className="text-[10px] font-bold text-blue-400 uppercase">Espandi Serie</button>
+              <button type="button" onClick={expandSeries} 
+                className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter border-b border-blue-400/30">
+                Espandi Serie
+              </button>
             )}
           </div>
         </div>
-        <Input 
+        <input 
+          type="text"
           value={query} 
           onChange={(e) => handleQueryChange(e.target.value)} 
-          placeholder="Titolo, autore o serie..."
+          placeholder="Titolo, autore o ISBN..."
+          className={fieldClass}
+          style={fieldStyle}
           autoComplete="off"
         />
+        {searching && <div className="absolute right-4 top-[38px] animate-pulse text-[10px] font-bold opacity-40 uppercase">Ricerca...</div>}
         
         {showResults && (
-          <ul className="absolute z-50 w-full mt-2 rounded-2xl shadow-2xl overflow-hidden border"
-            style={{ background: "var(--bg-elevated)", borderColor: "var(--bg-input)" }}>
+          <ul className="absolute z-50 w-full mt-2 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden border border-white/10"
+            style={{ background: "var(--bg-elevated)" }}>
             {results.map((book) => (
               <li key={book.googleId} onClick={() => addToSelection(book)}
-                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 transition-all border-b last:border-0 border-white/5">
+                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 transition-all border-b last:border-0"
+                style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 10%, transparent)" }}>
                 {book.coverUrl ? (
-                  <Image src={book.coverUrl} alt="" width={32} height={44} unoptimized className="rounded" />
+                  <Image src={book.coverUrl} alt="" width={32} height={44} unoptimized className="rounded shadow-sm" />
                 ) : (
-                  <div className="w-8 h-11 bg-white/5 rounded" />
+                  <div className="w-8 h-11 rounded opacity-20" style={{ background: "var(--fg-subtle)" }} />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold truncate leading-tight">{book.title}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold truncate" style={{ color: "var(--fg-primary)" }}>{book.title}</p>
+                    {book.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm flex-shrink-0">IT</span>}
+                  </div>
                   <p className="text-xs opacity-50 truncate">{book.author}</p>
                 </div>
-                {book.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm">IT</span>}
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      {/* Lista Selezione (per bulk) */}
+      {/* ── MODALITÀ SERIE (BULK) ─────────────────────────────────────── */}
       {selection.length > 1 && (
-        <div className="space-y-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20">
-          <p className="text-[10px] font-bold uppercase text-blue-400 tracking-widest text-center">Modalità Serie ({selection.length} libri)</p>
-          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto scrollbar-hide">
+        <div className="space-y-3 p-5 rounded-2xl border border-blue-500/20 shadow-2xl animate-fade-in"
+          style={{ background: "color-mix(in srgb, #3b82f6 5%, var(--bg-elevated))" }}>
+          <p className="text-[9px] font-black uppercase text-blue-400 tracking-[0.2em] text-center mb-4">Modalità Collezione ({selection.length} volumi)</p>
+          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 scrollbar-hide">
             {selection.map((book) => (
-              <div key={book.googleId} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
-                <p className="text-xs font-bold truncate flex-1 pr-2">{book.title}</p>
-                <button onClick={() => removeFromSelection(book.googleId)} className="text-red-400 text-xs">✕</button>
+              <div key={book.googleId} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <p className="text-xs font-bold truncate flex-1 pr-4">{book.title}</p>
+                <button onClick={() => removeFromSelection(book.googleId)} className="text-red-400 text-xs hover:scale-110 transition-transform">✕</button>
               </div>
             ))}
           </div>
           <button
             onClick={handleBulkAdd}
             disabled={bulkLoading}
-            className="w-full py-2.5 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98] disabled:opacity-20"
+            className="w-full py-3 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-20 shadow-xl"
           >
-            {bulkLoading ? "Aggiunta in corso..." : "Conferma Aggiunta Serie"}
+            {bulkLoading ? "Elaborazione..." : "Aggiungi Collezione"}
           </button>
         </div>
       )}
 
-      {/* Form Integrale (Singolo Libro o Primo della serie) */}
+      {/* ── FORM DETTAGLIATO ─────────────────────────────────────────── */}
       {selection.length > 0 && (
-        <form action={formAction} className="flex flex-col gap-5">
-          {/* Hidden Fields per Google Metadata */}
+        <form action={formAction} className="flex flex-col gap-6 animate-fade-up">
+          {/* Metadata Hidden */}
           <input type="hidden" name="googleId"      value={selected.googleId} />
           <input type="hidden" name="coverUrl"      value={selected.coverUrl} />
           <input type="hidden" name="isbn"          value={selected.isbn} />
@@ -204,80 +267,115 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           <input type="hidden" name="description"   value={selected.description} />
           <input type="hidden" name="formats"       value={formats.join(",")} />
 
-          <div className="flex gap-4 items-center p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-            {selected.coverUrl && <Image src={selected.coverUrl} alt="" width={40} height={56} unoptimized className="rounded shadow-md" />}
+          {/* Anteprima Selezionato */}
+          <div className="flex gap-5 items-center p-4 rounded-2xl border border-amber-500/20 shadow-inner"
+            style={{ background: "color-mix(in srgb, var(--accent) 5%, var(--bg-elevated))" }}>
+            {selected.coverUrl && <Image src={selected.coverUrl} alt="" width={44} height={62} unoptimized className="rounded-md shadow-xl" />}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase opacity-40">Selezionato</p>
-              <p className="text-sm font-bold text-amber-500 truncate">{selected.title}</p>
+              <p className="text-[9px] font-black uppercase opacity-30 tracking-widest mb-1">Dati recuperati</p>
+              <p className="text-sm font-bold text-amber-500 truncate leading-tight">{selected.title}</p>
+              <p className="text-[11px] opacity-60 truncate mt-0.5 font-medium">{selected.author}</p>
             </div>
             {selection.length === 1 && (
-              <button type="button" onClick={() => setSelection([])} className="p-2 opacity-40 hover:opacity-100 transition-opacity">✕</button>
+              <button type="button" onClick={() => setSelection([])} className="text-xs opacity-20 hover:opacity-100 transition-opacity">✕</button>
             )}
           </div>
 
-          <FormField label="Titolo *" error={state?.fieldErrors?.title}>
-            <Input name="title" key={key + "-t"} defaultValue={selected.title} error={state?.fieldErrors?.title} />
-          </FormField>
-
-          <FormField label="Autore *" error={state?.fieldErrors?.author}>
-            <Input name="author" key={key + "-a"} defaultValue={selected.author} error={state?.fieldErrors?.author} />
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Stato" error={state?.fieldErrors?.status}>
-              <Select name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Select>
-            </FormField>
-            <FormField label="Voto" error={state?.fieldErrors?.rating}>
-              <div className="pt-1"><StarRating name="rating" defaultValue={0} size="md" /></div>
-            </FormField>
-          </div>
-
-          <FormField label="Tag" error={state?.fieldErrors?.tags}>
-            <Input name="tags" key={key + "-tags"} defaultValue={autoTags} placeholder="Generi, temi..." />
-          </FormField>
-
-          <FormField label="Formato">
-            <div className="flex flex-wrap gap-2">
-              {FORMAT_OPTIONS.map(({ value, label }) => (
-                <button key={value} type="button" onClick={() => setFormats(prev => prev.includes(value) ? prev.filter(f => f !== value) : [...prev, value])}
-                  className={`text-[10px] px-3 py-1.5 rounded-full border font-black uppercase transition-all
-                    ${formats.includes(value) ? 'bg-amber-500 text-black border-amber-500' : 'opacity-40 border-white/10'}`}>
-                  {label}
-                </button>
-              ))}
+          <div className="space-y-5">
+            {/* Titolo e Autore */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Titolo del libro *</label>
+                <input name="title" key={key + "-t"} defaultValue={selected.title} required className={fieldClass} style={fieldStyle} />
+                {state?.fieldErrors?.title && <p className="text-[10px] text-red-400 mt-1 font-bold">{state.fieldErrors.title[0]}</p>}
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Autore *</label>
+                <input name="author" key={key + "-a"} defaultValue={selected.author} required className={fieldClass} style={fieldStyle} />
+                {state?.fieldErrors?.author && <p className="text-[10px] text-red-400 mt-1 font-bold">{state.fieldErrors.author[0]}</p>}
+              </div>
             </div>
-          </FormField>
 
-          <FormField label="Note" error={state?.fieldErrors?.comment}>
-            <Textarea name="comment" placeholder="Impressioni iniziali..." error={state?.fieldErrors?.comment} />
-          </FormField>
+            {/* Stato e Voto */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Stato</label>
+                <select name="status" value={status} onChange={(e) => setStatus(e.target.value)} className={fieldClass} style={fieldStyle}>
+                  {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Valutazione</label>
+                <div className="pt-1"><StarRating name="rating" defaultValue={0} size="md" /></div>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Data acquisto" error={state?.fieldErrors?.purchasedAt}>
-              <Input name="purchasedAt" type="date" error={state?.fieldErrors?.purchasedAt} />
-            </FormField>
-            {status === "READ" && (
-              <FormField label="Data fine" error={state?.fieldErrors?.finishedAt}>
-                <Input name="finishedAt" type="date" error={state?.fieldErrors?.finishedAt} />
-              </FormField>
+            {/* Suggerimento Reading */}
+            {showReminder && (
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-blue-500/20 text-[11px] font-medium"
+                style={{ background: "color-mix(in srgb, #3b82f6 10%, var(--bg-elevated))", color: "#93c5fd" }}>
+                <span className="text-lg">💡</span>
+                <span>Potrai registrare il tuo progresso pagina per pagina dopo l&apos;aggiunta.</span>
+              </div>
             )}
+
+            {/* Tag e Formati */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Tag e Categorie</label>
+              <input name="tags" key={key + "-tags"} defaultValue={autoTags} placeholder="Es. narrativa, thriller, classici..." className={fieldClass} style={fieldStyle} />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Formato posseduto</label>
+              <div className="flex flex-wrap gap-2">
+                {FORMAT_OPTIONS.map(({ value, label }) => (
+                  <button key={value} type="button" onClick={() => toggleFormat(value)}
+                    className={`text-[10px] px-3.5 py-2 rounded-full border font-black uppercase transition-all duration-200
+                      ${formats.includes(value) ? 'bg-amber-500 text-black border-amber-500' : 'opacity-40 border-white/10 hover:opacity-100'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Note */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Note iniziali</label>
+              <textarea name="comment" rows={2} placeholder="Perché vuoi leggerlo? Impressioni..." className={`${fieldClass} resize-none`} style={fieldStyle}></textarea>
+            </div>
+
+            {/* Date */}
+            <div className="pt-2 border-t border-white/5 space-y-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-20">Cronologia</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Acquistato il</label>
+                  <input name="purchasedAt" type="date" className={fieldClass} style={fieldStyle} />
+                </div>
+                {status === "READ" && (
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase mb-2" style={labelStyle}>Finito il</label>
+                    <input name="finishedAt" type="date" className={fieldClass} style={fieldStyle} />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {state?.error && (
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold animate-shake">
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold animate-shake text-center">
               {state.error}
             </div>
           )}
           
-          <SubmitButton label="Aggiungi Libro" />
+          <SubmitButton label="Aggiungi alla Libreria" />
         </form>
       )}
 
       {selection.length === 0 && (
-        <div className="py-12 border-2 border-dashed border-white/5 rounded-3xl flex flex-col items-center justify-center opacity-30">
-          <p className="text-sm font-reading italic">Cerca un titolo per iniziare</p>
+        <div className="py-24 border-2 border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center opacity-20 select-none">
+          <span className="text-4xl mb-4">📖</span>
+          <p className="text-sm font-reading italic tracking-wide">Cerca un titolo per iniziare la magia</p>
         </div>
       )}
     </div>
