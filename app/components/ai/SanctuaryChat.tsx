@@ -39,8 +39,11 @@ export function SanctuaryChat() {
             ))}
             {isLoading && <div className="text-slate-400 text-xs italic flex items-center gap-2"><span className="animate-pulse">●</span> L&apos;AI sta riflettendo...</div>}
             {error && (
-              <div className="text-red-500 text-xs flex items-center gap-1 bg-red-50 p-2 rounded">
-                <AlertCircle className="w-3 h-3" /> Errore di connessione. Riprova.
+              <div className="text-red-500 text-xs flex flex-col gap-2 bg-red-50 p-3 rounded-xl border border-red-200">
+                <div className="flex items-center gap-1 font-bold">
+                  <AlertCircle className="w-4 h-4" /> Dettaglio Errore Server:
+                </div>
+                <span className="font-mono break-words bg-white/50 p-2 rounded">{error.message || "Sconosciuto"}</span>
               </div>
             )}
           </div>
