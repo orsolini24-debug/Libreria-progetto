@@ -17,14 +17,26 @@ export function StatsBar({ books }: { books: Book[] }) {
       ? (ratedBooks.reduce((s, b) => s + (b.rating ?? 0), 0) / ratedBooks.length).toFixed(1)
       : null;
 
-  const totalPages = readBooks
+  // Pagine lette: libri finiti (pageCount) + libri in corso (currentPage)
+  const pagesRead = readBooks
     .filter((b) => b.pageCount != null)
     .reduce((s, b) => s + (b.pageCount ?? 0), 0);
 
+  const pagesInProgress = books
+    .filter((b) => b.status === "READING" && b.currentPage != null)
+    .reduce((s, b) => s + (b.currentPage ?? 0), 0);
+
+  const totalPages = pagesRead + pagesInProgress;
+
+  const readingBooks = books.filter((b) => b.status === "READING");
+
   const stats = [
-    { icon: "📚", value: books.length,         label: "nella libreria" },
-    { icon: "✅", value: readBooks.length,      label: "letti" },
-    { icon: "✍️", value: uniqueAuthors,         label: "autori" },
+    { icon: "📚", value: books.length,          label: "nella libreria" },
+    { icon: "✅", value: readBooks.length,       label: "letti" },
+    ...(readingBooks.length > 0
+      ? [{ icon: "📖", value: readingBooks.length, label: "in lettura" }]
+      : []),
+    { icon: "✍️", value: uniqueAuthors,          label: "autori" },
     ...(avgRating
       ? [{ icon: "⭐", value: `${avgRating}/10`, label: "media voti" }]
       : []),

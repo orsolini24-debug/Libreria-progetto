@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { updateBook, deleteBook } from "@/app/lib/book-actions";
 import { StarRating } from "./StarRating";
-import { QuoteSection } from "./QuoteSection";
-import { LoanSection }  from "./LoanSection";
+import { QuoteSection }          from "./QuoteSection";
+import { LoanSection }           from "./LoanSection";
+import { ReadingSessionSection } from "./ReadingSessionSection";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
@@ -471,6 +472,11 @@ export function EditBookForm({
 
       {/* Citazioni */}
       <QuoteSection bookId={book.id} />
+
+      {/* Sessioni di lettura — solo per libri in lettura o già letti */}
+      {(book.status === "READING" || book.status === "READ") && (
+        <ReadingSessionSection bookId={book.id} pageCount={book.pageCount} />
+      )}
 
       {/* Prestiti */}
       <LoanSection bookId={book.id} />
