@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { CreateBookSchema, UpdateBookSchema } from "./validation/schemas";
 import { mapZodError } from "./validation/errors";
 
@@ -104,6 +105,64 @@ export async function createBook(
     console.error("[createBook]", e);
     return { error: "Errore durante il salvataggio. Riprova." };
   }
+}
+
+// ── createBooksBulk ──────────────────────────────────────────────────────────
+export async function createBooksBulk(
+  books: (Partial<z.infer<typeof CreateBookSchema>> & { googleId?: string; publisher?: string; publishedDate?: string; language?: string; coverUrl?: string; description?: string })[]
+): Promise<{ success: number; skipped: number; error?: string }> {
+  let userId: string;
+  try { userId = await requireUserId(); }
+  catch { return { success: 0, skipped: 0, error: "Sessione scaduta." }; }
+
+  let successCount = 0;
+  let skippedCount = 0;
+
+  for (const bookData of books) {
+    const validated = CreateBookSchema.safeParse(bookData);
+    if (!validated.success) {
+      skippedCount++;
+      continue;
+    }
+
+    const data = validated.data;
+    
+    // Controllo duplicati atomico
+    const existing = await prisma.book.findFirst({
+      where: {
+        userId,
+        title: data.title,
+        author: data.author,
+        isbn: data.isbn || undefined,
+      },
+    });
+
+    if (existing) {
+      skippedCount++;
+      continue;
+    }
+
+    try {
+      await prisma.book.create({
+        data: {
+          userId,
+          ...data,
+          googleId: bookData.googleId,
+          publisher: bookData.publisher,
+          publishedDate: bookData.publishedDate,
+          language: bookData.language,
+          coverUrl: bookData.coverUrl,
+          description: bookData.description,
+        },
+      });
+      successCount++;
+    } catch {
+      skippedCount++;
+    }
+  }
+
+  if (successCount > 0) revalidatePath("/dashboard");
+  return { success: successCount, skipped: skippedCount };
 }
 
 // ── updateBook ────────────────────────────────────────────────────────────────
