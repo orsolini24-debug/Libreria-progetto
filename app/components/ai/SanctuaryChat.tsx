@@ -1,5 +1,5 @@
 "use client";
-import { useChat } from "ai/react";
+import { useChat, type Message } from "ai/react";
 import { useState } from "react";
 import { MessageSquare, Send, X, AlertCircle } from "lucide-react";
 
@@ -30,7 +30,7 @@ export function SanctuaryChat() {
             {messages.length === 0 && (
               <p className="text-center text-slate-400 text-sm italic mt-10">Sono qui per ascoltarti. Parlami del tuo momento o dei tuoi pensieri.</p>
             )}
-            {messages.map(m => (
+            {messages.map((m: Message) => (
               <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'}`}>
                   {m.content}
