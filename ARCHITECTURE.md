@@ -30,8 +30,9 @@ If unknown, mark as TBD.
 ---
 
 ## 5) Feature Log
-- **2026-02-25:** Removed legacy 3D room configuration system (Commit `4ba70e1` and follow-ups).
-  - **Reason:** Incomplete feature, architectural simplification, and removal of weak-typed JSON fields.
-  - **Evidence:** `npx prisma db push --accept-data-loss` (Success).
+- **2026-02-25:** Removed legacy 3D room configuration system (Commits `4ba70e1`, `e5c7050`, `[TBD]`).
+  - **Reason:** Incomplete feature, architectural simplification.
+  - **DB Status:** Baseline established via `20260225000000_init_baseline`. Column `roomConfig` dropped physically.
+
 
 

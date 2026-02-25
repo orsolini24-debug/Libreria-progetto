@@ -25,3 +25,12 @@ Any security rule that is implemented MUST reference:
 ## 4) Secrets & config
 - Utilizzo di `.env` locale e Vercel Env Vars.
 - **Evidence:** `app/lib/prisma.ts` usa `process.env.DATABASE_URL`.
+
+---
+
+## 5) Database Governance
+- **VIETATO** l'uso di `npx prisma db push` su ambienti di produzione.
+- Ogni modifica allo schema deve essere veicolata tramite migrazioni (`prisma migrate dev`).
+- Eccezioni ammesse solo con Decisione Critica del CEO registrata in `DECISIONS.md` e previa conferma di backup.
+- In produzione si utilizza esclusivamente `npx prisma migrate deploy`.
+

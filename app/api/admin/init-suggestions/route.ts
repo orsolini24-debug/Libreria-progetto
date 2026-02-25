@@ -5,11 +5,6 @@ import { NextResponse } from "next/server";
 
 const UPDATES = [
   {
-    keywords: ["stanza", "room"],
-    status:   "REJECTED" as const,
-    adminNote: "La pagina Stanza è stata rimossa — complessità alta per valore limitato. Da riprogettare completamente in futuro.",
-  },
-  {
     keywords: ["export", "esport"],
     status:   "IMPLEMENTED" as const,
     adminNote: "Implementato: export CSV e JSON dalla dashboard (pulsante ↓ Esporta).",

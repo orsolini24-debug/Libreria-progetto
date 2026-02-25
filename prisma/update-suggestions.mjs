@@ -21,7 +21,6 @@ const adapter = new PrismaNeon(sql);
 const prisma  = new PrismaClient({ adapter });
 
 const updates = [
-  { keyword: "stanza",       status: "REJECTED",      note: "La pagina Stanza è stata rimossa — complessità alta per valore basso." },
   { keyword: "export",       status: "IMPLEMENTED",   note: "Implementato: export CSV e JSON dalla dashboard." },
   { keyword: "statistic",    status: "IMPLEMENTED",   note: "Implementato: statistiche cliccabili, modal dettaglio libri per anno/stato." },
   { keyword: "appunt",       status: "ACCEPTED",      note: "Implementeremo note per pagina nell'area citazioni." },
