@@ -229,12 +229,19 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
           <div className="pt-4 border-t border-white/5">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-20 mb-6 text-center">Informazioni Cronologiche</p>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormField label="Data Acquisto">
                 <Input name="purchasedAt" type="date" />
               </FormField>
+              
+              {(status === "READING" || status === "READ") && (
+                <FormField label="Inizio Lettura">
+                  <Input name="startedAt" type="date" />
+                </FormField>
+              )}
+
               {status === "READ" && (
-                <FormField label="Data Fine">
+                <FormField label="Fine Lettura">
                   <Input name="finishedAt" type="date" />
                 </FormField>
               )}
