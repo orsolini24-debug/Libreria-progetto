@@ -12,7 +12,6 @@ import { SeriesPanel } from "./SeriesPanel";
 import { FormField, Input, Select, Textarea } from "@/app/components/ui/FormField";
 import { DeleteBookButton } from "./DeleteBookButton";
 import { StarRating } from "./StarRating";
-import { BookAIInsight } from "./BookAIInsight";
 import dynamic from "next/dynamic";
 
 // Sezioni dinamiche
@@ -81,8 +80,6 @@ export function EditBookForm({
           </div>
         </div>
       </div>
-
-      <BookAIInsight bookId={book.id} />
 
       <form action={formAction} className="flex flex-col gap-5">
         <input type="hidden" name="formats" value={formats.join(",")} />

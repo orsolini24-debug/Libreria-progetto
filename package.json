@@ -10,13 +10,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
-    "ai": "^6.0.99",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^0.575.0",
     "next": "^15.1.0",
