@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// Ottimizzato per coerenza con le Server Actions e gestione Float per i voti.
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -8,11 +5,115 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Prisma 7 con adapter esterno (PrismaNeon): l'URL è gestito da prisma.config.ts
-  // e dal costruttore PrismaNeon in app/lib/prisma.ts. Non serve qui.
 }
 
-// ── ENUM ──────────────────────────────────────────────────────────────────────
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  password    String
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  displayName String?
+  books       Book[]
+  suggestions Suggestion[]
+}
+
+model Book {
+  id              String           @id @default(cuid())
+  userId          String
+  status          BookStatus       @default(TO_READ)
+  rating          Float?
+  comment         String?
+  tags            String?
+  formats         String?
+  googleId        String?
+  title           String
+  author          String?
+  isbn            String?
+  publisher       String?
+  publishedDate   String?
+  language        String?
+  pageCount       Int?
+  coverUrl        String?
+  description     String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  finishedAt      DateTime?
+  purchasedAt     DateTime?
+  startedAt       DateTime?
+  currentPage     Int?
+  series          String?
+  seriesOrder     Int?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loans           Loan[]
+  quotes          Quote[]
+  readingSessions ReadingSession[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Quote {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  text      String
+  page      Int?
+  chapter   String?
+  createdAt DateTime @default(now())
+  type      NoteType @default(QUOTE)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Loan {
+  id         String    @id @default(cuid())
+  bookId     String
+  userId     String
+  borrower   String
+  loanedAt   DateTime  @default(now())
+  returnedAt DateTime?
+  note       String?
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model ReadingSession {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  date      DateTime @default(now())
+  startPage Int?
+  endPage   Int?
+  pagesRead Int?
+  duration  Int?
+  note      String?
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Suggestion {
+  id          String             @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  category    SuggestionCategory @default(OTHER)
+  status      SuggestionStatus   @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
 
 enum Role {
   USER
@@ -35,8 +136,8 @@ enum SuggestionCategory {
 }
 
 enum NoteType {
-  QUOTE  // Citazione testuale dall'autore
-  NOTE   // Appunto personale per pagina
+  QUOTE
+  NOTE
 }
 
 enum SuggestionStatus {
@@ -45,135 +146,4 @@ enum SuggestionStatus {
   ACCEPTED
   REJECTED
   IMPLEMENTED
-}
-
-// ── MODELS ────────────────────────────────────────────────────────────────────
-
-model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String
-  role        Role     @default(USER)
-  displayName String?  // Nome scelto dall'utente per i saluti
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  books       Book[]
-  suggestions Suggestion[]
-}
-
-model Book {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Stato e Metadati utente
-  status  BookStatus @default(TO_READ)
-  rating  Float?     // Supporta mezzi voti (es. 7.5)
-  comment String?    @db.Text
-  tags    String?    // CSV: "fantasy,storico"
-  formats String?    // CSV: "cartaceo,kindle"
-
-  // Dati Google Books API
-  googleId      String?
-  title         String
-  author        String?
-  isbn          String?
-  publisher     String?
-  publishedDate String?
-  language      String?
-  pageCount     Int?
-  coverUrl      String?
-  description   String? @db.Text
-
-  // Progresso lettura e serie
-  currentPage Int?
-  series      String?
-  seriesOrder Int?
-
-  // Date
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  purchasedAt DateTime?
-  startedAt   DateTime?
-  finishedAt  DateTime?
-
-  // Relazioni
-  quotes          Quote[]
-  loans           Loan[]
-  readingSessions ReadingSession[]
-
-  @@index([userId])
-  @@index([status])
-}
-
-// ── Citazioni salvate da un libro ─────────────────────────────────────────────
-model Quote {
-  id      String   @id @default(cuid())
-  bookId  String
-  book    Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId  String
-
-  type    NoteType @default(QUOTE) // QUOTE = citazione autore, NOTE = appunto personale
-  text    String   @db.Text
-  page    Int?
-  chapter String?
-
-  createdAt DateTime @default(now())
-
-  @@index([bookId])
-  @@index([userId])
-}
-
-// ── Prestiti — traccia a chi hai prestato un libro ────────────────────────────
-model Loan {
-  id     String @id @default(cuid())
-  bookId String
-  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId String
-
-  borrower   String    // Nome di chi ha preso il libro
-  loanedAt   DateTime  @default(now())
-  returnedAt DateTime? // null = non ancora restituito
-  note       String?
-
-  @@index([bookId])
-  @@index([userId])
-}
-
-// ── Sessioni di lettura — log pagine/ore per sessione + note ──────────────────
-model ReadingSession {
-  id     String @id @default(cuid())
-  bookId String
-  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId String
-
-  date      DateTime @default(now())
-  startPage Int?
-  endPage   Int?
-  pagesRead Int?     // calcolato o inserito manualmente
-  duration  Int?     // minuti
-  note      String?  @db.Text
-
-  @@index([bookId])
-  @@index([userId])
-}
-
-// ── Suggerimenti community ────────────────────────────────────────────────────
-model Suggestion {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title       String
-  description String             @db.Text
-  category    SuggestionCategory @default(OTHER)
-  status      SuggestionStatus   @default(PENDING)
-  adminNote   String?            @db.Text
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
 }

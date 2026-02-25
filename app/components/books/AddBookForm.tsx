@@ -128,16 +128,18 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         {showResults && (
-          <ul className="absolute z-50 w-[calc(100%-3rem)] mt-2 rounded-2xl shadow-2xl border border-white/10 bg-[#1a1a1a] overflow-hidden">
+          <ul className="absolute z-50 w-[calc(100%-3rem)] mt-2 rounded-2xl shadow-2xl border overflow-hidden"
+            style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--fg-subtle) 15%, transparent)" }}>
             {results.map((b) => (
-              <li key={b.googleId} onClick={() => selectBook(b)} className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 border-b border-white/5 last:border-0 transition-all">
+              <li key={b.googleId} onClick={() => selectBook(b)} className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 border-b last:border-0 transition-all"
+                style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 8%, transparent)" }}>
                 {b.coverUrl ? <Image src={b.coverUrl} alt="" width={32} height={44} unoptimized className="rounded shadow-sm" /> : <div className="w-8 h-11 bg-white/10 rounded" />}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold truncate leading-tight">{b.title}</p>
+                    <p className="text-sm font-bold truncate leading-tight" style={{ color: "var(--fg-primary)" }}>{b.title}</p>
                     {b.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm flex-shrink-0">IT</span>}
                   </div>
-                  <p className="text-xs opacity-50 truncate">{b.author}</p>
+                  <p className="text-xs opacity-50 truncate" style={{ color: "var(--fg-muted)" }}>{b.author}</p>
                 </div>
                 <button type="button" onClick={(e) => { e.stopPropagation(); setBulkSelection(p => [...p, b]); setShowResults(false); }} className="text-[10px] font-black text-blue-400 uppercase p-2">+</button>
               </li>
