@@ -7,6 +7,14 @@ export function SanctuaryChat() {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chat',
+    fetch: async (url, options) => {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || res.statusText);
+      }
+      return res;
+    },
     onError: (e) => console.error("Chat Error:", e)
   });
 
