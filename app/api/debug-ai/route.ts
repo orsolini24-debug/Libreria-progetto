@@ -10,7 +10,7 @@ export async function GET() {
     
     // Test simple generation
     const result = await generateText({
-      model: googleProvider('gemini-3.1-pro-preview'),
+      model: googleProvider('gemini-2.5-flash'),
       prompt: 'Hello, say "API is working".'
     });
 

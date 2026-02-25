@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const systemPrompt = `Sei un assistente empatico. Contesto utente: ${emotionalContext}`;
 
     const result = await streamText({
-      model: googleProvider('gemini-3.1-pro-preview'),
+      model: googleProvider('gemini-2.5-flash'),
       system: systemPrompt,
       messages,
     });
