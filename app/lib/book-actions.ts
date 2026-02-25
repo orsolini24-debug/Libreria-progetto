@@ -81,6 +81,9 @@ export async function createBook(
         purchasedAt:   parseDateOrNull(formData.get("purchasedAt")),
         startedAt:     parseDateOrNull(formData.get("startedAt")),
         finishedAt:    parseDateOrNull(formData.get("finishedAt")),
+        currentPage:   parseIntOrNull(formData.get("currentPage")),
+        series:        str(formData.get("series")),
+        seriesOrder:   parseIntOrNull(formData.get("seriesOrder")),
       },
     });
 
@@ -120,6 +123,9 @@ export async function updateBook(
         purchasedAt: parseDateOrNull(formData.get("purchasedAt")),
         startedAt:   parseDateOrNull(formData.get("startedAt")),
         finishedAt:  parseDateOrNull(formData.get("finishedAt")),
+        currentPage: parseIntOrNull(formData.get("currentPage")),
+        series:      str(formData.get("series")),
+        seriesOrder: parseIntOrNull(formData.get("seriesOrder")),
       },
     });
 

@@ -253,6 +253,74 @@ export function EditBookForm({
           </div>
         </div>
 
+        {/* Progresso lettura — solo se READING */}
+        {status === "READING" && (
+          <div>
+            <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>
+              Pagina corrente
+              {book.pageCount && (
+                <span className="ml-2 normal-case font-normal" style={{ color: "var(--fg-subtle)" }}>
+                  su {book.pageCount}
+                </span>
+              )}
+            </label>
+            <input
+              name="currentPage"
+              type="number"
+              min={0}
+              max={book.pageCount ?? undefined}
+              defaultValue={book.currentPage ?? ""}
+              placeholder="Es. 142"
+              className={fieldClass}
+              style={fieldStyle}
+            />
+            {book.pageCount && book.currentPage && (
+              <div className="mt-2">
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "color-mix(in srgb, var(--accent) 15%, var(--bg-elevated))" }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((book.currentPage / book.pageCount) * 100))}%`,
+                      background: "var(--accent)",
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] mt-1" style={{ color: "var(--fg-subtle)" }}>
+                  {Math.round((book.currentPage / book.pageCount) * 100)}% completato
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        {status !== "READING" && <input type="hidden" name="currentPage" value={book.currentPage ?? ""} />}
+
+        {/* Serie */}
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Serie</label>
+            <input
+              name="series"
+              type="text"
+              defaultValue={book.series ?? ""}
+              placeholder="Es. Il Signore degli Anelli"
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+          <div className="w-20">
+            <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>N°</label>
+            <input
+              name="seriesOrder"
+              type="number"
+              min={1}
+              defaultValue={book.seriesOrder ?? ""}
+              placeholder="1"
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+        </div>
+
         {/* Tag */}
         <div>
           <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Tag</label>

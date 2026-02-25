@@ -94,6 +94,31 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
           </div>
         </div>
         <p className="text-[10px] mt-1.5 pl-3" style={{ color: "var(--fg-subtle)" }}>{STATUS_LABELS[book.status]}</p>
+
+        {/* Progress bar — solo per libri in lettura con pagina corrente */}
+        {book.status === "READING" && book.currentPage != null && book.pageCount && (
+          <div className="mt-2 px-0.5">
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)" }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.min(100, Math.round((book.currentPage / book.pageCount) * 100))}%`,
+                  background: "var(--accent)",
+                }}
+              />
+            </div>
+            <p className="text-[9px] mt-0.5 text-right" style={{ color: "var(--fg-subtle)" }}>
+              p. {book.currentPage}/{book.pageCount}
+            </p>
+          </div>
+        )}
+
+        {/* Badge serie */}
+        {book.series && (
+          <p className="text-[9px] mt-1 pl-3 truncate" style={{ color: "var(--fg-subtle)" }}>
+            {book.series}{book.seriesOrder ? ` #${book.seriesOrder}` : ""}
+          </p>
+        )}
       </div>
     </div>
   );
