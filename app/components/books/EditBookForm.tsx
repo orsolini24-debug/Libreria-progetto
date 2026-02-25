@@ -8,6 +8,7 @@ import Image from "next/image";
 import { updateBook, deleteBook } from "@/app/lib/book-actions";
 import { StarRating } from "./StarRating";
 import { QuoteSection } from "./QuoteSection";
+import { LoanSection }  from "./LoanSection";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
@@ -470,6 +471,9 @@ export function EditBookForm({
 
       {/* Citazioni */}
       <QuoteSection bookId={book.id} />
+
+      {/* Prestiti */}
+      <LoanSection bookId={book.id} />
     </div>
   );
 }
