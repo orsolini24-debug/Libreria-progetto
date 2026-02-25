@@ -36,38 +36,39 @@ export async function getProactiveInsights() {
 
     if (topBooks.length === 0) return null;
 
-    // 2. Prepariamo il prompt per Gemini
+    // 2. Utilizzo di Gemini 1.5 Pro per ragionamento superiore e precisione JSON
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: { responseMimeType: "application/json" }
+      model: "gemini-1.5-pro",
+      generationConfig: { 
+        responseMimeType: "application/json",
+        temperature: 0.7 
+      }
     });
     
     const context = {
-      sessions: recentSessions.map(s => `ID:${s.bookId} | Libro: ${s.book.title}, Note: ${s.note || "Nessuna"}`),
-      quotes: recentQuotes.map(q => `ID:${q.bookId} | Libro: ${q.book.title}, Citazione: "${q.text}"`),
-      library: topBooks.map(b => `ID:${b.id} | ${b.title} (${b.author}) - Tag: ${b.tags || "N/A"}`)
+      sessions: recentSessions.map(s => `ID:${s.bookId} | Titolo: ${s.book.title}, Note: ${s.note || ""}`),
+      quotes: recentQuotes.map(q => `ID:${q.bookId} | Titolo: ${q.book.title}, Testo: "${q.text}"`),
+      library: topBooks.map(b => `ID:${b.id} | ${b.title} (${b.author})`)
     };
 
     const prompt = `
-      Sei un assistente letterario empatico e intelligente chiamato "Gemini Companion".
-      Analizza questi dati della libreria di un utente e proponi un "Insight" proattivo.
+      Sei un assistente letterario di alto livello. Analizza i dati della libreria utente e restituisci un JSON.
       
-      Dati recenti:
-      - Ultime sessioni: ${context.sessions.join("; ")}
-      - Ultime citazioni: ${context.quotes.join("; ")}
-      - Libri letti/in lettura: ${context.library.join("; ")}
+      Dati:
+      - Sessioni: ${context.sessions.join("; ")}
+      - Citazioni: ${context.quotes.join("; ")}
+      - Libri: ${context.library.join("; ")}
 
-      REGOLE:
-      1. Sii breve (massimo 2 frasi).
-      2. Non fare domande generiche ("Cosa vuoi leggere oggi?"), proponi qualcosa di specifico basato sui pattern.
-      3. Se suggerisci di riprendere o approfondire un libro, includi il suo ID specifico dai dati forniti nel campo suggestedBookId.
-      4. Restituisci UNICAMENTE un oggetto JSON con questa struttura: { "text": "testo del consiglio", "suggestedBookId": "ID_DEL_LIBRO_O_NULL" }
-      5. NON includere testo prima o dopo il JSON.
+      OBIETTIVO:
+      Genera un consiglio (text) di max 150 caratteri. 
+      Se il consiglio riguarda un libro specifico tra quelli forniti, includi il suo ID in 'suggestedBookId'.
+      
+      FORMATO JSON RICHIESTO:
+      { "text": "string", "suggestedBookId": "string|null" }
     `;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = result.response.text().trim();
     
     try {
       // Estrai JSON se l'AI include markdown code blocks
