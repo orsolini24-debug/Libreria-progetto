@@ -47,7 +47,11 @@ export async function POST(req: Request) {
       messages,
     });
 
-    return result.toDataStreamResponse();
+    return result.toDataStreamResponse({
+      getErrorMessage: (err) => {
+        return `STREAM ERROR: ${err instanceof Error ? err.message : JSON.stringify(err)}`;
+      }
+    });
     
   } catch (error) {
     // DIAGNOSTICA: Catturiamo l'oggetto errore di Google e lo spariamo al frontend
