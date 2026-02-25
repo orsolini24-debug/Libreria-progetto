@@ -51,23 +51,23 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   books       Book[]
   suggestions Suggestion[]
 }
 
 model Book {
-  id            String     @id @default(cuid())
-  userId        String
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Stato e Metadati utente
-  status        BookStatus @default(TO_READ)
-  rating        Float?     // Supporta mezzi voti (es. 7.5)
-  comment       String?    @db.Text
-  tags          String?    // CSV: "fantasy,storico"
-  formats       String?    // CSV: "cartaceo,kindle"
-  
+  status  BookStatus @default(TO_READ)
+  rating  Float?     // Supporta mezzi voti (es. 7.5)
+  comment String?    @db.Text
+  tags    String?    // CSV: "fantasy,storico"
+  formats String?    // CSV: "cartaceo,kindle"
+
   // Dati Google Books API
   googleId      String?
   title         String
@@ -78,25 +78,88 @@ model Book {
   language      String?
   pageCount     Int?
   coverUrl      String?
-  description   String?    @db.Text
-  
-  // Posizionamento UI
-  roomConfig    Json?      // Esempio: { "x": 10, "y": 20, "variant": "amber" }
-  
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  purchasedAt   DateTime?
-  startedAt     DateTime?
-  finishedAt    DateTime?
+  description   String? @db.Text
+
+  // Posizionamento UI (scaffale 3D)
+  roomConfig Json? // Esempio: { "x": 10, "y": 20, "variant": "amber" }
+
+  // Progresso lettura e serie
+  currentPage Int?
+  series      String?
+  seriesOrder Int?
+
+  // Date
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  purchasedAt DateTime?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  // Relazioni
+  quotes          Quote[]
+  loans           Loan[]
+  readingSessions ReadingSession[]
 
   @@index([userId])
   @@index([status])
 }
 
+// ── Citazioni salvate da un libro ─────────────────────────────────────────────
+model Quote {
+  id      String @id @default(cuid())
+  bookId  String
+  book    Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId  String
+
+  text    String  @db.Text
+  page    Int?
+  chapter String?
+
+  createdAt DateTime @default(now())
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+// ── Prestiti — traccia a chi hai prestato un libro ────────────────────────────
+model Loan {
+  id     String @id @default(cuid())
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId String
+
+  borrower   String    // Nome di chi ha preso il libro
+  loanedAt   DateTime  @default(now())
+  returnedAt DateTime? // null = non ancora restituito
+  note       String?
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+// ── Sessioni di lettura — log pagine/ore per sessione + note ──────────────────
+model ReadingSession {
+  id     String @id @default(cuid())
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId String
+
+  date      DateTime @default(now())
+  startPage Int?
+  endPage   Int?
+  pagesRead Int?     // calcolato o inserito manualmente
+  duration  Int?     // minuti
+  note      String?  @db.Text
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+// ── Suggerimenti community ────────────────────────────────────────────────────
 model Suggestion {
-  id          String             @id @default(cuid())
-  userId      String
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title       String
   description String             @db.Text
@@ -104,8 +167,8 @@ model Suggestion {
   status      SuggestionStatus   @default(PENDING)
   adminNote   String?            @db.Text
 
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
