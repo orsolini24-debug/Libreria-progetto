@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 import { Sparkles, Trophy, Share2 } from "lucide-react";
 import { getProactiveInsights, getReadingStreak } from "@/app/lib/ai-actions";
 
-export function AICompanion() {
-  const [insight, setInsight] = useState<string | null>(null);
+interface InsightData {
+  text: string;
+  suggestedBookId: string | null;
+}
+
+export function AICompanion({ onNavigateToBook }: { onNavigateToBook?: (id: string) => void }) {
+  const [insight, setInsight] = useState<InsightData | null>(null);
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -16,6 +21,7 @@ export function AICompanion() {
           getProactiveInsights(),
           getReadingStreak(),
         ]);
+        // insightRes è ora un oggetto { text, suggestedBookId }
         setInsight(insightRes);
         setStreak(streakRes);
       } catch (err) {
@@ -47,12 +53,17 @@ export function AICompanion() {
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400/80">Gemini Insight</span>
           </div>
           <p className="font-display text-base font-bold text-white/90 leading-relaxed mb-4">
-            {insight || "La tua libreria sta crescendo. Aggiungi nuove citazioni o sessioni di lettura per sbloccare analisi proattive!"}
+            {insight?.text || "La tua libreria sta crescendo. Aggiungi nuove citazioni o sessioni di lettura per sbloccare analisi proattive!"}
           </p>
           <div className="flex gap-2">
-            <button className="text-[9px] font-black uppercase tracking-tighter px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-indigo-500/20 hover:border-indigo-500/30 transition-all">
-              Segui consiglio ↗
-            </button>
+            {insight?.suggestedBookId && onNavigateToBook && (
+              <button 
+                onClick={() => onNavigateToBook(insight.suggestedBookId!)}
+                className="text-[9px] font-black uppercase tracking-tighter px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-indigo-500/20 hover:border-indigo-500/30 transition-all text-indigo-300"
+              >
+                Segui consiglio ↗
+              </button>
+            )}
             <button className="p-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white/80">
               <Share2 className="w-3 h-3" />
             </button>

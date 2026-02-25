@@ -195,7 +195,10 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
 
       {/* AI Proactive Insights & Streaks */}
-      <AICompanion />
+      <AICompanion onNavigateToBook={(bookId) => {
+        const target = initialBooks.find((b) => b.id === bookId);
+        if (target) setPanel({ type: "edit", book: target });
+      }} />
 
       {/* Stats bar — cliccabile */}
       <StatsBar books={initialBooks} onStatClick={(f) => setStatsModal(f)} />

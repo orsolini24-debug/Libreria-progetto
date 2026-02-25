@@ -18,31 +18,34 @@ export async function getProactiveInsights() {
         where: { userId },
         orderBy: { date: "desc" },
         take: 5,
-        include: { book: { select: { title: true, author: true } } }
+        include: { book: { select: { id: true, title: true, author: true } } }
       }),
       prisma.quote.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },
         take: 3,
-        include: { book: { select: { title: true } } }
+        include: { book: { select: { id: true, title: true } } }
       }),
       prisma.book.findMany({
         where: { userId, status: { in: ["READING", "READ"] } },
         orderBy: { updatedAt: "desc" },
         take: 10,
-        select: { title: true, author: true, tags: true, description: true, rating: true }
+        select: { id: true, title: true, author: true, tags: true, description: true, rating: true }
       })
     ]);
 
     if (topBooks.length === 0) return null;
 
     // 2. Prepariamo il prompt per Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: { responseMimeType: "application/json" }
+    });
     
     const context = {
-      sessions: recentSessions.map(s => `Libro: ${s.book.title}, Note: ${s.note || "Nessuna"}`),
-      quotes: recentQuotes.map(q => `Libro: ${q.book.title}, Citazione: "${q.text}"`),
-      library: topBooks.map(b => `${b.title} (${b.author}) - Tag: ${b.tags || "N/A"}`)
+      sessions: recentSessions.map(s => `ID:${s.bookId} | Libro: ${s.book.title}, Note: ${s.note || "Nessuna"}`),
+      quotes: recentQuotes.map(q => `ID:${q.bookId} | Libro: ${q.book.title}, Citazione: "${q.text}"`),
+      library: topBooks.map(b => `ID:${b.id} | ${b.title} (${b.author}) - Tag: ${b.tags || "N/A"}`)
     };
 
     const prompt = `
@@ -57,15 +60,13 @@ export async function getProactiveInsights() {
       REGOLE:
       1. Sii breve (massimo 2 frasi).
       2. Non fare domande generiche ("Cosa vuoi leggere oggi?"), proponi qualcosa di specifico basato sui pattern.
-      3. Se vedi molte citazioni su un tema, evidenzia la connessione.
-      4. Se un libro è in lettura da tempo senza sessioni recenti, incoraggia gentilmente a riprenderlo con un motivo (es. "Ti mancava poco per finire il capitolo X").
-      5. Usa un tono amichevole ma professionale.
-      6. Restituisci SOLO il testo del consiglio, senza prefissi come "Ecco il tuo consiglio".
+      3. Se suggerisci di riprendere o approfondire un libro, includi il suo ID specifico dai dati forniti.
+      4. Restituisci un JSON con questa struttura: { "text": "string", "suggestedBookId": "string|null" }
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    return JSON.parse(response.text());
   } catch (error) {
     console.error("[getProactiveInsights]", error);
     return null;
