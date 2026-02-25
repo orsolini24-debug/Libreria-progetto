@@ -88,7 +88,6 @@ export async function createBook(
     });
 
     revalidatePath("/dashboard");
-    revalidatePath("/room");
     return { success: "Libro aggiunto!" };
   } catch (e) {
     console.error("[createBook]", e);
@@ -145,6 +144,5 @@ export async function deleteBook(id: string): Promise<void> {
   const userId = await requireUserId();
   await prisma.book.deleteMany({ where: { id, userId } });
   revalidatePath("/dashboard");
-  revalidatePath("/room");
 }
 

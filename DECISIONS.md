@@ -20,5 +20,5 @@ This file is the supreme source of truth. If something conflicts with this file,
 - **Mitigations:** Full QA build before push; backup via git history.
 - **Affected canonical artefacts:** `schema.prisma`, `ARCHITECTURE.md`, `API_CONTRACTS.md`.
 - **Owner to implement:** Gemini.
-- **Evidence:** Commit [TBD after push].
+- **Evidence:** Commit `4ba70e1`.
 
