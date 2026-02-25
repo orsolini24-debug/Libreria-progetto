@@ -4,15 +4,27 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { BookStatus } from "@/app/generated/prisma/client";
+import { CreateBookSchema } from "./validation/schemas";
+import { mapZodError } from "./validation/errors";
 
-export type ActionState = { error?: string; success?: string } | null;
+export type ActionState =
+  | { error?: string; success?: string; fieldErrors?: Record<string, string[]> }
+  | null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function requireUserId(): Promise<string> {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Non autenticato");
+  if (!session?.user?.id) throw new Error("UNAUTHORIZED");
   return session.user.id;
+}
+
+/**
+ * Helper per leggere FormData con comportamenti coerenti.
+ * Nota: lo schema gestisce già "" -> null, quindi qui non “normalizziamo”.
+ */
+function formDataToObject(formData: FormData): Record<string, unknown> {
+  return Object.fromEntries(formData.entries());
 }
 
 const VALID_STATUSES = Object.values(BookStatus) as string[];
@@ -27,10 +39,9 @@ function parseIntOrNull(raw: FormDataEntryValue | null): number | null {
   return isNaN(n) ? null : n;
 }
 
-// FIX: scala 0.5–10 → Float invece di Int
 function parseFloatOrNull(raw: FormDataEntryValue | null): number | null {
   const n = parseFloat(raw as string);
-  return isNaN(n) ? null : Math.round(n * 2) / 2; // arrotonda al mezzo voto più vicino
+  return isNaN(n) ? null : Math.round(n * 2) / 2;
 }
 
 function str(raw: FormDataEntryValue | null): string | null {
@@ -46,44 +57,60 @@ function parseDateOrNull(raw: FormDataEntryValue | null): Date | null {
 }
 
 // ── createBook ────────────────────────────────────────────────────────────────
-// BUG FIX: rating, comment, tags e formats erano assenti dalla create → ora inclusi
+/**
+ * createBook (P0 secure-by-default)
+ */
 export async function createBook(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   let userId: string;
-  try { userId = await requireUserId(); }
-  catch { return { error: "Sessione scaduta. Effettua di nuovo il login." }; }
+  try {
+    userId = await requireUserId();
+  } catch {
+    return { error: "Sessione scaduta. Effettua di nuovo il login." };
+  }
 
-  const title = str(formData.get("title"));
-  if (!title) return { error: "Il titolo è obbligatorio." };
+  const raw = formDataToObject(formData);
+  const validated = CreateBookSchema.safeParse(raw);
+
+  if (!validated.success) {
+    const mapped = mapZodError(validated.error);
+    // mapped.ok è garantito false qui dato che validated.success è false
+    return {
+      error: !mapped.ok ? mapped.error.message : "Errore di validazione",
+      fieldErrors: !mapped.ok ? mapped.error.fieldErrors : undefined,
+    };
+  }
+
+  // Da qui validated.data è garantito
+  const data = validated.data;
 
   try {
     await prisma.book.create({
       data: {
         userId,
-        title,
-        author:        str(formData.get("author")),
-        status:        parseStatus(formData.get("status"), BookStatus.TO_READ),
-        googleId:      str(formData.get("googleId")),
-        isbn:          str(formData.get("isbn")),
-        publisher:     str(formData.get("publisher")),
-        publishedDate: str(formData.get("publishedDate")),
-        language:      str(formData.get("language")),
-        pageCount:     parseIntOrNull(formData.get("pageCount")),
-        coverUrl:      str(formData.get("coverUrl")),
-        description:   str(formData.get("description")),
-        // ← questi tre erano mancanti (bug principale)
-        rating:        parseFloatOrNull(formData.get("rating")),
-        comment:       str(formData.get("comment")),
-        tags:          str(formData.get("tags")),
-        formats:       str(formData.get("formats")),
-        purchasedAt:   parseDateOrNull(formData.get("purchasedAt")),
-        startedAt:     parseDateOrNull(formData.get("startedAt")),
-        finishedAt:    parseDateOrNull(formData.get("finishedAt")),
-        currentPage:   parseIntOrNull(formData.get("currentPage")),
-        series:        str(formData.get("series")),
-        seriesOrder:   parseIntOrNull(formData.get("seriesOrder")),
+        title: data.title,
+        author: data.author,
+        status: data.status,
+        googleId: data.googleId,
+        isbn: data.isbn,
+        publisher: data.publisher,
+        publishedDate: data.publishedDate,
+        language: data.language,
+        coverUrl: data.coverUrl,
+        description: data.description,
+        rating: data.rating,
+        comment: data.comment,
+        tags: data.tags,
+        formats: data.formats,
+        purchasedAt: data.purchasedAt,
+        startedAt: data.startedAt,
+        finishedAt: data.finishedAt,
+        currentPage: data.currentPage,
+        pageCount: data.pageCount,
+        series: data.series,
+        seriesOrder: data.seriesOrder,
       },
     });
 
@@ -109,11 +136,10 @@ export async function updateBook(
   if (!title) return { error: "Il titolo è obbligatorio." };
 
   try {
-    // [GEMINI-ARCH] - Motivo: Query singola atomica (filtro userId in where) - Fine ultimo: Riduzione latenza
     const result = await prisma.book.update({
       where: { id, userId },
       data: {
-        title, // Ora garantito come string (non null)
+        title,
         author:      str(formData.get("author")),
         status:      parseStatus(formData.get("status"), BookStatus.TO_READ),
         rating:      parseFloatOrNull(formData.get("rating")),
@@ -145,4 +171,3 @@ export async function deleteBook(id: string): Promise<void> {
   await prisma.book.deleteMany({ where: { id, userId } });
   revalidatePath("/dashboard");
 }
-
