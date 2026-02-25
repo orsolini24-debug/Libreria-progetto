@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { BookCard } from "./books/BookCard";
 import { SlidePanel } from "./SlidePanel";
@@ -134,9 +135,6 @@ function TopTenSection({
   );
 }
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-
-// ... (dentro DashboardClient) ...
 export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -198,11 +196,21 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
       {/* Stats bar — cliccabile */}
       <StatsBar books={initialBooks} onStatClick={(f) => setStatsModal(f)} />
 
+      {/* Year Wrapped Interattivo */}
+      <YearWrapped 
+        books={initialBooks} 
+        onStatClick={(filter, year) => {
+          if (year) {
+            // Se c'è un anno specifico, apriamo il modal filtrato
+            setStatsModal(`${filter}-${year}`);
+          } else {
+            updateFilters({ status: filter });
+          }
+        }} 
+      />
+
       {/* Reading challenge */}
       <ReadingChallenge books={initialBooks} />
-
-      {/* Year Wrapped */}
-      <YearWrapped books={initialBooks} />
 
       {/* Activity heatmap */}
       <ActivityHeatMap books={initialBooks} />

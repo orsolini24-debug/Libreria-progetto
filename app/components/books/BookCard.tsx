@@ -95,6 +95,17 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
         </div>
         <p className="text-[10px] mt-1.5 pl-3" style={{ color: "var(--fg-subtle)" }}>{STATUS_LABELS[book.status]}</p>
 
+        {/* Badge Formati */}
+        {formats.length > 0 && (
+          <div className="flex gap-1 mt-2 pl-3">
+            {formats.map(f => (
+              <span key={f} className="text-[10px] opacity-60" title={f}>
+                {FORMAT_ICONS[f] || f}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Progress bar — solo per libri in lettura con pagina corrente */}
         {book.status === "READING" && book.currentPage != null && book.pageCount && (
           <div className="mt-2 px-0.5">

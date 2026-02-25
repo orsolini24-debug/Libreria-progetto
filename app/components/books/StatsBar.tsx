@@ -45,7 +45,7 @@ export function StatsBar({ books, onStatClick }: Props) {
       ? [{ icon: "⭐", value: `${avgRating}/10`, label: "media voti",   filter: "READ" }]
       : []),
     ...(totalPages > 0
-      ? [{ icon: "📄", value: `~${totalPages.toLocaleString("it")}`, label: "pag. lette (anno)", filter: "year" }]
+      ? [{ icon: "📄", value: `~${totalPages.toLocaleString("it")}`, label: "pagine totali", filter: "READ" }]
       : []),
   ];
 

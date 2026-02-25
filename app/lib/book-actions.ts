@@ -58,13 +58,14 @@ export async function createBook(
   const data = validated.data;
 
   try {
-    // [GEMINI-ARCH] - Controllo duplicati prima della creazione
+    // [GEMINI-ARCH] - Controllo duplicati raffinato (Titolo + Autore + ISBN + Formati)
     const existing = await prisma.book.findFirst({
       where: {
         userId,
         title: data.title,
         author: data.author,
         isbn: data.isbn || undefined,
+        formats: data.formats || undefined, // Se il formato è diverso, non è un duplicato
       },
     });
 

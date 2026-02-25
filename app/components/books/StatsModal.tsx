@@ -35,7 +35,15 @@ export function StatsModal({ books, filter, onClose, onBookClick }: Props) {
   // Filtra i libri
   let filtered: Book[];
   let title: string;
-  let subtitle: string;
+
+  let targetStatus = filter;
+  let targetYear: number | null = null;
+
+  if (filter.includes("-")) {
+    const parts = filter.split("-");
+    targetStatus = parts[0];
+    targetYear = parseInt(parts[1], 10);
+  }
 
   if (filter === "year") {
     filtered = books.filter((b) => {
@@ -44,12 +52,19 @@ export function StatsModal({ books, filter, onClose, onBookClick }: Props) {
       return new Date(d).getFullYear() === YEAR;
     });
     title    = `Libri letti nel ${YEAR}`;
-    subtitle = `${filtered.length} libr${filtered.length === 1 ? "o" : "i"}`;
+  } else if (targetYear) {
+    filtered = books.filter((b) => {
+      if (b.status !== targetStatus) return false;
+      const d = b.finishedAt ?? b.updatedAt;
+      return new Date(d).getFullYear() === targetYear;
+    });
+    title = `Libri ${STATUS_LABELS[targetStatus] || targetStatus} nel ${targetYear}`;
   } else {
     filtered = books.filter((b) => b.status === filter);
     title    = STATUS_LABELS[filter] ?? filter;
-    subtitle = `${filtered.length} libr${filtered.length === 1 ? "o" : "i"}`;
   }
+  
+  const subtitle = `${filtered.length} libr${filtered.length === 1 ? "o" : "i"}`;
 
   // Statistiche aggregate per la vista "READ"
   const ratedBooks = filtered.filter((b) => b.rating != null && b.rating > 0);
