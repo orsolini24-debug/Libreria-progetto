@@ -10,7 +10,7 @@ import { createBook, createBooksBulk } from "@/app/lib/book-actions";
 import type { GoogleBookResult } from "@/app/lib/api/google-books";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import { BookStatus } from "@/app/generated/prisma/client";
-import { FormField, Input, Select } from "@/app/components/ui/FormField";
+import { FormField, Input, Select, Textarea } from "@/app/components/ui/FormField";
 import { StarRating } from "./StarRating";
 
 const BarcodeScanner = dynamic(
@@ -37,7 +37,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [state, formAction] = useActionState(createBook, null);
   
-  // Gestione selezione multipla
   const [selection, setSelection] = useState<GoogleBookResult[]>([]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GoogleBookResult[]>([]);
@@ -47,7 +46,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [formats, setFormats] = useState<string[]>([]);
   const [showScanner, setShowScanner] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
-  const [bulkResult, setBulkResult] = useState<{success: number, skipped: number} | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -104,19 +102,15 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         status: status as BookStatus,
         formats: formats.join(",")
       })));
-      setBulkResult(res);
       if (res.success > 0) {
-        setTimeout(() => {
-          onSuccess?.();
-          router.refresh();
-        }, 2000);
+        onSuccess?.();
+        router.refresh();
       }
     } finally {
       setBulkLoading(false);
     }
   }
 
-  // Cerca serie basandosi sul primo autore o sul titolo del primo libro selezionato
   async function expandSeries() {
     if (selection.length === 0) return;
     const base = selection[0];
@@ -125,15 +119,19 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
     handleQueryChange(seriesQuery);
   }
 
+  const selected = selection[0];
+  const key = selected?.googleId ?? "manual";
+  const autoTags = selected?.categories?.slice(0, 5).join(", ") ?? "";
+
   return (
     <>
     {showScanner && <BarcodeScanner onDetected={(i) => { setQuery(i); handleQueryChange(i); setShowScanner(false); }} onClose={() => setShowScanner(false)} />}
     
     <div className="flex flex-col gap-6 pb-8">
-      {/* Search & Selector */}
+      {/* Ricerca */}
       <div ref={containerRef} className="relative">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-60">Ricerca Digitale</label>
+          <label className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-60">Cerca Libro o Serie</label>
           <div className="flex gap-3">
             <button type="button" onClick={() => setShowScanner(true)} className="text-[10px] font-bold text-amber-500 uppercase">Barcode</button>
             {selection.length > 0 && (
@@ -144,117 +142,101 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         <Input 
           value={query} 
           onChange={(e) => handleQueryChange(e.target.value)} 
-          placeholder="Cerca un libro o una serie..."
+          placeholder="Titolo, autore o serie..."
           autoComplete="off"
         />
         
         {showResults && (
-          <ul className="absolute z-50 w-full mt-2 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden border"
-            style={{ 
-              background: "var(--bg-elevated)", 
-              borderColor: "color-mix(in srgb, var(--fg-subtle) 20%, transparent)" 
-            }}>
+          <ul className="absolute z-50 w-full mt-2 rounded-2xl shadow-2xl overflow-hidden border"
+            style={{ background: "var(--bg-elevated)", borderColor: "var(--bg-input)" }}>
             {results.map((book) => (
               <li key={book.googleId} onClick={() => addToSelection(book)}
-                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 transition-all border-b last:border-0"
-                style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 10%, transparent)" }}>
+                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 transition-all border-b last:border-0 border-white/5">
                 {book.coverUrl ? (
-                  <Image src={book.coverUrl} alt="" width={32} height={44} unoptimized className="rounded shadow-md" />
+                  <Image src={book.coverUrl} alt="" width={32} height={44} unoptimized className="rounded" />
                 ) : (
-                  <div className="w-8 h-11 rounded flex items-center justify-center text-[8px] opacity-30" style={{ background: "var(--bg-input)" }}>NO IMG</div>
+                  <div className="w-8 h-11 bg-white/5 rounded" />
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold truncate leading-tight" style={{ color: "var(--fg-primary)" }}>{book.title}</p>
-                    {book.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm">IT</span>}
-                  </div>
-                  <p className="text-xs opacity-50 truncate" style={{ color: "var(--fg-muted)" }}>{book.author}</p>
+                  <p className="text-sm font-bold truncate leading-tight">{book.title}</p>
+                  <p className="text-xs opacity-50 truncate">{book.author}</p>
                 </div>
+                {book.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm">IT</span>}
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      {/* Selection List */}
-      {selection.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase opacity-40 tracking-widest">Libri da aggiungere ({selection.length})</p>
-          <div className="flex flex-col gap-2 max-h-60 overflow-y-auto scrollbar-hide">
+      {/* Lista Selezione (per bulk) */}
+      {selection.length > 1 && (
+        <div className="space-y-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20">
+          <p className="text-[10px] font-bold uppercase text-blue-400 tracking-widest text-center">Modalità Serie ({selection.length} libri)</p>
+          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto scrollbar-hide">
             {selection.map((book) => (
-              <div key={book.googleId} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 group">
-                {book.coverUrl && <Image src={book.coverUrl} alt="" width={24} height={34} unoptimized className="rounded" />}
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold truncate">{book.title}</p>
-                  <p className="text-[10px] opacity-40 truncate">{book.author}</p>
-                </div>
-                <button onClick={() => removeFromSelection(book.googleId)} className="opacity-0 group-hover:opacity-100 p-2 text-red-400">✕</button>
+              <div key={book.googleId} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                <p className="text-xs font-bold truncate flex-1 pr-2">{book.title}</p>
+                <button onClick={() => removeFromSelection(book.googleId)} className="text-red-400 text-xs">✕</button>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Bulk Feedback */}
-      {bulkResult && (
-        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 animate-fade-in">
-          Operazione completata: {bulkResult.success} aggiunti, {bulkResult.skipped} saltati.
-        </div>
-      )}
-
-      {/* Main Action or Bulk Action */}
-      {selection.length > 1 ? (
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Stato Serie">
-              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-                {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Select>
-            </FormField>
-            <FormField label="Formato">
-              <div className="flex flex-wrap gap-1">
-                {FORMAT_OPTIONS.map(({ value, label }) => (
-                  <button key={value} type="button" onClick={() => setFormats(prev => prev.includes(value) ? prev.filter(f => f !== value) : [...prev, value])}
-                    className={`text-[8px] px-2 py-1 rounded-full border font-black uppercase transition-all
-                      ${formats.includes(value) ? 'bg-amber-500 text-black border-amber-500' : 'opacity-40 border-white/10'}`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </FormField>
           </div>
           <button
             onClick={handleBulkAdd}
             disabled={bulkLoading}
-            className="w-full py-3 rounded-xl bg-white text-black text-sm font-bold uppercase tracking-widest shadow-xl active:scale-[0.98] disabled:opacity-20"
+            className="w-full py-2.5 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98] disabled:opacity-20"
           >
-            {bulkLoading ? "Caricamento Serie..." : `Aggiungi Serie (${selection.length} libri)`}
+            {bulkLoading ? "Aggiunta in corso..." : "Conferma Aggiunta Serie"}
           </button>
         </div>
-      ) : selection.length === 1 ? (
+      )}
+
+      {/* Form Integrale (Singolo Libro o Primo della serie) */}
+      {selection.length > 0 && (
         <form action={formAction} className="flex flex-col gap-5">
-          <input type="hidden" name="googleId" value={selection[0].googleId} />
-          <input type="hidden" name="coverUrl" value={selection[0].coverUrl} />
-          <input type="hidden" name="isbn" value={selection[0].isbn} />
-          <input type="hidden" name="title" value={selection[0].title} />
-          <input type="hidden" name="author" value={selection[0].author} />
-          <input type="hidden" name="publisher" value={selection[0].publisher} />
-          <input type="hidden" name="publishedDate" value={selection[0].publishedDate} />
-          <input type="hidden" name="language" value={selection[0].language} />
-          <input type="hidden" name="pageCount" value={selection[0].pageCount} />
-          <input type="hidden" name="description" value={selection[0].description} />
-          <input type="hidden" name="formats" value={formats.join(",")} />
+          {/* Hidden Fields per Google Metadata */}
+          <input type="hidden" name="googleId"      value={selected.googleId} />
+          <input type="hidden" name="coverUrl"      value={selected.coverUrl} />
+          <input type="hidden" name="isbn"          value={selected.isbn} />
+          <input type="hidden" name="publisher"     value={selected.publisher} />
+          <input type="hidden" name="publishedDate" value={selected.publishedDate} />
+          <input type="hidden" name="language"      value={selected.language} />
+          <input type="hidden" name="pageCount"     value={selected.pageCount} />
+          <input type="hidden" name="description"   value={selected.description} />
+          <input type="hidden" name="formats"       value={formats.join(",")} />
+
+          <div className="flex gap-4 items-center p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+            {selected.coverUrl && <Image src={selected.coverUrl} alt="" width={40} height={56} unoptimized className="rounded shadow-md" />}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase opacity-40">Selezionato</p>
+              <p className="text-sm font-bold text-amber-500 truncate">{selected.title}</p>
+            </div>
+            {selection.length === 1 && (
+              <button type="button" onClick={() => setSelection([])} className="p-2 opacity-40 hover:opacity-100 transition-opacity">✕</button>
+            )}
+          </div>
+
+          <FormField label="Titolo *" error={state?.fieldErrors?.title}>
+            <Input name="title" key={key + "-t"} defaultValue={selected.title} error={state?.fieldErrors?.title} />
+          </FormField>
+
+          <FormField label="Autore *" error={state?.fieldErrors?.author}>
+            <Input name="author" key={key + "-a"} defaultValue={selected.author} error={state?.fieldErrors?.author} />
+          </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Stato">
+            <FormField label="Stato" error={state?.fieldErrors?.status}>
               <Select name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
                 {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </Select>
             </FormField>
-            <FormField label="Voto">
+            <FormField label="Voto" error={state?.fieldErrors?.rating}>
               <div className="pt-1"><StarRating name="rating" defaultValue={0} size="md" /></div>
             </FormField>
           </div>
+
+          <FormField label="Tag" error={state?.fieldErrors?.tags}>
+            <Input name="tags" key={key + "-tags"} defaultValue={autoTags} placeholder="Generi, temi..." />
+          </FormField>
 
           <FormField label="Formato">
             <div className="flex flex-wrap gap-2">
@@ -268,6 +250,21 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
             </div>
           </FormField>
 
+          <FormField label="Note" error={state?.fieldErrors?.comment}>
+            <Textarea name="comment" placeholder="Impressioni iniziali..." error={state?.fieldErrors?.comment} />
+          </FormField>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Data acquisto" error={state?.fieldErrors?.purchasedAt}>
+              <Input name="purchasedAt" type="date" error={state?.fieldErrors?.purchasedAt} />
+            </FormField>
+            {status === "READ" && (
+              <FormField label="Data fine" error={state?.fieldErrors?.finishedAt}>
+                <Input name="finishedAt" type="date" error={state?.fieldErrors?.finishedAt} />
+              </FormField>
+            )}
+          </div>
+
           {state?.error && (
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold animate-shake">
               {state.error}
@@ -276,10 +273,12 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           
           <SubmitButton label="Aggiungi Libro" />
         </form>
-      ) : (
-        <p className="text-xs text-center opacity-30 italic py-8 border-2 border-dashed border-white/5 rounded-2xl font-reading">
-          Cerca un libro per iniziare
-        </p>
+      )}
+
+      {selection.length === 0 && (
+        <div className="py-12 border-2 border-dashed border-white/5 rounded-3xl flex flex-col items-center justify-center opacity-30">
+          <p className="text-sm font-reading italic">Cerca un titolo per iniziare</p>
+        </div>
       )}
     </div>
     </>
