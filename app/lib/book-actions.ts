@@ -148,15 +148,3 @@ export async function deleteBook(id: string): Promise<void> {
   revalidatePath("/room");
 }
 
-// ── updateRoomPosition ────────────────────────────────────────────────────────
-export async function updateRoomPosition(
-  id: string, x: number, y: number, variant?: string
-): Promise<void> {
-  const userId = await requireUserId();
-  // [GEMINI-ARCH] - Motivo: Query atomica (filtro userId in where) - Fine ultimo: Performance UI 3D
-  await prisma.book.update({
-    where: { id, userId },
-    data: { roomConfig: { x, y, ...(variant ? { variant } : {}) } },
-  });
-  revalidatePath("/room");
-}

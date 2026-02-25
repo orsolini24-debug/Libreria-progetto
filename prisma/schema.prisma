@@ -86,9 +86,6 @@ model Book {
   coverUrl      String?
   description   String? @db.Text
 
-  // Posizionamento UI (scaffale 3D)
-  roomConfig Json? // Esempio: { "x": 10, "y": 20, "variant": "amber" }
-
   // Progresso lettura e serie
   currentPage Int?
   series      String?
