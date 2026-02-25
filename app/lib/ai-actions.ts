@@ -60,13 +60,24 @@ export async function getProactiveInsights() {
       REGOLE:
       1. Sii breve (massimo 2 frasi).
       2. Non fare domande generiche ("Cosa vuoi leggere oggi?"), proponi qualcosa di specifico basato sui pattern.
-      3. Se suggerisci di riprendere o approfondire un libro, includi il suo ID specifico dai dati forniti.
-      4. Restituisci un JSON con questa struttura: { "text": "string", "suggestedBookId": "string|null" }
+      3. Se suggerisci di riprendere o approfondire un libro, includi il suo ID specifico dai dati forniti nel campo suggestedBookId.
+      4. Restituisci UNICAMENTE un oggetto JSON con questa struttura: { "text": "testo del consiglio", "suggestedBookId": "ID_DEL_LIBRO_O_NULL" }
+      5. NON includere testo prima o dopo il JSON.
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return JSON.parse(response.text());
+    const text = response.text().trim();
+    
+    try {
+      // Estrai JSON se l'AI include markdown code blocks
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : text;
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error("AI JSON Parse Error", e);
+      return { text: text.slice(0, 100), suggestedBookId: null };
+    }
   } catch (error) {
     console.error("[getProactiveInsights]", error);
     return null;

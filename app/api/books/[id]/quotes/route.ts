@@ -17,7 +17,7 @@ export async function GET(
   const quotes = await prisma.quote.findMany({
     where: { bookId, userId: session.user.id },
     orderBy: { createdAt: "asc" },
-    select: { id: true, text: true, page: true, chapter: true, createdAt: true },
+    select: { id: true, text: true, page: true, chapter: true, createdAt: true, type: true },
   });
 
   return NextResponse.json(quotes);
