@@ -138,6 +138,23 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   const [query,       setQuery]   = useState("");
   const [statusFilter, setStatus] = useState("");
   const [celebrate,  setCelebrate] = useState(false);
+  const [exporting,  setExporting] = useState(false);
+
+  async function handleExport(format: "csv" | "json") {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/export?format=${format}`);
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `libreria-${new Date().toISOString().slice(0, 10)}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   function handleCelebrate() {
     setCelebrate(true);
@@ -256,6 +273,37 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
             );
           })}
         </div>
+        {/* Export dropdown */}
+        <div className="relative group/export">
+          <button
+            disabled={exporting}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border
+              transition-all duration-150 disabled:opacity-50"
+            style={{
+              background: "var(--bg-card)",
+              color: "var(--fg-muted)",
+              borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
+            }}
+          >
+            {exporting ? "…" : "↓"} Esporta
+          </button>
+          <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover/export:flex flex-col
+            min-w-[120px] rounded-xl overflow-hidden shadow-xl border"
+            style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)" }}
+          >
+            {(["csv", "json"] as const).map((fmt) => (
+              <button
+                key={fmt}
+                onClick={() => handleExport(fmt)}
+                className="px-4 py-2.5 text-sm text-left hover:bg-white/5 transition-colors"
+                style={{ color: "var(--fg-primary)" }}
+              >
+                .{fmt.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button
           onClick={() => setPanel({ type: "add" })}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm
