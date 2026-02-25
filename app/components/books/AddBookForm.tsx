@@ -37,7 +37,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [state, formAction] = useActionState(createBook, null);
   
-  // Stati UI
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GoogleBookResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -48,7 +47,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [bulkSelection, setBulkSelection] = useState<GoogleBookResult[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  // Dati libro corrente (auto-compilati dalla ricerca o manuali)
   const [currentBook, setCurrentBook] = useState<Partial<GoogleBookResult>>({
     title: "", author: "", googleId: "", isbn: "", publisher: "", publishedDate: "", language: "", pageCount: 0, coverUrl: "", description: "", categories: []
   });
@@ -111,19 +109,14 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
     
     <div className="flex flex-col gap-8 pb-12 animate-fade-in">
       
-      {/* 1. Strumento di Ricerca / ISBN */}
+      {/* 1. Ricerca */}
       <div ref={containerRef} className="relative p-6 rounded-[2rem] bg-white/5 border border-white/5 shadow-2xl">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Inserimento Rapido</p>
           <button type="button" onClick={() => setShowScanner(true)} className="text-[10px] font-bold text-amber-500 uppercase border-b border-amber-500/20">Usa Scanner Barcode</button>
         </div>
         <div className="relative">
-          <Input 
-            value={query} 
-            onChange={(e) => handleSearch(e.target.value)} 
-            placeholder="Cerca titolo o incolla ISBN..." 
-            className="!rounded-2xl"
-          />
+          <Input value={query} onChange={(e) => handleSearch(e.target.value)} placeholder="Cerca titolo o incolla ISBN..." className="!rounded-2xl" />
           {searching && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold opacity-30 animate-pulse uppercase">Ricerca...</div>}
         </div>
 
@@ -131,15 +124,14 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           <ul className="absolute z-50 w-[calc(100%-3rem)] mt-2 rounded-2xl shadow-2xl border overflow-hidden"
             style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--fg-subtle) 15%, transparent)" }}>
             {results.map((b) => (
-              <li key={b.googleId} onClick={() => selectBook(b)} className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 border-b last:border-0 transition-all"
-                style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 8%, transparent)" }}>
+              <li key={b.googleId} onClick={() => selectBook(b)} className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/5 border-b last:border-0 border-white/5 transition-all">
                 {b.coverUrl ? <Image src={b.coverUrl} alt="" width={32} height={44} unoptimized className="rounded shadow-sm" /> : <div className="w-8 h-11 bg-white/10 rounded" />}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold truncate leading-tight" style={{ color: "var(--fg-primary)" }}>{b.title}</p>
                     {b.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm flex-shrink-0">IT</span>}
                   </div>
-                  <p className="text-xs opacity-50 truncate" style={{ color: "var(--fg-muted)" }}>{b.author}</p>
+                  <p className="text-xs opacity-50 truncate">{b.author}</p>
                 </div>
                 <button type="button" onClick={(e) => { e.stopPropagation(); setBulkSelection(p => [...p, b]); setShowResults(false); }} className="text-[10px] font-black text-blue-400 uppercase p-2">+</button>
               </li>
@@ -148,7 +140,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         )}
       </div>
 
-      {/* 2. Modalità Serie (se attiva) */}
+      {/* 2. Selezione Serie */}
       {bulkSelection.length > 0 && (
         <div className="p-6 rounded-[2rem] bg-blue-500/5 border border-blue-500/20 shadow-xl space-y-4">
           <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest text-center">Selezione Multipla ({bulkSelection.length})</p>
@@ -168,7 +160,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
       )}
 
-      {/* 3. Form Integrale (Sempre Visibile) */}
+      {/* 3. Form Integrale */}
       <form action={formAction} className="flex flex-col gap-8">
         <input type="hidden" name="googleId"      value={currentBook.googleId ?? ""} />
         <input type="hidden" name="coverUrl"      value={currentBook.coverUrl ?? ""} />
@@ -180,7 +172,6 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         <input type="hidden" name="description"   value={currentBook.description ?? ""} />
         <input type="hidden" name="formats"       value={formats.join(",")} />
 
-        {/* Anteprima del libro corrente */}
         <div className="flex gap-6 items-center p-6 rounded-[2rem] border border-amber-500/10 shadow-inner bg-white/[0.02]">
           {currentBook.coverUrl ? (
             <Image src={currentBook.coverUrl} alt="" width={50} height={70} unoptimized className="rounded-lg shadow-2xl" />
@@ -195,28 +186,29 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            <FormField label="Titolo del libro *" error={state?.fieldErrors?.title}>
-              <Input name="title" defaultValue={currentBook.title} placeholder="..." error={state?.fieldErrors?.title} />
-            </FormField>
-            <FormField label="Autore *" error={state?.fieldErrors?.author}>
-              <Input name="author" defaultValue={currentBook.author} placeholder="..." error={state?.fieldErrors?.author} />
-            </FormField>
-          </div>
+          <FormField label="Titolo del libro *" error={state?.fieldErrors?.title}>
+            <Input name="title" defaultValue={currentBook.title} placeholder="..." error={state?.fieldErrors?.title} />
+          </FormField>
+          <FormField label="Autore *" error={state?.fieldErrors?.author}>
+            <Input name="author" defaultValue={currentBook.author} placeholder="..." error={state?.fieldErrors?.author} />
+          </FormField>
 
-          <div className="grid grid-cols-2 gap-6 items-end">
-            <FormField label="Stato">
-              <Select name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Select>
-            </FormField>
-            <FormField label="Valutazione Personale">
-              <div className="pb-1"><StarRating name="rating" defaultValue={0} size="md" /></div>
-            </FormField>
-          </div>
+          {/* RIGA STATO */}
+          <FormField label="Stato della lettura" error={state?.fieldErrors?.status}>
+            <Select name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+              {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </Select>
+          </FormField>
 
-          <FormField label="Tag / Categorie">
-            <Input name="tags" defaultValue={currentBook.categories?.join(", ")} placeholder="Es. fantasy, classico..." />
+          {/* RIGA VALUTAZIONE (SOTTO STATO) */}
+          <FormField label="Valutazione Personale (Stelle)" error={state?.fieldErrors?.rating}>
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+              <StarRating name="rating" defaultValue={0} size="md" />
+            </div>
+          </FormField>
+
+          <FormField label="Tag / Categorie" error={state?.fieldErrors?.tags}>
+            <Input name="tags" defaultValue={currentBook.categories?.join(", ")} placeholder="Es. narrativa, storico..." />
           </FormField>
 
           <FormField label="Formato Disponibile">
