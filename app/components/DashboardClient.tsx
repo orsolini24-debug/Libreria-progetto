@@ -376,6 +376,10 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
             book={panel.book}
             onClose={closePanel}
             onCelebrate={handleCelebrate}
+            onNavigateToBook={(bookId) => {
+              const target = initialBooks.find((b) => b.id === bookId);
+              if (target) setPanel({ type: "edit", book: target });
+            }}
           />
         )}
       </SlidePanel>

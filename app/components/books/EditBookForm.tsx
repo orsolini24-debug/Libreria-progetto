@@ -10,6 +10,7 @@ import { StarRating } from "./StarRating";
 import { QuoteSection }          from "./QuoteSection";
 import { LoanSection }           from "./LoanSection";
 import { ReadingSessionSection } from "./ReadingSessionSection";
+import { SeriesPanel }           from "./SeriesPanel";
 import { STATUS_OPTIONS, FORMAT_OPTIONS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
@@ -116,13 +117,16 @@ export function EditBookForm({
   book,
   onClose,
   onCelebrate,
+  onNavigateToBook,
 }: {
   book: Book;
   onClose: () => void;
   onCelebrate?: () => void;
+  onNavigateToBook?: (bookId: string) => void;
 }) {
   const router = useRouter();
   const [status,     setStatus]     = useState<string>(book.status);
+  const [series,     setSeries]     = useState<string>(book.series ?? "");
   const [finishedAt, setFinishedAt] = useState<string>(
     book.finishedAt ? new Date(book.finishedAt).toISOString().slice(0, 10) : ""
   );
@@ -314,7 +318,8 @@ export function EditBookForm({
             <input
               name="series"
               type="text"
-              defaultValue={book.series ?? ""}
+              value={series}
+              onChange={(e) => setSeries(e.target.value)}
               placeholder="Es. Il Signore degli Anelli"
               className={fieldClass}
               style={fieldStyle}
@@ -333,6 +338,15 @@ export function EditBookForm({
             />
           </div>
         </div>
+
+        {/* [GEMINI-ARCH] - Handover completato da Claude: Cablatura SeriesPanel */}
+        {series && onNavigateToBook && (
+          <SeriesPanel
+            seriesName={series}
+            currentBookId={book.id}
+            onNavigate={onNavigateToBook}
+          />
+        )}
 
         {/* Tag */}
         <div>
