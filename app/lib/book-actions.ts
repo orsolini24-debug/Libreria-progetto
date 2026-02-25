@@ -106,16 +106,14 @@ export async function updateBook(
   try { userId = await requireUserId(); }
   catch { return { error: "Sessione scaduta." }; }
 
-  const existing = await prisma.book.findFirst({ where: { id, userId } });
-  if (!existing) return { error: "Libro non trovato." };
-
   try {
-    await prisma.book.update({
-      where: { id },
+    // [GEMINI-ARCH] - Motivo: Query singola atomica (filtro userId in where) - Fine ultimo: Riduzione latenza
+    const result = await prisma.book.update({
+      where: { id, userId },
       data: {
-        title:       str(formData.get("title"))  ?? existing.title,
+        title:       str(formData.get("title")),
         author:      str(formData.get("author")),
-        status:      parseStatus(formData.get("status"), existing.status),
+        status:      parseStatus(formData.get("status"), BookStatus.TO_READ), // fallback sicuro
         rating:      parseFloatOrNull(formData.get("rating")),
         comment:     str(formData.get("comment")),
         tags:        str(formData.get("tags")),
@@ -129,9 +127,12 @@ export async function updateBook(
       },
     });
 
+    if (!result) return { error: "Libro non trovato o non autorizzato." };
+
     revalidatePath("/dashboard");
     return { success: "Libro aggiornato!" };
-  } catch {
+  } catch (e) {
+    console.error("[updateBook]", e);
     return { error: "Errore durante l'aggiornamento." };
   }
 }
@@ -149,10 +150,9 @@ export async function updateRoomPosition(
   id: string, x: number, y: number, variant?: string
 ): Promise<void> {
   const userId = await requireUserId();
-  const book = await prisma.book.findFirst({ where: { id, userId } });
-  if (!book) throw new Error("Libro non trovato.");
+  // [GEMINI-ARCH] - Motivo: Query atomica (filtro userId in where) - Fine ultimo: Performance UI 3D
   await prisma.book.update({
-    where: { id },
+    where: { id, userId },
     data: { roomConfig: { x, y, ...(variant ? { variant } : {}) } },
   });
   revalidatePath("/room");

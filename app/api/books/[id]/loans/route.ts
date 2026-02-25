@@ -13,11 +13,7 @@ export async function GET(
 
   const { id: bookId } = await params;
 
-  const book = await prisma.book.findFirst({
-    where: { id: bookId, userId: session.user.id },
-  });
-  if (!book) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
-
+  // [GEMINI-ARCH] - Motivo: Consolidamento query - Fine ultimo: Efficienza DB
   const loans = await prisma.loan.findMany({
     where: { bookId, userId: session.user.id },
     orderBy: { loanedAt: "desc" },

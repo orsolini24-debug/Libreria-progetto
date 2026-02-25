@@ -60,6 +60,17 @@ In qualità di Principal Architect, propongo le seguenti evoluzioni per portare 
 
 ---
 
+### ✅ OTTIMIZZAZIONE PERFORMANCE DB (GEMINI)
+**Data:** 25 Febbraio 2026
+**Attività:** Risoluzione anti-pattern N+1 e riduzione roundtrip DB.
+
+1.  **Consolidamento Query API:** Nelle rotte `/api/books/[id]/(sessions|loans|quotes)`, è stata rimossa la query `findFirst` preliminare. Il controllo di proprietà (`userId`) è ora integrato direttamente nella clausola `where` della `findMany` principale.
+2.  **Server Actions Atomiche:** In `book-actions.ts`, le funzioni `updateBook` e `updateRoomPosition` sono state rese atomiche. Il controllo di autorizzazione avviene ora nello stesso statement `prisma.book.update({ where: { id, userId } })`, dimezzando il carico sul database serverless (Neon).
+3.  **Tag di Audit:** Ogni modifica è marcata con `[GEMINI-ARCH]`.
+4.  **Branch di Lavoro:** `gemini-refactor-prisma-n1`.
+
+---
+
 ### 🛡️ Protocollo di Sicurezza Attivo (GEMINI-ARCH)
 Come da istruzioni, da questo momento in poi:
 *   Nessuna modifica verrà apportata a file critici senza l'apertura di un branch `gemini-refactor-<timestamp>`.
