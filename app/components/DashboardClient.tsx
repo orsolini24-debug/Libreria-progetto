@@ -12,6 +12,7 @@ import { YearWrapped } from "./books/YearWrapped";
 import { ActivityHeatMap } from "./books/ActivityHeatMap";
 import { ConfettiCelebration } from "./ConfettiCelebration";
 import { STATUS_LABELS } from "@/app/lib/constants";
+import { StatsModal } from "./books/StatsModal";
 import type { Book } from "@/app/generated/prisma/client";
 
 // Colori di stato (semantici — invarianti rispetto al tema)
@@ -139,6 +140,7 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   const [statusFilter, setStatus] = useState("");
   const [celebrate,  setCelebrate] = useState(false);
   const [exporting,  setExporting] = useState(false);
+  const [statsModal, setStatsModal] = useState<string | null>(null);
 
   async function handleExport(format: "csv" | "json") {
     setExporting(true);
@@ -190,11 +192,24 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
     <>
       <ConfettiCelebration show={celebrate} />
 
+      {/* Modal statistiche */}
+      {statsModal && (
+        <StatsModal
+          books={initialBooks}
+          filter={statsModal}
+          onClose={() => setStatsModal(null)}
+          onBookClick={(b) => {
+            setStatsModal(null);
+            setPanel({ type: "edit", book: b });
+          }}
+        />
+      )}
+
       {/* Top 10 */}
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
 
-      {/* Stats bar */}
-      <StatsBar books={initialBooks} />
+      {/* Stats bar — cliccabile */}
+      <StatsBar books={initialBooks} onStatClick={(f) => setStatsModal(f)} />
 
       {/* Reading challenge */}
       <ReadingChallenge books={initialBooks} />

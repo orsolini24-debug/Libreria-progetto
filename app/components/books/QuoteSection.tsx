@@ -36,7 +36,7 @@ function AddButton() {
 }
 
 export function QuoteSection({ bookId }: { bookId: string }) {
-  const [open,    setOpen]    = useState(false);
+  const [open,    setOpen]    = useState(true);
   const [quotes,  setQuotes]  = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
 

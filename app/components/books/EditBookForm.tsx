@@ -122,7 +122,10 @@ export function EditBookForm({
   onCelebrate?: () => void;
 }) {
   const router = useRouter();
-  const [status,  setStatus]  = useState<string>(book.status);
+  const [status,     setStatus]     = useState<string>(book.status);
+  const [finishedAt, setFinishedAt] = useState<string>(
+    book.finishedAt ? new Date(book.finishedAt).toISOString().slice(0, 10) : ""
+  );
   const [formats, setFormats] = useState<string[]>(
     book.formats ? book.formats.split(",").map((f) => f.trim()).filter(Boolean) : []
   );
@@ -202,7 +205,14 @@ export function EditBookForm({
           <select
             name="status"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setStatus(next);
+              // Auto-imposta data fine a oggi se si passa a READ e non è già impostata
+              if (next === "READ" && !finishedAt) {
+                setFinishedAt(new Date().toISOString().slice(0, 10));
+              }
+            }}
             className={fieldClass}
             style={fieldStyle}
           >
@@ -370,14 +380,23 @@ export function EditBookForm({
           )}
           {status === "READ" && (
             <div>
-              <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>Fine lettura</label>
+              <label className="block text-xs font-semibold uppercase mb-2" style={labelStyle}>
+                Fine lettura *
+              </label>
               <input
                 name="finishedAt"
                 type="date"
-                defaultValue={book.finishedAt ? new Date(book.finishedAt).toISOString().slice(0, 10) : ""}
+                required
+                value={finishedAt}
+                onChange={(e) => setFinishedAt(e.target.value)}
                 className={fieldClass}
-                style={fieldStyle}
+                style={finishedAt ? fieldStyle : { ...fieldStyle, borderColor: "color-mix(in srgb,#f59e0b 60%,transparent)" }}
               />
+              {!finishedAt && (
+                <p className="text-[10px] mt-1" style={{ color: "#f59e0b" }}>
+                  Inserisci la data in cui hai finito il libro.
+                </p>
+              )}
             </div>
           )}
         </div>

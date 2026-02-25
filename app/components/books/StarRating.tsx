@@ -34,7 +34,7 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
         if (readOnly) {
           return (
             <span key={star} className="relative inline-block" style={{ width: px, height: px, fontSize: px }}>
-              <span style={{ color: "var(--fg-subtle)", userSelect: "none" }}>★</span>
+              <span style={{ color: "#c4b89a", userSelect: "none" }}>★</span>
               {fill > 0 && (
                 <span
                   className="absolute inset-0 overflow-hidden"
@@ -60,7 +60,7 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
             onMouseLeave={() => setHover(0)}
           >
             {/* Stella base (vuota) */}
-            <span style={{ color: "var(--fg-subtle)", userSelect: "none", transition: "color 120ms ease" }}>★</span>
+            <span style={{ color: "#c4b89a", userSelect: "none", transition: "color 120ms ease" }}>★</span>
 
             {/* Overlay colorato */}
             {fill > 0 && (
