@@ -9,7 +9,7 @@ interface StarRatingProps {
   size?: "sm" | "md" | "lg";
 }
 
-const STAR_SIZES = { sm: 16, md: 22, lg: 28 };
+const STAR_SIZES = { sm: 14, md: 20, lg: 26 };
 
 export function StarRating({ name, defaultValue = 0, readOnly = false, size = "md" }: StarRatingProps) {
   const [value, setValue] = useState<number>(defaultValue ?? 0);
@@ -25,88 +25,61 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
   }
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1">
       <input type="hidden" name={name} value={value > 0 ? value : ""} />
 
-      {Array.from({ length: 10 }, (_, i) => i + 1).map((star) => {
-        const fill = fillPercent(star);
+      <div className="flex items-center gap-0.5">
+        {Array.from({ length: 10 }, (_, i) => i + 1).map((star) => {
+          const fill = fillPercent(star);
 
-        if (readOnly) {
+          if (readOnly) {
+            return (
+              <span key={star} className="relative inline-block" style={{ width: px, height: px, fontSize: px }}>
+                <span style={{ color: "color-mix(in srgb, var(--accent) 20%, transparent)", userSelect: "none" }}>★</span>
+                {fill > 0 && (
+                  <span
+                    className="absolute inset-0 overflow-hidden"
+                    style={{ width: `${fill}%`, color: "var(--accent)", userSelect: "none" }}
+                  >
+                    ★
+                  </span>
+                )}
+              </span>
+            );
+          }
+
           return (
-            <span key={star} className="relative inline-block" style={{ width: px, height: px, fontSize: px }}>
-              <span style={{ color: "#c4b89a", userSelect: "none" }}>★</span>
+            <span
+              key={star}
+              className="relative inline-block cursor-pointer transition-all duration-150"
+              style={{
+                width: px,
+                height: px,
+                fontSize: px,
+                transform: hover === star || hover === star - 0.5 ? "scale(1.2)" : "scale(1)",
+              }}
+              onMouseLeave={() => setHover(0)}
+            >
+              <span style={{ color: "rgba(255,255,255,0.1)", userSelect: "none" }}>★</span>
               {fill > 0 && (
                 <span
-                  className="absolute inset-0 overflow-hidden"
+                  className="absolute inset-0 overflow-hidden pointer-events-none"
                   style={{ width: `${fill}%`, color: "var(--accent)", userSelect: "none" }}
                 >
                   ★
                 </span>
               )}
+              <span className="absolute left-0 top-0 h-full w-1/2 z-10" onMouseEnter={() => setHover(star - 0.5)} onClick={() => setValue(star - 0.5 === value ? 0 : star - 0.5)} />
+              <span className="absolute right-0 top-0 h-full w-1/2 z-10" onMouseEnter={() => setHover(star)} onClick={() => setValue(star === value ? 0 : star)} />
             </span>
           );
-        }
-
-        return (
-          <span
-            key={star}
-            className="relative inline-block cursor-pointer transition-transform duration-150"
-            style={{
-              width: px,
-              height: px,
-              fontSize: px,
-              transform: hover === star || hover === star - 0.5 ? "scale(1.25)" : "scale(1)",
-            }}
-            onMouseLeave={() => setHover(0)}
-          >
-            {/* Stella base (vuota) */}
-            <span style={{ color: "#c4b89a", userSelect: "none", transition: "color 120ms ease" }}>★</span>
-
-            {/* Overlay colorato */}
-            {fill > 0 && (
-              <span
-                className="absolute inset-0 overflow-hidden pointer-events-none"
-                style={{ width: `${fill}%`, color: "var(--accent)", userSelect: "none", transition: "width 80ms ease" }}
-              >
-                ★
-              </span>
-            )}
-
-            {/* Zona sinistra: mezzo voto */}
-            <span
-              className="absolute left-0 top-0 h-full w-1/2 z-10"
-              onMouseEnter={() => setHover(star - 0.5)}
-              onClick={() => setValue(star - 0.5 === value ? 0 : star - 0.5)}
-              onTouchStart={(e) => { e.preventDefault(); setHover(star - 0.5); }}
-              onTouchEnd={(e) => { e.preventDefault(); setValue(star - 0.5 === value ? 0 : star - 0.5); setHover(0); }}
-            />
-            {/* Zona destra: voto intero */}
-            <span
-              className="absolute right-0 top-0 h-full w-1/2 z-10"
-              onMouseEnter={() => setHover(star)}
-              onClick={() => setValue(star === value ? 0 : star)}
-              onTouchStart={(e) => { e.preventDefault(); setHover(star); }}
-              onTouchEnd={(e) => { e.preventDefault(); setValue(star === value ? 0 : star); setHover(0); }}
-            />
-          </span>
-        );
-      })}
+        })}
+      </div>
 
       {!readOnly && (
-        <span className="ml-2 text-sm font-semibold min-w-[32px]" style={{ color: "var(--accent)" }}>
-          {active > 0 ? `${active}/10` : ""}
+        <span className="ml-3 text-xs font-black tracking-tighter whitespace-nowrap" style={{ color: "var(--accent)" }}>
+          {active > 0 ? `${active} / 10` : "VOTA"}
         </span>
-      )}
-      {!readOnly && value > 0 && (
-        <button
-          type="button"
-          onClick={() => setValue(0)}
-          className="ml-1 text-xs transition-colors"
-          style={{ color: "var(--fg-subtle)" }}
-          title="Rimuovi valutazione"
-        >
-          ×
-        </button>
       )}
     </div>
   );
@@ -115,14 +88,9 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
 export function RatingDisplay({ value, size = "sm" }: { value: number | null; size?: "sm" | "md" }) {
   if (!value) return null;
   return (
-    <span className="flex items-center gap-1">
+    <span className="flex items-center gap-2">
       <StarRating name="_display" defaultValue={value} readOnly size={size} />
-      <span
-        className={`font-semibold ${size === "sm" ? "text-xs" : "text-sm"}`}
-        style={{ color: "var(--accent)" }}
-      >
-        {value}/10
-      </span>
+      <span className="font-black text-[10px] tracking-tighter text-amber-500">{value}/10</span>
     </span>
   );
 }
