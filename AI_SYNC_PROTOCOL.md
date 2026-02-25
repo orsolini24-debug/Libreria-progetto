@@ -223,3 +223,12 @@ Security is mandatory. If a request conflicts with baseline, agent must:
 - SECURITY_BASELINE.md (security baseline; may reference Section 7)
 - API_CONTRACTS.md (routes & contracts)
 - ARCHITECTURE.md (modules & boundaries)
+
+---
+
+## 11) DECISION RISK TIERS
+- **LOW:** No CEO approval required. Gemini can implement and document in DECISIONS.md post-merge.
+- **MEDIUM:** CEO notified via checkpoint/handover. Gemini proceeds unless CEO interjects.
+- **HIGH:** CEO approval MANDATORY before merge. Implementation can start on branch, but merge is blocked.
+- **CRITICAL:** Implementation BLOCKED until CEO decision is recorded in DECISIONS.md.
+
