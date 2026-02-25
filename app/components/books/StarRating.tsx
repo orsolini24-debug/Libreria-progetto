@@ -35,7 +35,7 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
           if (readOnly) {
             return (
               <span key={star} className="relative inline-block" style={{ width: px, height: px, fontSize: px }}>
-                <span style={{ color: "color-mix(in srgb, var(--accent) 20%, transparent)", userSelect: "none" }}>★</span>
+                <span style={{ color: "color-mix(in srgb, var(--fg-muted) 20%, transparent)", userSelect: "none" }}>★</span>
                 {fill > 0 && (
                   <span
                     className="absolute inset-0 overflow-hidden"
@@ -60,7 +60,10 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
               }}
               onMouseLeave={() => setHover(0)}
             >
-              <span style={{ color: "rgba(255,255,255,0.1)", userSelect: "none" }}>★</span>
+              {/* Stella base (vuota) - Colore grigio neutro visibile ovunque */}
+              <span style={{ color: "rgba(156, 163, 175, 0.3)", userSelect: "none" }}>★</span>
+
+              {/* Overlay colorato (pieno o mezzo) */}
               {fill > 0 && (
                 <span
                   className="absolute inset-0 overflow-hidden pointer-events-none"
@@ -69,16 +72,24 @@ export function StarRating({ name, defaultValue = 0, readOnly = false, size = "m
                   ★
                 </span>
               )}
-              <span className="absolute left-0 top-0 h-full w-1/2 z-10" onMouseEnter={() => setHover(star - 0.5)} onClick={() => setValue(star - 0.5 === value ? 0 : star - 0.5)} />
-              <span className="absolute right-0 top-0 h-full w-1/2 z-10" onMouseEnter={() => setHover(star)} onClick={() => setValue(star === value ? 0 : star)} />
+
+              {/* Aree di interazione per i mezzi voti */}
+              <span className="absolute left-0 top-0 h-full w-1/2 z-10" 
+                onMouseEnter={() => setHover(star - 0.5)} 
+                onClick={() => setValue(star - 0.5 === value ? 0 : star - 0.5)} 
+              />
+              <span className="absolute right-0 top-0 h-full w-1/2 z-10" 
+                onMouseEnter={() => setHover(star)} 
+                onClick={() => setValue(star === value ? 0 : star)} 
+              />
             </span>
           );
         })}
       </div>
 
       {!readOnly && (
-        <span className="ml-3 text-xs font-black tracking-tighter whitespace-nowrap" style={{ color: "var(--accent)" }}>
-          {active > 0 ? `${active} / 10` : "VOTA"}
+        <span className="ml-3 text-xs font-black tracking-tighter" style={{ color: "var(--accent)" }}>
+          {active > 0 ? `${active} / 10` : "Vota"}
         </span>
       )}
     </div>
@@ -90,7 +101,7 @@ export function RatingDisplay({ value, size = "sm" }: { value: number | null; si
   return (
     <span className="flex items-center gap-2">
       <StarRating name="_display" defaultValue={value} readOnly size={size} />
-      <span className="font-black text-[10px] tracking-tighter text-amber-500">{value}/10</span>
+      <span className="font-black text-[10px] tracking-tighter" style={{ color: "var(--accent)" }}>{value}/10</span>
     </span>
   );
 }
