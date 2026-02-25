@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BookStatus } from "@/app/generated/prisma/client";
+import { BookStatus, NoteType } from "@/app/generated/prisma/client";
 
 /** Trasforma: undefined/null/""/"   " -> undefined */
 const emptyToUndefined = z.preprocess((v: unknown) => {
@@ -71,3 +71,30 @@ export const CreateBookSchema = z
     seriesOrder: nullableNumber(z.number().int("Deve essere un intero").min(1, "Min 1")),
   })
   .strict(); // P0: allowlist, niente campi inattesi
+
+export const UpdateBookSchema = CreateBookSchema.partial();
+
+export const QuoteSchema = z.object({
+  bookId: z.string().min(1, "ID libro obbligatorio"),
+  text: z.string().trim().min(1, "Il testo è obbligatorio").max(2000),
+  type: z.nativeEnum(NoteType).default(NoteType.QUOTE),
+  page: nullableNumber(z.number().int().min(0)),
+  chapter: nullableTrimmedString(100),
+}).strict();
+
+export const LoanSchema = z.object({
+  bookId: z.string().min(1, "ID libro obbligatorio"),
+  borrower: z.string().trim().min(1, "Il nome del debitore è obbligatorio").max(100),
+  loanedAt: nullableDate().default(() => new Date()),
+  note: nullableTrimmedString(500),
+}).strict();
+
+export const ReadingSessionSchema = z.object({
+  bookId: z.string().min(1, "ID libro obbligatorio"),
+  date: nullableDate().default(() => new Date()),
+  startPage: nullableNumber(z.number().int().min(0)),
+  endPage: nullableNumber(z.number().int().min(0)),
+  pagesRead: nullableNumber(z.number().int().min(0)),
+  duration: nullableNumber(z.number().int().min(0)),
+  note: nullableTrimmedString(1000),
+}).strict();

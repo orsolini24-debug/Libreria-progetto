@@ -3,13 +3,14 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { NoteType } from "@/app/generated/prisma/client";
+import { QuoteSchema } from "./validation/schemas";
+import { mapZodError } from "./validation/errors";
 
-export type QuoteActionState = { error?: string; success?: string } | null;
+export type QuoteActionState = { error?: string; success?: string; fieldErrors?: Record<string, string[]> } | null;
 
 async function requireUserId(): Promise<string> {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Non autenticato");
+  if (!session?.user?.id) throw new Error("UNAUTHORIZED");
   return session.user.id;
 }
 
@@ -18,23 +19,31 @@ export async function createQuote(
   formData: FormData
 ): Promise<QuoteActionState> {
   let userId: string;
-  try { userId = await requireUserId(); }
-  catch { return { error: "Sessione scaduta." }; }
+  try {
+    userId = await requireUserId();
+  } catch {
+    return { error: "Sessione scaduta." };
+  }
 
-  const bookId = (formData.get("bookId") as string)?.trim();
-  const text   = (formData.get("text")   as string)?.trim();
-  if (!bookId) return { error: "Libro mancante." };
-  if (!text)   return { error: "Il testo della citazione è obbligatorio." };
+  const raw = Object.fromEntries(formData.entries());
+  const validated = QuoteSchema.safeParse(raw);
+
+  if (!validated.success) {
+    const mapped = mapZodError(validated.error);
+    return {
+      error: !mapped.ok ? mapped.error.message : "Errore di validazione",
+      fieldErrors: !mapped.ok ? mapped.error.fieldErrors : undefined,
+    };
+  }
+
+  const { bookId, text, type, page, chapter } = validated.data;
 
   // Verifica ownership del libro
-  const book = await prisma.book.findFirst({ where: { id: bookId, userId } });
-  if (!book) return { error: "Libro non trovato." };
-
-  const pageRaw = formData.get("page") as string;
-  const page    = pageRaw ? parseInt(pageRaw, 10) : null;
-
-  const typeRaw = formData.get("type") as string;
-  const type    = typeRaw === "NOTE" ? NoteType.NOTE : NoteType.QUOTE;
+  const book = await prisma.book.findFirst({
+    where: { id: bookId, userId },
+    select: { id: true },
+  });
+  if (!book) return { error: "Libro non trovato o non autorizzato." };
 
   try {
     await prisma.quote.create({
@@ -43,13 +52,14 @@ export async function createQuote(
         userId,
         type,
         text,
-        page:    page && !isNaN(page) ? page : null,
-        chapter: (formData.get("chapter") as string)?.trim() || null,
+        page,
+        chapter,
       },
     });
     revalidatePath("/dashboard");
     return { success: "Citazione salvata!" };
-  } catch {
+  } catch (e) {
+    console.error("[createQuote]", e);
     return { error: "Errore durante il salvataggio." };
   }
 }

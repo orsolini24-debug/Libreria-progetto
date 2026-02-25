@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { BookStatus } from "@/app/generated/prisma/client";
-import { CreateBookSchema } from "./validation/schemas";
+import { CreateBookSchema, UpdateBookSchema } from "./validation/schemas";
 import { mapZodError } from "./validation/errors";
 
 export type ActionState =
@@ -132,26 +132,36 @@ export async function updateBook(
   try { userId = await requireUserId(); }
   catch { return { error: "Sessione scaduta." }; }
 
-  const title = str(formData.get("title"));
-  if (!title) return { error: "Il titolo è obbligatorio." };
+  const raw = formDataToObject(formData);
+  const validated = UpdateBookSchema.safeParse(raw);
+
+  if (!validated.success) {
+    const mapped = mapZodError(validated.error);
+    return {
+      error: !mapped.ok ? mapped.error.message : "Errore di validazione",
+      fieldErrors: !mapped.ok ? mapped.error.fieldErrors : undefined,
+    };
+  }
+
+  const data = validated.data;
 
   try {
     const result = await prisma.book.update({
       where: { id, userId },
       data: {
-        title,
-        author:      str(formData.get("author")),
-        status:      parseStatus(formData.get("status"), BookStatus.TO_READ),
-        rating:      parseFloatOrNull(formData.get("rating")),
-        comment:     str(formData.get("comment")),
-        tags:        str(formData.get("tags")),
-        formats:     str(formData.get("formats")),
-        purchasedAt: parseDateOrNull(formData.get("purchasedAt")),
-        startedAt:   parseDateOrNull(formData.get("startedAt")),
-        finishedAt:  parseDateOrNull(formData.get("finishedAt")),
-        currentPage: parseIntOrNull(formData.get("currentPage")),
-        series:      str(formData.get("series")),
-        seriesOrder: parseIntOrNull(formData.get("seriesOrder")),
+        title:       data.title,
+        author:      data.author,
+        status:      data.status,
+        rating:      data.rating,
+        comment:     data.comment,
+        tags:        data.tags,
+        formats:     data.formats,
+        purchasedAt: data.purchasedAt,
+        startedAt:   data.startedAt,
+        finishedAt:  data.finishedAt,
+        currentPage: data.currentPage,
+        series:      data.series,
+        seriesOrder: data.seriesOrder,
       },
     });
 

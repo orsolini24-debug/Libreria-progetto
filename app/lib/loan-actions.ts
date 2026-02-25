@@ -3,12 +3,14 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { LoanSchema } from "./validation/schemas";
+import { mapZodError } from "./validation/errors";
 
-export type LoanActionState = { error?: string; success?: string } | null;
+export type LoanActionState = { error?: string; success?: string; fieldErrors?: Record<string, string[]> } | null;
 
 async function requireUserId(): Promise<string> {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Non autenticato");
+  if (!session?.user?.id) throw new Error("UNAUTHORIZED");
   return session.user.id;
 }
 
@@ -17,19 +19,30 @@ export async function createLoan(
   formData: FormData
 ): Promise<LoanActionState> {
   let userId: string;
-  try { userId = await requireUserId(); }
-  catch { return { error: "Sessione scaduta." }; }
+  try {
+    userId = await requireUserId();
+  } catch {
+    return { error: "Sessione scaduta." };
+  }
 
-  const bookId   = (formData.get("bookId")   as string)?.trim();
-  const borrower = (formData.get("borrower") as string)?.trim();
-  if (!bookId)   return { error: "Libro mancante." };
-  if (!borrower) return { error: "Inserisci il nome di chi ha preso il libro." };
+  const raw = Object.fromEntries(formData.entries());
+  const validated = LoanSchema.safeParse(raw);
 
-  const book = await prisma.book.findFirst({ where: { id: bookId, userId } });
-  if (!book) return { error: "Libro non trovato." };
+  if (!validated.success) {
+    const mapped = mapZodError(validated.error);
+    return {
+      error: !mapped.ok ? mapped.error.message : "Errore di validazione",
+      fieldErrors: !mapped.ok ? mapped.error.fieldErrors : undefined,
+    };
+  }
 
-  const loanedAtRaw = formData.get("loanedAt") as string;
-  const loanedAt    = loanedAtRaw ? new Date(loanedAtRaw) : new Date();
+  const { bookId, borrower, loanedAt, note } = validated.data;
+
+  const book = await prisma.book.findFirst({
+    where: { id: bookId, userId },
+    select: { id: true },
+  });
+  if (!book) return { error: "Libro non trovato o non autorizzato." };
 
   try {
     await prisma.loan.create({
@@ -37,13 +50,14 @@ export async function createLoan(
         bookId,
         userId,
         borrower,
-        loanedAt,
-        note: (formData.get("note") as string)?.trim() || null,
+        loanedAt: loanedAt ?? new Date(),
+        note,
       },
     });
     revalidatePath("/dashboard");
     return { success: "Prestito registrato!" };
-  } catch {
+  } catch (e) {
+    console.error("[createLoan]", e);
     return { error: "Errore durante il salvataggio." };
   }
 }
