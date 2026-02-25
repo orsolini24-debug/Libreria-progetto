@@ -1,26 +1,26 @@
 import { auth } from "@/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { streamText } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { getUserEmotionalContext } from "@/app/lib/emotional-actions";
 
 export const maxDuration = 30;
 
+// Inizializza il provider Google mappando esplicitamente la nostra variabile d'ambiente
+const googleProvider = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_AI_API_KEY || "",
+});
+
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     const { messages } = await req.json();
     const emotionalContext = await getUserEmotionalContext(session.user.id);
-    
-    // Inizializza il client standard
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
-    // Upgrade al modello Gemini 3.0 Pro per ragionamento empatico avanzato
-    const model = genAI.getGenerativeModel({ model: "gemini-3.0-pro" });
 
-    // Estrai l'ultimo messaggio dell'utente
-    const lastUserMessage = messages[messages.length - 1].content;
-
-    const prompt = `
+    const systemPrompt = `
       Sei un assistente ibrido: un caro Amico, un Terapeuta Letterario e un Bibliotecario Onnisciente.
       REGOLE ASSOLUTE:
       1. ASCOLTA E COMPRENDI PRIMA DI PROPORRE. Fai domande aperte, esplora come si sente l'utente.
@@ -29,22 +29,24 @@ export async function POST(req: Request) {
       4. Ecco il contesto emotivo e letterario attuale dell'utente:
       ${emotionalContext}
       
-      Messaggio dell'utente: "${lastUserMessage}"
-      
-      Rispondi in modo conciso ed empatico.
+      Usa queste informazioni per personalizzare le tue risposte e fargli capire che lo conosci bene. Sii conciso.
     `;
 
-    // Metodo fallback ultra stabile (No Stream)
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-
-    // Ritorna la risposta nel formato testuale base per l'hook useChat
-    return new Response(text, {
-        headers: { 'Content-Type': 'text/plain' }
+    // Utilizziamo gemini-1.5-pro: è il modello di ragionamento top-tier attualmente stabile al pubblico
+    const result = await streamText({
+      model: googleProvider('gemini-1.5-pro'),
+      system: systemPrompt,
+      messages,
     });
 
+    // Ritorna lo stream compatibile con la nostra versione dell'SDK
+    return result.toDataStreamResponse();
+    
   } catch (error) {
     console.error("API Chat Error:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Errore di connessione all'AI. Verifica i log." }), 
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
