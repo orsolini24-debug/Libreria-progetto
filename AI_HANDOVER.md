@@ -352,10 +352,22 @@ npm run build      # "Compiled successfully"
 - [x] Supporto visivo per status `ABANDONED` aggiunto ai filtri della Dashboard.
 - [x] QA: `tsc` + `build` passati con successo.
 
+### CHECKPOINT CP-005 — AI Book Analysis: Description + AI Analysis field
+**Stato:** COMPLETATO
+**Data:** 27 Febbraio 2026
+
+**Task — in ordine esatto:**
+- [x] Aggiunto campo `aiAnalysis` al modello `Book` in `schema.prisma`.
+- [x] Eseguita migration manuale per il nuovo campo (bypass shadow DB).
+- [x] Aggiornati Zod Schema (`CreateBookSchema`, `UpdateBookSchema`) con `aiAnalysis`.
+- [x] Aggiornata Server Action `updateBook` per salvare `description` e `aiAnalysis`.
+- [x] **UI Dettagli**: Aggiunti campi Textarea per Descrizione e Analisi AI nel tab "Dettagli" della scheda libro.
+- [x] **Sanctuary Tool**: Aggiunto strumento `updateBookAnalysis` alla chat per permettere all'AI di salvare analisi profonde.
+- [x] QA: `tsc` + `build` passati con successo.
+
 **Completion Notes (Gemini):**
-- File modificati: `app/components/books/EditBookForm.tsx`, `app/components/DashboardClient.tsx`, `app/(protected)/layout.tsx`, `app/components/books/ReadingSessionSection.tsx`, `app/components/books/LoanSection.tsx`, `app/components/books/QuoteSection.tsx`.
-- Eliminati: `app/components/books/ReadingProgressNudge.tsx`.
-- Risultato: Sistema ora totalmente coerente. La chat "vede" il libro che stai modificando, l'UI è moderna e i file morti sono stati rimossi.
+- File modificati: `prisma/schema.prisma`, `app/lib/validation/schemas.ts`, `app/lib/book-actions.ts`, `app/components/books/EditBookForm.tsx`, `app/api/chat/route.ts`, `app/lib/ai/prompts.ts`.
+- Risultato: Ora puoi chiedere alla Sanctuary Chat di analizzare un libro e salvare il risultato direttamente nella scheda tecnica del libro.
 - tsc check: ✅
 - build check: ✅
 - Push: ✅

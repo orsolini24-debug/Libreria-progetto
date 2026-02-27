@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     const groq = createGroq({ apiKey: apiKey.trim() });
 
     const result = await streamText({
-      model: groq("moonshotai/kimi-k2-instruct-0905"),
+      model: groq("llama-3.3-70b-versatile"),
       system: `${systemPrompt}\n\n---\n\n${developerPrompt}`,
       messages,
       maxSteps: 3,
@@ -111,6 +111,26 @@ export async function POST(req: Request) {
                 pageCount: b.pageCount || undefined,
               })),
             };
+          },
+        },
+        updateBookAnalysis: {
+          description:
+            "Aggiorna l'analisi tematica e stilistica di un libro nella libreria dell'utente. " +
+            "Usalo quando hai generato un'analisi profonda e vuoi che venga salvata permanentemente nei dettagli del libro.",
+          parameters: z.object({
+            bookId: z.string().describe("L'ID del libro da aggiornare"),
+            analysis: z.string().describe("Il testo dell'analisi da salvare (Markdown supportato)"),
+          }),
+          execute: async ({ bookId, analysis }) => {
+            try {
+              await prisma.book.update({
+                where: { id: bookId, userId },
+                data: { aiAnalysis: analysis },
+              });
+              return { success: true, message: "Analisi salvata con successo." };
+            } catch {
+              return { success: false, message: "Errore durante il salvataggio dell'analisi." };
+            }
           },
         },
       },

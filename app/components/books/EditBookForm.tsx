@@ -478,6 +478,14 @@ export function EditBookForm({
             <Input name="author" defaultValue={book.author ?? ""} error={state?.fieldErrors?.author} />
           </FormField>
 
+          <FormField label="Descrizione" error={state?.fieldErrors?.description}>
+            <Textarea name="description" defaultValue={book.description ?? ""} placeholder="Trama del libro..." className="h-32" />
+          </FormField>
+
+          <FormField label="Analisi AI" error={state?.fieldErrors?.aiAnalysis}>
+            <Textarea name="aiAnalysis" defaultValue={book.aiAnalysis ?? ""} placeholder="Analisi tematica e stilistica generata dall'AI..." className="h-48 font-reading text-sm italic" />
+          </FormField>
+
           {/* Metadati read-only */}
           <div className="grid grid-cols-2 gap-3">
             {book.isbn && (

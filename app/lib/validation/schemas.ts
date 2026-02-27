@@ -53,6 +53,7 @@ export const CreateBookSchema = z
     language: nullableTrimmedString(32),
     coverUrl: nullableTrimmedString(2048),
     description: nullableTrimmedString(20000),
+    aiAnalysis: nullableTrimmedString(20000),
 
     // campi “funzionali”
     rating: nullableNumber(z.number().min(0, "Rating min 0").max(10, "Rating max 10")),

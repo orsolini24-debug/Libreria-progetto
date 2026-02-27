@@ -35,7 +35,13 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(cd /c/Users/g.orsolini/Desktop/Giorgio/Libreria-progetto && node prisma/update-suggestions.mjs 2>&1)"
+      "Bash(cd /c/Users/g.orsolini/Desktop/Giorgio/Libreria-progetto && node prisma/update-suggestions.mjs 2>&1)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git:*)",
+      "WebFetch(domain:console.groq.com)",
+      "WebFetch(domain:artificialanalysis.ai)"
     ]
   }
 }

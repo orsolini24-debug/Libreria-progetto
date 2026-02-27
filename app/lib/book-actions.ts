@@ -206,6 +206,8 @@ export async function updateBook(
         currentPage: data.currentPage,
         series:      data.series,
         seriesOrder: data.seriesOrder,
+        description: data.description,
+        aiAnalysis:  data.aiAnalysis,
       },
     });
 
