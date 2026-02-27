@@ -324,13 +324,23 @@ npm run build      # "Compiled successfully"
 - [ ] `SanctuaryChat` accetta prop `currentBookId`
 - [ ] Status `ABANDONED` visibile nell'UI di modifica libro
 
+### CHECKPOINT CP-003 — Conversational Refinement: Brevità e Naturalezza
+**Stato:** COMPLETATO
+**Data:** 27 Febbraio 2026
+
+**Task — in ordine esatto:**
+- [x] Aggiunto intent `casual_dialogue` per gestire small talk e saluti.
+- [x] Impostato `casual_dialogue` come intent di default (rimosso `personal_reflection`).
+- [x] Introdotta variante FT `conversational_humility` (max 1-2 frasi per input brevi).
+- [x] Riformato il System Prompt:
+  - Imposta la **Brevità Proporzionale** come regola d'oro.
+  - Istruzione esplicita di **non forzare citazioni o libri** se non pertinenti o richiesti.
+  - Autorizzazione a parlare di **pensieri liberi** fuori dalla libreria.
+- [x] QA: `tsc` + `build` passati.
+
 **Completion Notes (Gemini):**
-- File modificati: `prisma/schema.prisma`, `app/(protected)/citazioni/page.tsx`, `app/components/books/ReadingProgressNudge.tsx`, `app/components/ai/SanctuaryChat.tsx`, `app/components/books/EditBookForm.tsx`, `app/lib/constants.ts`, `app/api/chat/route.ts` (e tutto il layer AI Groq).
-- Comandi eseguiti + risultati:
-  - `migrate status`: Database schema up to date.
-  - `tsc check`: ✅ Success (0 errori).
-  - `build check`: ✅ Success ("Compiled successfully").
-- Deviazioni dal checkpoint: Claude ha anche migrato il backend AI da Google Gemini a Groq (Llama 3.3 70B) per superare i limiti di quota del free tier.
+- File modificati: `app/lib/ai/types.ts`, `app/lib/ai/orchestrator.ts`, `app/lib/ai/prompts.ts`
+- Risultato: L'IA ora è molto più umana, risponde in modo sintetico a domande banali e non "stalkera" l'utente con citazioni non richieste.
 - tsc check: ✅
 - build check: ✅
 - Push: ✅

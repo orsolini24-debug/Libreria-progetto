@@ -15,6 +15,7 @@ const INTENT_WEIGHTS: Record<Intent, StanceWeights> = {
   personal_reflection: { FT: 0.3, RC: 0.6, IL: 0.1 },
   crisis_overwhelm:    { FT: 0.5, RC: 0.4, IL: 0.1 },
   meta:                { FT: 0.6, RC: 0.1, IL: 0.3 },
+  casual_dialogue:     { FT: 0.8, RC: 0.1, IL: 0.1 },
 };
 
 // Parole chiave di sicurezza — check prioritario
@@ -87,6 +88,18 @@ const PATTERNS: Record<Intent, RegExp[]> = {
     /cosa sei/i,
     /modalità (bibliotecario|amico|coach|terapeuta)/i,
   ],
+  casual_dialogue: [
+    /ciao/i,
+    /buongiorno/i,
+    /buonasera/i,
+    /come stai/i,
+    /tutto bene/i,
+    /ehi/i,
+    /hey/i,
+    /dimmi/i,
+    /che dici/i,
+    /parlami/i,
+  ],
 };
 
 function detectIntent(message: string): Intent {
@@ -102,6 +115,7 @@ function detectIntent(message: string): Intent {
     "book_discussion",
     "personal_reflection",
     "meta",
+    "casual_dialogue",
   ];
 
   for (const intent of ordered) {
@@ -110,11 +124,14 @@ function detectIntent(message: string): Intent {
     }
   }
 
-  // Default: reflection (il più comune in un'app di lettura)
-  return "personal_reflection";
+  // Default: casual_dialogue invece di reflection per non forzare analisi
+  return "casual_dialogue";
 }
 
 function selectFTVariant(message: string): FTVariant {
+  // Se il messaggio è molto breve (es. ciao, come stai), usa l'umiltà conversazionale
+  if (message.length < 20) return "conversational_humility";
+
   if (/non so|bloccato|bloccata|che faccio|non riesco a scegliere/i.test(message))
     return "quick_decision";
   if (/primo passo|adesso|subito|iniziare|stasera/i.test(message))

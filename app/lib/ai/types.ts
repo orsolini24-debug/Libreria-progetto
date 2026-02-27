@@ -42,9 +42,10 @@ export type Intent =
   | "book_discussion"
   | "personal_reflection"
   | "crisis_overwhelm"
-  | "meta";
+  | "meta"
+  | "casual_dialogue";
 
-export type FTVariant = "quick_decision" | "tradeoff" | "minimal_plan";
+export type FTVariant = "quick_decision" | "tradeoff" | "minimal_plan" | "conversational_humility";
 export type RCVariant = "contradiction" | "timeline" | "experiment";
 export type ILVariant = "theme" | "ending" | "comparison" | "reading_path";
 
