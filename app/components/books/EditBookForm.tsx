@@ -12,6 +12,7 @@ import { SeriesPanel } from "./SeriesPanel";
 import { FormField, Input, Select, Textarea } from "@/app/components/ui/FormField";
 import { DeleteBookButton } from "./DeleteBookButton";
 import { StarRating } from "./StarRating";
+import { ReadingProgressNudge } from "./ReadingProgressNudge";
 import dynamic from "next/dynamic";
 
 // Sezioni dinamiche
@@ -48,6 +49,7 @@ export function EditBookForm({
   const router = useRouter();
   const [state, formAction] = useActionState(updateBook.bind(null, book.id), null);
   const [status, setStatus] = useState<string>(book.status);
+  const [showNudge, setShowNudge] = useState(book.status === "READING");
   const [series, setSeries] = useState<string>(book.series ?? "");
   const [formats, setFormats] = useState<string[]>(book.formats?.split(",").filter(Boolean) ?? []);
 
@@ -65,6 +67,17 @@ export function EditBookForm({
 
   return (
     <div className="flex flex-col gap-8 pb-20">
+      {/* Reading progress nudge — solo per libri in lettura */}
+      {showNudge && (
+        <ReadingProgressNudge
+          bookId={book.id}
+          bookTitle={book.title}
+          currentPage={book.currentPage}
+          pageCount={book.pageCount}
+          onClose={() => setShowNudge(false)}
+        />
+      )}
+
       {/* Header Info */}
       <div className="flex gap-4 items-start p-4 rounded-2xl bg-white/5 border border-white/5">
         {book.coverUrl && (

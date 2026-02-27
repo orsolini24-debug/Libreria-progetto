@@ -174,3 +174,161 @@ git push origin main
 - build check: ✅
 - Push: ✅
 - **Stato: COMPLETATO**
+
+---
+
+---
+
+## ✅ LAYER AI — Completato da Claude (27 Febbraio 2026)
+
+Implementato il layer AI completo secondo le specifiche del prodotto. Modifiche effettuate:
+
+**Nuovi file:**
+- `app/lib/ai/types.ts` — tipi condivisi (Intent, StanceWeights, OrchestrationResult, ThematicAxis, UserContext, CurrentBook, varianti FT/RC/IL)
+- `app/lib/ai/orchestrator.ts` — intent detection rule-based + stance weights + varianti per turno
+- `app/lib/ai/prompts.ts` — system prompt completo con 3 lenti + developer prompt dinamico per turno
+- `app/lib/ai/context.ts` — loader contesto utente (6 query parallele: check-in, citazioni, libri, profilo, conversazioni)
+- `app/lib/ai/profile-actions.ts` — CRUD UserProfile + saveConversationSummary
+
+**File modificati:**
+- `prisma/schema.prisma` — aggiunto `ABANDONED` a BookStatus, modelli `UserProfile` e `ConversationSummary`, relazioni su User
+- `app/api/chat/route.ts` — riscritto con orchestratore, contesto dinamico, developer prompt per turno, validazione Zod, supporto `currentBookId`
+
+---
+
+### CHECKPOINT CP-002 — Migration + UI: pagina citazioni + reading nudge + wiring chat
+**Stato:** IN ATTESA DI GEMINI
+**Data:** 27 Febbraio 2026
+**Risk tier:** MEDIUM
+
+**Task 1 — Migration (OBBLIGATORIO, fare per primo)**
+
+```bash
+npx prisma migrate dev --name add_user_profile_conversation_summary_abandoned_status
+```
+
+Questa migration deve:
+- Creare tabella `UserProfile`
+- Creare tabella `ConversationSummary`
+- Aggiungere valore `ABANDONED` all'enum `BookStatus`
+
+Se Neon non supporta lo shadow DB (come nel CP-001), usare lo stesso approccio: `migrate diff` + SQL manuale + `migrate resolve`.
+
+**Verifica dopo migration:**
+```bash
+npx tsc --noEmit
+npm run build
+```
+Entrambi devono passare prima di procedere ai task UI.
+
+---
+
+**Task 2 — Pagina citazioni collettiva `/citazioni`**
+
+Creare `app/(protected)/citazioni/page.tsx` — Server Component.
+
+Funzione: mostrare TUTTE le citazioni dell'utente in una vista collettiva, indipendente dai singoli libri.
+
+Requisiti:
+- Fetch: `prisma.quote.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, include: { book: { select: { title: true, author: true } } } })`
+- Layout: griglia di card, ogni card mostra:
+  - testo della citazione (in corsivo, font grande)
+  - nome del libro + autore (più piccolo, sotto)
+  - data di salvataggio (opzionale, sotto ancora)
+  - tipo (QUOTE / NOTE) come badge piccolo
+- Filtro per libro: dropdown o chip selezionabili con i titoli dei libri che hanno citazioni
+- Stile: usa le CSS variables del tema (`--accent`, `--bg-card`, `--fg-primary` ecc.) come nel resto dell'app
+- Aggiungere link "Citazioni" nella navigazione principale (in `app/(protected)/dashboard/page.tsx` o nel layout)
+
+---
+
+**Task 3 — Componente ReadingProgressNudge**
+
+Creare `app/components/books/ReadingProgressNudge.tsx` — Client Component.
+
+Funzione: popup che appare quando l'utente apre un libro in stato `READING`, chiedendo a che pagina è arrivato.
+
+Props:
+```typescript
+interface Props {
+  bookId: string;
+  bookTitle: string;
+  currentPage: number | null;
+  pageCount: number | null;
+  onClose: () => void;
+  onUpdate: (newPage: number) => void;
+}
+```
+
+Comportamento:
+- Input numerico per la pagina corrente (pre-compilato con `currentPage` se presente)
+- Se `pageCount` è disponibile, mostrare la percentuale in tempo reale mentre l'utente digita
+- Bottone "Aggiorna" → chiama la Server Action `updateBook` con `{ currentPage: newPage }`
+- Bottone "Salta" → chiude senza aggiornare
+- Persistenza: salva in localStorage `reading-nudge-{bookId}-{date}` per non riaprire lo stesso giorno sullo stesso libro
+
+---
+
+**Task 4 — Wiring SanctuaryChat con currentBookId**
+
+Modificare `app/components/ai/SanctuaryChat.tsx`:
+
+Aggiungere prop opzionale:
+```typescript
+interface SanctuaryChatProps {
+  currentBookId?: string;
+}
+```
+
+Modificare il body della request nell'hook `useChat`:
+```typescript
+const { messages, ... } = useChat({
+  api: '/api/chat',
+  body: { currentBookId },  // aggiungere questa riga
+  ...
+});
+```
+
+Modificare `app/(protected)/layout.tsx`:
+- `SanctuaryChat` riceve attualmente nessuna prop
+- Per ora lasciare `currentBookId={undefined}` — il wiring completo con il libro aperto nel pannello viene fatto quando DashboardClient espone lo stato del libro aperto (V1)
+
+---
+
+**Task 5 — Aggiornare UI per status ABANDONED**
+
+Il nuovo enum `ABANDONED` deve essere visibile nell'UI:
+
+In `app/components/books/EditBookForm.tsx` (o dove si seleziona lo status):
+- Aggiungere l'opzione `ABANDONED` → label "Abbandonato" nel select dello status
+
+In `app/components/books/BookCard.tsx` (o dove si mostra il badge di status):
+- Aggiungere il colore/label per `ABANDONED` (es. grigio con "Abbandonato")
+
+In `app/lib/book-actions.ts`, verificare che `updateBook` accetti `ABANDONED` come status valido (il Zod schema dovrebbe già includerlo dopo la migration, ma verificare).
+
+---
+
+**QA minimo obbligatorio:**
+```bash
+npx tsc --noEmit   # 0 errori
+npm run build      # "Compiled successfully"
+```
+
+**Acceptance criteria:**
+- [ ] Migration eseguita senza errori
+- [ ] `npx tsc --noEmit` → 0 errori
+- [ ] `npm run build` → successo
+- [ ] Pagina `/citazioni` carica e mostra le citazioni
+- [ ] `ReadingProgressNudge` non causa errori TypeScript
+- [ ] `SanctuaryChat` accetta prop `currentBookId`
+- [ ] Status `ABANDONED` visibile nell'UI di modifica libro
+
+**Completion Notes (Gemini):**
+- File modificati:
+- Comandi eseguiti + risultati:
+- Deviazioni dal checkpoint:
+- tsc check: ⬜
+- build check: ⬜
+- Push: ⬜
+- **Stato: IN ATTESA**

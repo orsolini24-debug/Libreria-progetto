@@ -6,24 +6,27 @@ import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
 
 const STATUS_ACCENT: Record<string, string> = {
-  TO_READ:  "after:bg-stone-600",
-  READING:  "after:bg-blue-500",
-  READ:     "after:bg-emerald-500",
-  WISHLIST: "after:bg-violet-500",
+  TO_READ:   "after:bg-stone-600",
+  READING:   "after:bg-blue-500",
+  READ:      "after:bg-emerald-500",
+  WISHLIST:  "after:bg-violet-500",
+  ABANDONED: "after:bg-zinc-600",
 };
 
 const STATUS_DOT: Record<string, string> = {
-  TO_READ:  "bg-stone-500",
-  READING:  "bg-blue-500",
-  READ:     "bg-emerald-500",
-  WISHLIST: "bg-violet-500",
+  TO_READ:   "bg-stone-500",
+  READING:   "bg-blue-500",
+  READ:      "bg-emerald-500",
+  WISHLIST:  "bg-violet-500",
+  ABANDONED: "bg-zinc-500",
 };
 
 const STATUS_COVER_BG: Record<string, string> = {
-  TO_READ:  "from-stone-700 to-stone-900",
-  READING:  "from-blue-800 to-blue-950",
-  READ:     "from-emerald-700 to-emerald-950",
-  WISHLIST: "from-violet-700 to-violet-950",
+  TO_READ:   "from-stone-700 to-stone-900",
+  READING:   "from-blue-800 to-blue-950",
+  READ:      "from-emerald-700 to-emerald-950",
+  WISHLIST:  "from-violet-700 to-violet-950",
+  ABANDONED: "from-zinc-700 to-zinc-900",
 };
 
 const FORMAT_ICONS: Record<string, string> = {

@@ -26,5 +26,5 @@ export const config = {
    * è la rotta reale. Il matcher NON include /api/auth/* per non
    * bloccare i callback di NextAuth stesso.
    */
-  matcher: ["/dashboard/:path*", "/suggestions/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*", "/suggestions/:path*", "/admin/:path*", "/import/:path*", "/import"],
 };

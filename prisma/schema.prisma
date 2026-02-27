@@ -15,9 +15,11 @@ model User {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   displayName String?
-  books           Book[]
-  suggestions     Suggestion[]
-  dailyCheckIns   DailyCheckIn[]
+  books                Book[]
+  suggestions          Suggestion[]
+  dailyCheckIns        DailyCheckIn[]
+  profile              UserProfile?
+  conversationSummaries ConversationSummary[]
 }
 
 model Book {
@@ -126,6 +128,7 @@ enum BookStatus {
   READING
   READ
   WISHLIST
+  ABANDONED
 }
 
 enum SuggestionCategory {
@@ -149,7 +152,37 @@ enum SuggestionStatus {
   IMPLEMENTED
 }
 
-// --- AI EMOTIONAL & MEMORY LAYER ---
+// --- AI MEMORY & PROFILE LAYER ---
+
+model UserProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // JSON: ThematicAxis[] — { name, evidence[], bookIds[], trend, weight }
+  thematicAxes     Json      @default("[]")
+  // JSON: { genres[], avgPagesPerDay, preferredFormat, languages[] }
+  readingPrefs     Json      @default("{}")
+  // Sintesi AI degli stati emotivi recenti
+  emotionalSummary String?   @db.Text
+  // Ultima sintesi completa del profilo generata dall'AI
+  lastSynthesis    String?   @db.Text
+  lastSynthesisAt  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model ConversationSummary {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  summary   String   @db.Text
+  intent    String?
+  bookIds   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
 model DailyCheckIn {
   id          String   @id @default(cuid())
   userId      String

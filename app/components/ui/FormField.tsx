@@ -77,7 +77,7 @@ export function Textarea({ error, className = "", ...props }: TextareaProps) {
   const style = {
     background: "var(--bg-input)",
     color: "var(--fg-primary)",
-    borderColor: error ? "rgb(248 113(113)" : "color-mix(in srgb, var(--accent) 18%, transparent)",
+    borderColor: error ? "rgb(248 113 113)" : "color-mix(in srgb, var(--accent) 18%, transparent)",
   };
 
   return (

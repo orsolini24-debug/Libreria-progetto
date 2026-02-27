@@ -1,62 +1,92 @@
 import { auth } from "@/auth";
 import { streamText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { getUserEmotionalContext } from "@/app/lib/emotional-actions";
+import { z } from "zod";
+import { orchestrate } from "@/app/lib/ai/orchestrator";
+import { buildSystemPrompt, buildDeveloperPrompt } from "@/app/lib/ai/prompts";
+import { getUserFullContext } from "@/app/lib/ai/context";
+import { prisma } from "@/app/lib/prisma";
 
 export const maxDuration = 60;
 
+const ChatRequestSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant", "system"]),
+      content: z.string(),
+    }),
+  ),
+  currentBookId: z.string().optional(),
+});
+
 export async function POST(req: Request) {
   try {
-    // 1. Controllo esplicito chiave a runtime
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
-      return new Response("SERVER ERROR: La variabile GOOGLE_AI_API_KEY è undefined su Vercel.", { status: 500 });
+      return new Response("SERVER ERROR: GOOGLE_AI_API_KEY undefined.", { status: 500 });
     }
 
     const session = await auth();
     if (!session?.user?.id) {
-      return new Response("SERVER ERROR: Utente non autenticato.", { status: 401 });
+      return new Response("Utente non autenticato.", { status: 401 });
     }
 
-    const { messages } = await req.json();
-    const emotionalContext = await getUserEmotionalContext(session.user.id);
+    const body = await req.json();
+    const parsed = ChatRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return new Response("Richiesta non valida.", { status: 400 });
+    }
 
-    // Inizializzazione sicura
-    const googleProvider = createGoogleGenerativeAI({
-      apiKey: apiKey.trim(),
-    });
+    const { messages, currentBookId } = parsed.data;
+    const userId = session.user.id;
 
-    const systemPrompt = `
-      Sei "Sanctuary", un'intelligenza artificiale ibrida che incarna 3 anime: l'Amico Fidato, il Terapeuta Letterario e il Bibliotecario Onnisciente.
+    // Estrae l'ultimo messaggio dell'utente per l'orchestratore
+    const lastUserMessage =
+      messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
 
-      IL TUO RITMO CONVERSAZIONALE E LE REGOLE D'ORO:
-      1. ASCOLTA E COMPRENDI (Fase Iniziale): Quando l'utente confida uno stato d'animo (es. "ho voglia di mare" o "sono triste per il lavoro"), NON vomitare subito fiumi di parole o analisi. Sii conciso. Fai sentire la tua empatia con 1 o 2 frasi brevi e chiudi con una singola domanda aperta per esplorare la radice del sentimento.
-      2. NESSUN INTERROGATORIO: Se l'utente ti ha già spiegato bene il contesto, SMETTI di fare domande. Passa alla fase successiva (Condivisione).
-      3. CONDIVIDI SAGGEZZA (Fase Centrale): Quando hai capito la situazione, offri riflessioni profonde. Paragona i sentimenti dell'utente a pensieri di grandi filosofi (es. Seneca, Marco Aurelio) o situazioni vissute da protagonisti di romanzi celebri. Non sentenziare, esplora punti di vista divergenti.
-      4. IL CONTESTO UTENTE: Hai a disposizione il suo "Contesto attuale" (citazioni e libreria). Usalo in background per capire i suoi gusti. NON forzarlo mai nei discorsi se non c'entra perfettamente. 
-      5. ESPANDI LA SUA LIBRERIA: Il tuo compito è anche consigliare NUOVI libri, autori o capitoli che non sono nel suo storico. Quando offri uno spunto nuovo, suggeriscigli esplicitamente di aggiungerlo alla sua "Wishlist".
-      6. FORMATTAZIONE OBBLIGATORIA: Le tue risposte non devono mai essere un unico blocco di testo. Usa paragrafi corti e ariosi (massimo 3-4 righe per paragrafo). Usa il "tu". Sii colloquiale ma profondo.
+    // 1. Orchestrazione: intent detection + stance weights
+    const orchestration = orchestrate(lastUserMessage);
 
-      --- CONTESTO UTENTE ATTUALE (Le sue letture e preferenze) ---
-      ${emotionalContext}
-    `;
+    // 2. Carica contesto utente e libro corrente in parallelo
+    const [userContext, currentBook] = await Promise.all([
+      getUserFullContext(userId),
+      currentBookId
+        ? prisma.book.findFirst({
+            where: { id: currentBookId, userId },
+            select: {
+              title: true,
+              author: true,
+              currentPage: true,
+              pageCount: true,
+              status: true,
+              comment: true,
+              tags: true,
+              rating: true,
+            },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    // 3. Costruisce i prompt
+    const systemPrompt = buildSystemPrompt();
+    const developerPrompt = buildDeveloperPrompt(orchestration, userContext, currentBook);
+
+    // 4. Streaming
+    const googleProvider = createGoogleGenerativeAI({ apiKey: apiKey.trim() });
 
     const result = await streamText({
-      model: googleProvider('gemini-2.0-flash'),
-      system: systemPrompt,
+      model: googleProvider("gemini-2.0-flash"),
+      system: `${systemPrompt}\n\n---\n\n${developerPrompt}`,
       messages,
     });
 
     return result.toDataStreamResponse({
-      getErrorMessage: (err) => {
-        return `STREAM ERROR: ${err instanceof Error ? err.message : JSON.stringify(err)}`;
-      }
+      getErrorMessage: (err) =>
+        `STREAM ERROR: ${err instanceof Error ? err.message : JSON.stringify(err)}`,
     });
-    
   } catch (error) {
-    // DIAGNOSTICA: Catturiamo l'oggetto errore di Google e lo spariamo al frontend
-    console.error("DIAGNOSTIC CRASH:", error);
-    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
-    return new Response(`GOOGLE API ERROR: ${errorMessage}`, { status: 500 });
+    console.error("CHAT API ERROR:", error);
+    const msg = error instanceof Error ? error.message : JSON.stringify(error);
+    return new Response(`CHAT ERROR: ${msg}`, { status: 500 });
   }
 }

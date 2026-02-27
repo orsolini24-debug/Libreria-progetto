@@ -3,10 +3,15 @@ import { useChat, type Message } from "ai/react";
 import { useState } from "react";
 import { MessageSquare, Send, X, AlertCircle } from "lucide-react";
 
-export function SanctuaryChat() {
+interface SanctuaryChatProps {
+  currentBookId?: string;
+}
+
+export function SanctuaryChat({ currentBookId }: SanctuaryChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chat',
+    body: { currentBookId },
     fetch: async (url, options) => {
       const res = await fetch(url, options);
       if (!res.ok) {
