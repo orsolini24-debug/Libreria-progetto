@@ -325,10 +325,13 @@ npm run build      # "Compiled successfully"
 - [ ] Status `ABANDONED` visibile nell'UI di modifica libro
 
 **Completion Notes (Gemini):**
-- File modificati:
+- File modificati: `prisma/schema.prisma`, `app/(protected)/citazioni/page.tsx`, `app/components/books/ReadingProgressNudge.tsx`, `app/components/ai/SanctuaryChat.tsx`, `app/components/books/EditBookForm.tsx`, `app/lib/constants.ts`, `app/api/chat/route.ts` (e tutto il layer AI Groq).
 - Comandi eseguiti + risultati:
-- Deviazioni dal checkpoint:
-- tsc check: ⬜
-- build check: ⬜
-- Push: ⬜
-- **Stato: IN ATTESA**
+  - `migrate status`: Database schema up to date.
+  - `tsc check`: ✅ Success (0 errori).
+  - `build check`: ✅ Success ("Compiled successfully").
+- Deviazioni dal checkpoint: Claude ha anche migrato il backend AI da Google Gemini a Groq (Llama 3.3 70B) per superare i limiti di quota del free tier.
+- tsc check: ✅
+- build check: ✅
+- Push: ✅
+- **Stato: COMPLETATO**
