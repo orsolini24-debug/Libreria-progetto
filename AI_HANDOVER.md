@@ -346,16 +346,16 @@ npm run build      # "Compiled successfully"
 - [x] Riscritto `EditBookForm.tsx` con sistema a 3 Tab (Scheda, Lettura, Dettagli).
 - [x] Implementati pulsanti visuali per lo Status (5 stati con icone).
 - [x] Header migliorato con link Google Books e trama collassabile.
-- [x] Sostituito `confirm()` nativo con logica di conferma inline in:
-  - `ReadingSessionSection.tsx`
-  - `LoanSection.tsx`
-  - `QuoteSection.tsx`
-- [x] Fix TypeScript in `EditBookForm.tsx` per il typing dello status.
+- [x] Sostituito `confirm()` nativo con logica di conferma inline.
+- [x] **Wiring SanctuaryChat**: Spostata in `DashboardClient` per ricevere `currentBookId` dinamicamente quando il pannello di editing è aperto.
+- [x] **Cleanup**: Eliminato componente obsoleto `ReadingProgressNudge.tsx`.
+- [x] Supporto visivo per status `ABANDONED` aggiunto ai filtri della Dashboard.
 - [x] QA: `tsc` + `build` passati con successo.
 
 **Completion Notes (Gemini):**
-- File modificati: `app/components/books/EditBookForm.tsx`, `app/components/books/ReadingSessionSection.tsx`, `app/components/books/LoanSection.tsx`, `app/components/books/QuoteSection.tsx`.
-- Risultato: L'esperienza di modifica libro è ora molto più fluida, moderna e priva di fastidiosi popup nativi del browser.
+- File modificati: `app/components/books/EditBookForm.tsx`, `app/components/DashboardClient.tsx`, `app/(protected)/layout.tsx`, `app/components/books/ReadingSessionSection.tsx`, `app/components/books/LoanSection.tsx`, `app/components/books/QuoteSection.tsx`.
+- Eliminati: `app/components/books/ReadingProgressNudge.tsx`.
+- Risultato: Sistema ora totalmente coerente. La chat "vede" il libro che stai modificando, l'UI è moderna e i file morti sono stati rimossi.
 - tsc check: ✅
 - build check: ✅
 - Push: ✅

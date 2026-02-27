@@ -14,6 +14,7 @@ import { ActivityHeatMap } from "./books/ActivityHeatMap";
 import { ConfettiCelebration } from "./ConfettiCelebration";
 import { STATUS_LABELS } from "@/app/lib/constants";
 import { StatsModal } from "./books/StatsModal";
+import { SanctuaryChat } from "./ai/SanctuaryChat";
 import type { Book } from "@/app/generated/prisma/client";
 
 // Colori di stato (semantici — invarianti rispetto al tema)
@@ -22,6 +23,7 @@ const STATUS_COLORS_ACTIVE: Record<string, string> = {
   READING:  "bg-blue-900/60 text-blue-300 border-blue-700",
   READ:     "bg-emerald-900/60 text-emerald-300 border-emerald-700",
   WISHLIST: "bg-violet-900/60 text-violet-300 border-violet-700",
+  ABANDONED: "bg-zinc-700 text-zinc-300 border-zinc-600",
 };
 
 const STATUS_NUMBER_ACTIVE: Record<string, string> = {
@@ -29,6 +31,7 @@ const STATUS_NUMBER_ACTIVE: Record<string, string> = {
   READING:  "text-blue-300",
   READ:     "text-emerald-300",
   WISHLIST: "text-violet-300",
+  ABANDONED: "text-zinc-300",
 };
 
 const STATUS_ICON: Record<string, string> = {
@@ -36,6 +39,7 @@ const STATUS_ICON: Record<string, string> = {
   READING:  "📖",
   READ:     "✅",
   WISHLIST: "🔖",
+  ABANDONED: "🚫",
 };
 
 type PanelState =
@@ -357,6 +361,9 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
           />
         )}
       </SlidePanel>
+
+      {/* Sanctuary Chat con wiring libro corrente */}
+      <SanctuaryChat currentBookId={panel?.type === "edit" ? panel.book.id : undefined} />
     </>
   );
 }
