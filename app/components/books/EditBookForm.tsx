@@ -12,6 +12,9 @@ import { SeriesPanel } from "./SeriesPanel";
 import { FormField, Input, Textarea } from "@/app/components/ui/FormField";
 import { DeleteBookButton } from "./DeleteBookButton";
 import { StarRating } from "./StarRating";
+import { BookInfoOverlay } from "./BookInfoOverlay";
+import { generateBookAnalysis } from "@/app/lib/ai/analysis-action";
+import { Sparkles, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 
 // Sezioni dinamiche
@@ -76,8 +79,10 @@ export function EditBookForm({
   const [pageCount,   setPageCount]   = useState(book.pageCount?.toString() ?? "");
   const [startedAt,   setStartedAt]   = useState(book.startedAt  ? isoDate(book.startedAt)  : "");
   const [finishedAt,  setFinishedAt]  = useState(book.finishedAt ? isoDate(book.finishedAt) : "");
-  const [showDesc,    setShowDesc]    = useState(false);
+  const [showOverlay,  setShowOverlay]  = useState(false);
   const [ratingPrompt, setRatingPrompt] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [localAiAnalysis, setLocalAiAnalysis] = useState(book.aiAnalysis ?? "");
 
   useEffect(() => {
     if (state?.success) {
@@ -157,32 +162,35 @@ export function EditBookForm({
                 href={`https://books.google.com/books?id=${book.googleId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] font-bold px-2 py-0.5 rounded-md border transition-opacity hover:opacity-80"
+                className="text-[10px] font-bold px-2 py-0.5 rounded-md border transition-opacity hover:opacity-80 flex items-center gap-1"
                 style={{ color: "var(--accent)", borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)", background: "color-mix(in srgb, var(--accent) 8%, transparent)" }}
               >
                 Google Books ↗
               </a>
             )}
-          </div>
-          {book.description && (
-            <div className="mt-2">
+            {(book.description || book.aiAnalysis) && (
               <button
                 type="button"
-                onClick={() => setShowDesc(p => !p)}
-                className="text-[10px] font-bold uppercase tracking-wider transition-opacity hover:opacity-80"
-                style={{ color: "var(--fg-subtle)" }}
+                onClick={() => setShowOverlay(true)}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10 bg-white/5 transition-all hover:bg-white/10 flex items-center gap-1"
+                style={{ color: "var(--fg-muted)" }}
               >
-                Trama {showDesc ? "▴" : "▾"}
+                Info & Analisi
               </button>
-              {showDesc && (
-                <p className="text-xs italic leading-relaxed mt-1" style={{ color: "var(--fg-muted)" }}>
-                  {book.description}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Overlay Immersivo per Trama e Analisi */}
+      <BookInfoOverlay 
+        isOpen={showOverlay}
+        onClose={() => setShowOverlay(false)}
+        title={book.title}
+        author={book.author}
+        description={book.description}
+        aiAnalysis={book.aiAnalysis}
+      />
 
       {/* Tab Nav */}
       <div className="flex mb-5 border-b" style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 15%, transparent)" }}>
@@ -483,7 +491,37 @@ export function EditBookForm({
           </FormField>
 
           <FormField label="Analisi AI" error={state?.fieldErrors?.aiAnalysis}>
-            <Textarea name="aiAnalysis" defaultValue={book.aiAnalysis ?? ""} placeholder="Analisi tematica e stilistica generata dall'AI..." className="h-48 font-reading text-sm italic" />
+            <div className="relative group/ai">
+              <Textarea 
+                name="aiAnalysis" 
+                value={localAiAnalysis}
+                onChange={(e) => setLocalAiAnalysis(e.target.value)}
+                placeholder="Analisi tematica e stilistica generata dall'AI..." 
+                className="h-48 font-reading text-sm italic pr-10" 
+              />
+              <button
+                type="button"
+                disabled={isGenerating}
+                onClick={async () => {
+                  setIsGenerating(true);
+                  try {
+                    const res = await generateBookAnalysis(book.id);
+                    if (res.success) setLocalAiAnalysis(res.analysis);
+                  } finally {
+                    setIsGenerating(false);
+                  }
+                }}
+                className="absolute top-2 right-2 p-2 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all disabled:opacity-50"
+                title="Genera analisi con Sanctuary AI"
+              >
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              </button>
+            </div>
+            {!localAiAnalysis && !isGenerating && (
+              <p className="text-[10px] mt-1.5 text-indigo-400/60 font-medium">
+                ✨ Chiedi all&apos;AI di analizzare questo libro in base al tuo profilo.
+              </p>
+            )}
           </FormField>
 
           {/* Metadati read-only */}
