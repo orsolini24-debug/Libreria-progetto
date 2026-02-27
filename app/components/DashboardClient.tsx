@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { BookCard } from "./books/BookCard";
@@ -146,6 +146,25 @@ export function DashboardClient({ initialBooks }: { initialBooks: Book[] }) {
   const query = searchParams.get("q") ?? "";
   const statusFilter = searchParams.get("status") ?? "";
   const sort = searchParams.get("sort") ?? "updatedAt";
+  const bookParam = searchParams.get("book");
+
+  // Auto-open book panel from ?book=ID (e.g. navigating from /citazioni)
+  const bookParamHandled = useRef(false);
+  useEffect(() => {
+    if (bookParam && !bookParamHandled.current) {
+      const book = initialBooks.find(b => b.id === bookParam);
+      if (book) {
+        setPanel({ type: "edit", book });
+        bookParamHandled.current = true;
+        // Clean up URL without reload
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("book");
+        const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+        router.replace(newUrl, { scroll: false });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleCelebrate() {
     setCelebrate(true);

@@ -7,15 +7,22 @@ export default async function CitazioniPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/");
 
-  const quotes = await prisma.quote.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    include: {
-      book: { select: { id: true, title: true, author: true } },
-    },
-  });
+  const [quotes, userBooks] = await Promise.all([
+    prisma.quote.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        book: { select: { id: true, title: true, author: true, coverUrl: true } },
+      },
+    }),
+    prisma.book.findMany({
+      where: { userId: session.user.id },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true, author: true, status: true },
+    }),
+  ]);
 
-  // Lista unica di libri che hanno citazioni, per il filtro
+  // Lista unica di libri che hanno citazioni, per i chip filtro
   const booksWithQuotes = Array.from(
     new Map(quotes.map((q) => [q.book.id, q.book])).values(),
   );
@@ -31,7 +38,7 @@ export default async function CitazioniPage() {
         </p>
       </div>
 
-      <QuotesClient quotes={quotes} booksWithQuotes={booksWithQuotes} />
+      <QuotesClient quotes={quotes} booksWithQuotes={booksWithQuotes} userBooks={userBooks} />
     </div>
   );
 }

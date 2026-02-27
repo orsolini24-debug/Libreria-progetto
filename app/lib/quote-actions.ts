@@ -57,6 +57,7 @@ export async function createQuote(
       },
     });
     revalidatePath("/dashboard");
+    revalidatePath("/citazioni");
     return { success: "Citazione salvata!" };
   } catch (e) {
     console.error("[createQuote]", e);
@@ -68,6 +69,7 @@ export async function deleteQuote(id: string): Promise<void> {
   const userId = await requireUserId();
   await prisma.quote.deleteMany({ where: { id, userId } });
   revalidatePath("/dashboard");
+  revalidatePath("/citazioni");
 }
 
 export async function getQuotesForBook(bookId: string) {
