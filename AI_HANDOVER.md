@@ -338,9 +338,24 @@ npm run build      # "Compiled successfully"
   - Autorizzazione a parlare di **pensieri liberi** fuori dalla libreria.
 - [x] QA: `tsc` + `build` passati.
 
+### CHECKPOINT CP-004 — UI Rewrite: EditBookForm Tabbed + Inline Delete Confirm
+**Stato:** COMPLETATO
+**Data:** 27 Febbraio 2026
+
+**Task — in ordine esatto:**
+- [x] Riscritto `EditBookForm.tsx` con sistema a 3 Tab (Scheda, Lettura, Dettagli).
+- [x] Implementati pulsanti visuali per lo Status (5 stati con icone).
+- [x] Header migliorato con link Google Books e trama collassabile.
+- [x] Sostituito `confirm()` nativo con logica di conferma inline in:
+  - `ReadingSessionSection.tsx`
+  - `LoanSection.tsx`
+  - `QuoteSection.tsx`
+- [x] Fix TypeScript in `EditBookForm.tsx` per il typing dello status.
+- [x] QA: `tsc` + `build` passati con successo.
+
 **Completion Notes (Gemini):**
-- File modificati: `app/lib/ai/types.ts`, `app/lib/ai/orchestrator.ts`, `app/lib/ai/prompts.ts`
-- Risultato: L'IA ora è molto più umana, risponde in modo sintetico a domande banali e non "stalkera" l'utente con citazioni non richieste.
+- File modificati: `app/components/books/EditBookForm.tsx`, `app/components/books/ReadingSessionSection.tsx`, `app/components/books/LoanSection.tsx`, `app/components/books/QuoteSection.tsx`.
+- Risultato: L'esperienza di modifica libro è ora molto più fluida, moderna e priva di fastidiosi popup nativi del browser.
 - tsc check: ✅
 - build check: ✅
 - Push: ✅

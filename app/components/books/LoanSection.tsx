@@ -28,9 +28,10 @@ function AddButton() {
 }
 
 export function LoanSection({ bookId }: { bookId: string }) {
-  const [open,    setOpen]    = useState(false);
-  const [loans,   setLoans]   = useState<Loan[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [open,            setOpen]           = useState(false);
+  const [loans,           setLoans]          = useState<Loan[]>([]);
+  const [loading,         setLoading]        = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createLoan, null);
 
@@ -61,9 +62,9 @@ export function LoanSection({ bookId }: { bookId: string }) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare record prestito?")) return;
     await deleteLoan(id);
     setLoans((prev) => prev.filter((l) => l.id !== id));
+    setDeleteConfirmId(null);
   }
 
   const active   = loans.filter((l) => !l.returnedAt);
@@ -93,7 +94,14 @@ export function LoanSection({ bookId }: { bookId: string }) {
                   </div>
                   <div className="flex flex-col gap-2">
                     <button onClick={() => handleReturn(loan.id)} className="text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg bg-amber-500 text-black hover:bg-amber-400 transition-all">Restituito</button>
-                    <button onClick={() => handleDelete(loan.id)} className="text-[10px] font-bold uppercase opacity-40 hover:opacity-100 transition-all">Elimina</button>
+                    {deleteConfirmId === loan.id ? (
+                      <div className="flex flex-col gap-1 items-end">
+                        <button onClick={() => handleDelete(loan.id)} className="text-[10px] font-bold text-red-400 whitespace-nowrap">Conferma</button>
+                        <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] opacity-50 whitespace-nowrap">Annulla</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setDeleteConfirmId(loan.id)} className="text-[10px] font-bold uppercase opacity-40 hover:opacity-100 transition-all">Elimina</button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -105,12 +113,19 @@ export function LoanSection({ bookId }: { bookId: string }) {
               <p className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Storico</p>
               <div className="flex flex-col gap-2">
                 {returned.map((loan) => (
-                  <div key={loan.id} className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5">
+                  <div key={loan.id} className="group/hist flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5">
                     <div className="min-w-0">
                       <p className="text-xs font-bold opacity-60 line-through">{loan.borrower}</p>
                       <p className="text-[10px] opacity-40">Reso il {new Date(loan.returnedAt!).toLocaleDateString("it-IT")}</p>
                     </div>
-                    <button onClick={() => handleDelete(loan.id)} className="p-1 opacity-0 group-hover:opacity-100 hover:text-red-400 text-xs">✕</button>
+                    {deleteConfirmId === loan.id ? (
+                      <div className="flex flex-col gap-1 items-end">
+                        <button onClick={() => handleDelete(loan.id)} className="text-[10px] font-bold text-red-400 whitespace-nowrap">Conferma</button>
+                        <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] opacity-50 whitespace-nowrap">Annulla</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setDeleteConfirmId(loan.id)} className="p-1 opacity-0 group-hover/hist:opacity-100 hover:text-red-400 text-xs">✕</button>
+                    )}
                   </div>
                 ))}
               </div>

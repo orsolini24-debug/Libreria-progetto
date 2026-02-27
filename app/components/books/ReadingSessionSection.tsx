@@ -37,9 +37,10 @@ export function ReadingSessionSection({
   bookId: string;
   pageCount: number | null;
 }) {
-  const [open,     setOpen]    = useState(false);
-  const [sessions, setSessions] = useState<RSession[]>([]);
-  const [loading,  setLoading]  = useState(false);
+  const [open,            setOpen]           = useState(false);
+  const [sessions,        setSessions]        = useState<RSession[]>([]);
+  const [loading,         setLoading]         = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createReadingSession, null);
 
@@ -65,9 +66,9 @@ export function ReadingSessionSection({
   }, [state?.success, open, loadSessions]);
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare questa sessione?")) return;
     await deleteReadingSession(id);
     setSessions((prev) => prev.filter((s) => s.id !== id));
+    setDeleteConfirmId(null);
   }
 
   const totalPagesRead = sessions.reduce((s, r) => s + (r.pagesRead ?? 0), 0);
@@ -118,7 +119,14 @@ export function ReadingSessionSection({
                   </p>
                   {s.note && <p className="text-xs mt-2 italic opacity-70 leading-relaxed border-l-2 border-white/10 pl-2">{s.note}</p>}
                 </div>
-                <button onClick={() => handleDelete(s.id)} className="opacity-0 group-hover/session:opacity-100 p-1 hover:text-red-400 transition-all text-xs">✕</button>
+                {deleteConfirmId === s.id ? (
+                  <div className="flex flex-col gap-1 items-end">
+                    <button onClick={() => handleDelete(s.id)} className="text-[10px] font-bold text-red-400 whitespace-nowrap">Elimina</button>
+                    <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] opacity-50 whitespace-nowrap">Annulla</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setDeleteConfirmId(s.id)} className="opacity-0 group-hover/session:opacity-100 p-1 hover:text-red-400 transition-all text-xs">✕</button>
+                )}
               </div>
             ))}
           </div>

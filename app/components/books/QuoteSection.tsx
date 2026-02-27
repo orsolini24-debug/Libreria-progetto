@@ -33,11 +33,12 @@ function AddButton({ label }: { label: string }) {
 }
 
 export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: string; bookTitle: string; author?: string; coverUrl?: string }) {
-  const [open,    setOpen]    = useState(false);
-  const [tab,     setTab]     = useState<NoteType>("QUOTE");
-  const [items,   setItems]   = useState<QuoteItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sharing, setSharing] = useState<QuoteItem | null>(null);
+  const [open,            setOpen]           = useState(false);
+  const [tab,             setTab]            = useState<NoteType>("QUOTE");
+  const [items,           setItems]          = useState<QuoteItem[]>([]);
+  const [loading,         setLoading]        = useState(false);
+  const [sharing,         setSharing]        = useState<QuoteItem | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createQuote, null);
 
@@ -61,9 +62,9 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
   }, [state?.success, open, loadItems]);
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare?")) return;
     await deleteQuote(id);
     setItems((prev) => prev.filter((q) => q.id !== id));
+    setDeleteConfirmId(null);
   }
 
   const quotes = items.filter((i) => i.type === "QUOTE");
@@ -104,10 +105,17 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
                   </p>
                 )}
                 <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover/item:opacity-100 transition-all">
-                  {tab === "QUOTE" && (
+                  {tab === "QUOTE" && deleteConfirmId !== q.id && (
                     <button onClick={() => setSharing(q)} className="text-xs hover:text-amber-500"><Share2 className="w-3.5 h-3.5" /></button>
                   )}
-                  <button onClick={() => handleDelete(q.id)} className="text-xs hover:text-red-400">✕</button>
+                  {deleteConfirmId === q.id ? (
+                    <div className="flex gap-1.5">
+                      <button onClick={() => handleDelete(q.id)} className="text-[10px] font-bold text-red-400">Elimina</button>
+                      <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] opacity-50">Annulla</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setDeleteConfirmId(q.id)} className="text-xs hover:text-red-400">✕</button>
+                  )}
                 </div>
               </div>
             ))}
