@@ -6,6 +6,7 @@ import { orchestrate } from "@/app/lib/ai/orchestrator";
 import { buildSystemPrompt, buildDeveloperPrompt } from "@/app/lib/ai/prompts";
 import { getUserFullContext } from "@/app/lib/ai/context";
 import { prisma } from "@/app/lib/prisma";
+import { searchBooks } from "@/app/lib/api/google-books";
 
 export const maxDuration = 60;
 
@@ -78,6 +79,41 @@ export async function POST(req: Request) {
       model: groq("llama-3.3-70b-versatile"),
       system: `${systemPrompt}\n\n---\n\n${developerPrompt}`,
       messages,
+      maxSteps: 3,
+      tools: {
+        searchBook: {
+          description:
+            "Cerca informazioni aggiornate su un libro tramite Google Books. " +
+            "Usalo quando: l'utente menziona un titolo che non conosci o che potrebbe essere stato pubblicato dopo il tuo training cutoff (2023); " +
+            "hai dubbi su autore, anno di pubblicazione, trama o categorie di un libro; " +
+            "l'utente chiede di libri del 2024 o 2025. " +
+            "NON usarlo per libri classici o famosi che conosci già con certezza.",
+          parameters: z.object({
+            query: z
+              .string()
+              .describe("Titolo del libro e/o nome dell'autore, es. 'Le otto montagne Cognetti'"),
+          }),
+          execute: async ({ query }) => {
+            const results = await searchBooks(query);
+            if (results.length === 0) {
+              return { found: false, message: "Nessun risultato trovato su Google Books." };
+            }
+            return {
+              found: true,
+              results: results.slice(0, 3).map((b) => ({
+                title: b.title,
+                author: b.author,
+                publishedDate: b.publishedDate,
+                description: b.description
+                  ? b.description.slice(0, 400) + (b.description.length > 400 ? "…" : "")
+                  : "",
+                categories: b.categories,
+                pageCount: b.pageCount || undefined,
+              })),
+            };
+          },
+        },
+      },
     });
 
     return result.toDataStreamResponse({
