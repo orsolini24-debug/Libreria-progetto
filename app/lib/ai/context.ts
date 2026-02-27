@@ -2,7 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 import type { ThematicAxis, UserContext } from "./types";
 
 export async function getUserFullContext(userId: string): Promise<UserContext> {
-  const [checkIns, quotes, readingBooks, recentReadBooks, profile, recentConversations] =
+  const [checkIns, quotes, readingBooks, recentReadBooks, toReadBooks, wishlistBooks, profile, recentConversations] =
     await Promise.all([
       prisma.dailyCheckIn.findMany({
         where: { userId },
@@ -27,6 +27,18 @@ export async function getUserFullContext(userId: string): Promise<UserContext> {
         take: 5,
         select: { title: true, author: true },
       }),
+      prisma.book.findMany({
+        where: { userId, status: "TO_READ" },
+        orderBy: { updatedAt: "desc" },
+        take: 8,
+        select: { title: true, author: true },
+      }),
+      prisma.book.findMany({
+        where: { userId, status: "WISHLIST" },
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        select: { title: true, author: true },
+      }),
       prisma.userProfile.findUnique({
         where: { userId },
         select: { thematicAxes: true, emotionalSummary: true },
@@ -46,6 +58,12 @@ export async function getUserFullContext(userId: string): Promise<UserContext> {
       b.author ? `${b.title} di ${b.author}` : b.title,
     ),
     recentReadBooks: recentReadBooks.map((b) =>
+      b.author ? `${b.title} di ${b.author}` : b.title,
+    ),
+    toReadBooks: toReadBooks.map((b) =>
+      b.author ? `${b.title} di ${b.author}` : b.title,
+    ),
+    wishlistBooks: wishlistBooks.map((b) =>
       b.author ? `${b.title} di ${b.author}` : b.title,
     ),
     thematicAxes: (profile?.thematicAxes as unknown as ThematicAxis[]) ?? [],

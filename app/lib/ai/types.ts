@@ -20,6 +20,8 @@ export interface UserContext {
   recentQuotes: { text: string; bookTitle: string }[];
   readingBooks: string[];
   recentReadBooks: string[];
+  toReadBooks: string[];
+  wishlistBooks: string[];
   thematicAxes: ThematicAxis[];
   emotionalSummary: string | null;
   recentConversations: string[];
