@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { streamText } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { orchestrate } from "@/app/lib/ai/orchestrator";
 import { buildSystemPrompt, buildDeveloperPrompt } from "@/app/lib/ai/prompts";
@@ -21,9 +21,9 @@ const ChatRequestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return new Response("SERVER ERROR: GOOGLE_AI_API_KEY undefined.", { status: 500 });
+      return new Response("SERVER ERROR: GROQ_API_KEY undefined.", { status: 500 });
     }
 
     const session = await auth();
@@ -72,10 +72,10 @@ export async function POST(req: Request) {
     const developerPrompt = buildDeveloperPrompt(orchestration, userContext, currentBook);
 
     // 4. Streaming
-    const googleProvider = createGoogleGenerativeAI({ apiKey: apiKey.trim() });
+    const groq = createGroq({ apiKey: apiKey.trim() });
 
     const result = await streamText({
-      model: googleProvider("gemini-2.0-flash"),
+      model: groq("llama-3.3-70b-versatile"),
       system: `${systemPrompt}\n\n---\n\n${developerPrompt}`,
       messages,
     });
