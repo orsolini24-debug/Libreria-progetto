@@ -23,9 +23,10 @@ export async function togglePublicShelf(isPublic: boolean) {
     revalidatePath("/dashboard");
     
     return { success: true };
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
     console.error("CRITICAL_ACTION_ERROR:", e);
-    return { error: `DB_OR_SERVER_ERROR: ${e.message || 'unknown'}` };
+    return { error: `DB_OR_SERVER_ERROR: ${msg}` };
   }
 }
 

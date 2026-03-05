@@ -17,7 +17,9 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
   }, []);
 
   const publicUrl = `${origin}/scaffale/${userId}`;
@@ -32,17 +34,20 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
       } else {
         setError(res.error || "Errore imprevisto");
       }
-    } catch (e: any) {
-      setError(`Errore Tecnico: ${e.message || 'Connessione interrotta'}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Connessione interrotta";
+      setError(`Errore Tecnico: ${msg}`);
     } finally {
       setLoading(false);
     }
   }
 
   function copyToClipboard() {
-    navigator.clipboard.writeText(publicUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (typeof navigator !== "undefined") {
+      navigator.clipboard.writeText(publicUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   return (
