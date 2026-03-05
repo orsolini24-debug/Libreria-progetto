@@ -95,7 +95,8 @@ export async function POST(req: Request) {
     const groq = createGroq({ apiKey: apiKey.trim() });
 
     const result = await streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      model: groq("llama-3.3-70b-versatile") as any,
       system: `${systemPrompt}\n\n---\n\n${developerPrompt}`,
       messages,
       maxSteps: 3,

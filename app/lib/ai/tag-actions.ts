@@ -19,7 +19,8 @@ export async function suggestBookTags(description: string): Promise<string[]> {
 
     const groq = createGroq({ apiKey: apiKey.trim() });
     const { text } = await generateText({
-      model: groq("llama-3.3-70b-versatile"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      model: groq("llama-3.3-70b-versatile") as any,
       prompt: `Analizza questa trama di un libro e restituisci ESATTAMENTE 5 tag (parole chiave singole)
         che lo descrivano meglio (es. genere, atmosfera, temi).
         Rispondi solo con i tag separati da virgola, senza altro testo.

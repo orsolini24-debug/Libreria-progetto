@@ -27,7 +27,8 @@ export async function generateBookAnalysis(bookId: string) {
   const groq = createGroq({ apiKey: apiKey.trim() });
   
   const { text } = await generateText({
-    model: groq("llama-3.3-70b-versatile"),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    model: groq("llama-3.3-70b-versatile") as any,
     system: `Sei "Sanctuary", un critico letterario empatico e un analista di anime. 
 Il tuo compito è scrivere un'analisi profonda di un libro specifica per QUESTO utente. 
 Usa il contesto fornito (libri letti, citazioni, stato emotivo) per creare un ponte tra il libro e la vita del lettore.
