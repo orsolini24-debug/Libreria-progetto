@@ -2,7 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
-import { requireAuth } from "./auth-utils";
 import { revalidatePath } from "next/cache";
 import { logger } from "./logger";
 
