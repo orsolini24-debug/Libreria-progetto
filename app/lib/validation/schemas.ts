@@ -34,18 +34,16 @@ const nullableDate = () =>
     return Number.isNaN(d.getTime()) ? null : d;
   }, z.date().nullable());
 
-export const CreateBookSchema = z
+// Schema base senza refine — necessario per Zod v4 dove .partial() non funziona su schema con .refine()
+const BookBaseSchema = z
   .object({
-    // obbligatori
-    title: z.string().trim().min(1, "Il titolo è obbligatorio").max(200),
-    author: z.string().trim().min(1, "L'autore è obbligatorio").max(100),
+    title: z.string().trim().min(1, "Il titolo e' obbligatorio").max(200),
+    author: z.string().trim().min(1, "L'autore e' obbligatorio").max(100),
 
-    // stato
     status: emptyToUndefined
       .pipe(z.nativeEnum(BookStatus))
       .default(BookStatus.TO_READ),
 
-    // campi testo/metadata (tutti validati: niente bypass)
     googleId: nullableTrimmedString(64),
     isbn: nullableTrimmedString(32),
     publisher: nullableTrimmedString(120),
@@ -58,7 +56,6 @@ export const CreateBookSchema = z
     description: nullableTrimmedString(20000),
     aiAnalysis: nullableTrimmedString(20000),
 
-    // campi “funzionali”
     rating: nullableNumber(z.number().min(0, "Rating min 0").max(10, "Rating max 10")),
     comment: nullableTrimmedString(2000),
     tags: nullableTrimmedString(500),
@@ -74,43 +71,40 @@ export const CreateBookSchema = z
     series: nullableTrimmedString(120),
     seriesOrder: nullableNumber(z.number().int("Deve essere un intero").min(1, "Min 1")),
   })
-  .strict()
-  .refine((data) => {
-    // #48: Coerenza date
-    if (data.startedAt && data.finishedAt && data.startedAt > data.finishedAt) {
-      return false;
-    }
-    return true;
-  }, {
-    message: "La data di fine lettura non può essere precedente alla data di inizio",
-    path: ["finishedAt"],
-  })
-  .refine((data) => {
-    // #20: currentPage vs pageCount
-    if (data.currentPage !== null && data.pageCount !== null && data.currentPage > data.pageCount) {
-      return false;
-    }
-    return true;
-  }, {
-    message: "La pagina corrente non può superare il numero totale di pagine",
-    path: ["currentPage"],
-  })
-  .refine((data) => {
-    // #31: seriesOrder obbligatorio se series è presente
-    if (data.series && data.seriesOrder === null) {
-      return false;
-    }
-    return true;
-  }, {
-    message: "L'ordine nella serie è obbligatorio se il libro fa parte di una serie",
-    path: ["seriesOrder"],
-  }); // P0: allowlist, niente campi inattesi
+  .strict();
 
-export const UpdateBookSchema = CreateBookSchema.partial();
+export const CreateBookSchema = BookBaseSchema
+  .refine((data) => {
+    if (data.startedAt && data.finishedAt && data.startedAt > data.finishedAt) return false;
+    return true;
+  }, { message: "La data di fine lettura non puo' essere precedente alla data di inizio", path: ["finishedAt"] })
+  .refine((data) => {
+    if (data.currentPage != null && data.pageCount != null && data.currentPage > data.pageCount) return false;
+    return true;
+  }, { message: "La pagina corrente non puo' superare il numero totale di pagine", path: ["currentPage"] })
+  .refine((data) => {
+    if (data.series && data.seriesOrder === null) return false;
+    return true;
+  }, { message: "L'ordine nella serie e' obbligatorio se il libro fa parte di una serie", path: ["seriesOrder"] });
+
+// In Zod v4 .partial() non puo' essere usato su schema con .refine() — va applicato sul base schema
+export const UpdateBookSchema = BookBaseSchema.partial()
+  .refine((data) => {
+    if (data.startedAt && data.finishedAt && data.startedAt > data.finishedAt) return false;
+    return true;
+  }, { message: "La data di fine lettura non puo' essere precedente alla data di inizio", path: ["finishedAt"] })
+  .refine((data) => {
+    if (data.currentPage != null && data.pageCount != null && data.currentPage > data.pageCount) return false;
+    return true;
+  }, { message: "La pagina corrente non puo' superare il numero totale di pagine", path: ["currentPage"] })
+  .refine((data) => {
+    if (data.series && data.seriesOrder === null) return false;
+    return true;
+  }, { message: "L'ordine nella serie e' obbligatorio se il libro fa parte di una serie", path: ["seriesOrder"] });
 
 export const QuoteSchema = z.object({
   bookId: z.string().min(1, "ID libro obbligatorio"),
-  text: z.string().trim().min(1, "Il testo è obbligatorio").max(2000),
+  text: z.string().trim().min(1, "Il testo e' obbligatorio").max(2000),
   type: z.nativeEnum(NoteType).default(NoteType.QUOTE),
   page: nullableNumber(z.number().int().min(0)),
   chapter: nullableTrimmedString(100),
@@ -118,7 +112,7 @@ export const QuoteSchema = z.object({
 
 export const LoanSchema = z.object({
   bookId: z.string().min(1, "ID libro obbligatorio"),
-  borrower: z.string().trim().min(1, "Il nome del debitore è obbligatorio").max(100),
+  borrower: z.string().trim().min(1, "Il nome del debitore e' obbligatorio").max(100),
   loanedAt: nullableDate().default(() => new Date()),
   note: nullableTrimmedString(500),
 }).strict();
@@ -134,12 +128,11 @@ export const ReadingSessionSchema = z.object({
 })
 .strict()
 .refine((data) => {
-  // #32: startPage vs endPage
   if (data.startPage !== null && data.endPage !== null && data.startPage > data.endPage) {
     return false;
   }
   return true;
 }, {
-  message: "La pagina finale non può essere precedente alla pagina iniziale",
+  message: "La pagina finale non puo' essere precedente alla pagina iniziale",
   path: ["endPage"],
 });
