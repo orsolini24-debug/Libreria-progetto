@@ -32,8 +32,8 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
       } else {
         setError(res.error || "Errore imprevisto");
       }
-    } catch {
-      setError("Errore di connessione");
+    } catch (e: any) {
+      setError(`Errore Tecnico: ${e.message || 'Connessione interrotta'}`);
     } finally {
       setLoading(false);
     }
