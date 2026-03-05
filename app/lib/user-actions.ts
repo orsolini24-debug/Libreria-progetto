@@ -11,20 +11,29 @@ import { logger } from "./logger";
 export async function togglePublicShelf(isPublic: boolean) {
   try {
     const userId = await requireAuth();
-    
+    if (!userId) throw new Error("USER_ID_MISSING");
+
     await prisma.user.update({
       where: { id: userId },
       data: { isPublicShelf: isPublic }
     });
     
-    // Revalida sia la dashboard che lo scaffale pubblico
-    revalidatePath("/dashboard");
-    revalidatePath(`/scaffale/${userId}`);
+    // Tenta la revalidazione, ma non bloccare se fallisce
+    try {
+      revalidatePath("/dashboard");
+      revalidatePath(`/scaffale/${userId}`);
+    } catch (revalidateError) {
+      console.warn("REVALIDATE_ERROR_NON_FATAL:", revalidateError);
+    }
     
     return { success: true };
-  } catch (e) {
+  } catch (e: any) {
     logger.error("TOGGLE_PUBLIC_SHELF_ERROR", e);
-    return { error: "Errore durante il cambio della privacy" };
+    return { 
+      error: e.message === "UNAUTHORIZED" 
+        ? "Sessione scaduta. Ricarica la pagina." 
+        : "Errore durante l'aggiornamento della privacy" 
+    };
   }
 }
 
