@@ -372,3 +372,43 @@ npm run build      # "Compiled successfully"
 - build check: ✅
 - Push: ✅
 - **Stato: COMPLETATO**
+
+---
+
+---
+
+## ✅ EMERGENCY RECOVERY — Completato da Claude (05 Marzo 2026)
+
+**Problema:** L'app crashava in produzione con `Application error` (Digest: 657004745) dopo il mega-commit di Gemini (`c519dd1`) che conteneva ~200 modifiche.
+
+**Root causes trovati e risolti:**
+
+### 1. Migration mancanti (CRITICO — causa diretta del crash)
+Gemini aveva aggiunto al `schema.prisma` tre elementi senza mai creare la migration:
+- `isPublicShelf Boolean` sul modello `User` → `dashboard/page.tsx` crashava su ogni load
+- Modello `Notification` → `NotificationCenter` crashava
+- Modello `ChatMessage` (nuova versione) → `chat/route.ts` e `chat-actions.ts` crashavano
+
+**Fix:** Creata e applicata migration `20260305000000_add_ispublicshelf_notification_chatmessage`
+
+### 2. `prisma.ts` — TypeScript error
+`PrismaNeon` riceve `PoolConfig`, non un'istanza `Pool`.
+**Fix:** `new PrismaNeon({ connectionString: process.env.DATABASE_URL! })`
+
+### 3. `.claude/worktrees/` e `.git_backup/` committati (118 file fantasma)
+Gemini aveva accidentalmente committato un intero worktree nel repo → build lentissima su Vercel.
+**Fix:** `git rm --cached` + `.gitignore` aggiornato
+
+### 4. `next.config.mjs` con TS/ESLint disabled
+**Fix:** Rimossi i flag `ignoreBuildErrors` e `ignoreDuringBuilds` dopo aver fixato il vero errore TS
+
+### 5. `tag-actions.ts` ancora su Google Gemini
+**Fix:** Unificato su GROQ `llama-3.3-70b-versatile` (unico provider AI usato)
+
+**QA finale:**
+- `npx tsc --noEmit` → 0 errori ✅
+- `npm run build` → Compiled successfully ✅
+- `npx prisma migrate status` → Database schema is up to date ✅
+- Push: commit `5173f93` su main ✅
+
+**Nota Giorgio:** Ha menzionato "Kimi 2" come possibile modello AI — da chiarire se vuole un cambio provider rispetto a GROQ attuale.
