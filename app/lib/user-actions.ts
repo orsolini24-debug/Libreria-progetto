@@ -9,31 +9,37 @@ import { logger } from "./logger";
  * #164: Cambia lo stato di visibilità pubblica della propria libreria
  */
 export async function togglePublicShelf(isPublic: boolean) {
+  console.log(`[DEBUG] Attempting to set public status to ${isPublic}`);
   try {
     const userId = await requireAuth();
+    console.log(`[DEBUG] Auth check passed for user: ${userId}`);
+    
     if (!userId) throw new Error("USER_ID_MISSING");
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { isPublicShelf: isPublic }
+      data: { isPublicShelf: isPublic },
+      select: { id: true, isPublicShelf: true }
     });
     
-    // Tenta la revalidazione, ma non bloccare se fallisce
+    console.log(`[DEBUG] DB Update successful:`, updatedUser);
+    
     try {
       revalidatePath("/dashboard");
       revalidatePath(`/scaffale/${userId}`);
-    } catch (revalidateError) {
-      console.warn("REVALIDATE_ERROR_NON_FATAL:", revalidateError);
+      console.log(`[DEBUG] Revalidation successful`);
+    } catch (rvErr) {
+      console.warn("[DEBUG] Revalidation soft-failed:", rvErr);
     }
     
     return { success: true };
   } catch (e: unknown) {
-    logger.error("TOGGLE_PUBLIC_SHELF_ERROR", e);
-    const errorMessage = e instanceof Error ? e.message : "";
+    console.error("[CRITICAL] TOGGLE_PUBLIC_SHELF_ERROR:", e);
+    const errorMessage = e instanceof Error ? e.message : "UNKNOWN_ERROR";
     return { 
       error: errorMessage === "UNAUTHORIZED" 
         ? "Sessione scaduta. Ricarica la pagina." 
-        : "Errore durante l'aggiornamento della privacy" 
+        : `Errore: ${errorMessage}` 
     };
   }
 }
