@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { auth } from "@/auth";
 import { requireAuth } from "./auth-utils";
 import { revalidatePath } from "next/cache";
 import { logger } from "./logger";
@@ -9,38 +10,43 @@ import { logger } from "./logger";
  * #164: Cambia lo stato di visibilità pubblica della propria libreria
  */
 export async function togglePublicShelf(isPublic: boolean) {
-  console.log(`[DEBUG] Attempting to set public status to ${isPublic}`);
+  console.log(">>> [TOGGLE_START] Requested:", isPublic);
   try {
-    const userId = await requireAuth();
-    console.log(`[DEBUG] Auth check passed for user: ${userId}`);
+    const session = await auth();
+    const userId = session?.user?.id;
     
-    if (!userId) throw new Error("USER_ID_MISSING");
+    if (!userId) {
+      console.error(">>> [TOGGLE_ERROR] No userId in session");
+      return { error: "Sessione non valida. Effettua il logout e rientra." };
+    }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { isPublicShelf: isPublic },
-      select: { id: true, isPublicShelf: true }
-    });
+    console.log(">>> [TOGGLE_DB_UPDATE] Target User:", userId);
     
-    console.log(`[DEBUG] DB Update successful:`, updatedUser);
+    // Proviamo l'update con un blocco try/catch isolato
+    let updated;
+    try {
+      updated = await prisma.user.update({
+        where: { id: userId },
+        data: { isPublicShelf: isPublic },
+      });
+      console.log(">>> [TOGGLE_DB_SUCCESS] New status:", updated.isPublicShelf);
+    } catch (dbErr: any) {
+      console.error(">>> [TOGGLE_DB_FAIL]", dbErr);
+      return { error: `Database Error: ${dbErr.code || 'UNKNOWN'}` };
+    }
     
     try {
       revalidatePath("/dashboard");
       revalidatePath(`/scaffale/${userId}`);
-      console.log(`[DEBUG] Revalidation successful`);
+      console.log(">>> [TOGGLE_REVALIDATE_OK]");
     } catch (rvErr) {
-      console.warn("[DEBUG] Revalidation soft-failed:", rvErr);
+      console.warn(">>> [TOGGLE_REVALIDATE_SOFT_FAIL]", rvErr);
     }
     
     return { success: true };
-  } catch (e: unknown) {
-    console.error("[CRITICAL] TOGGLE_PUBLIC_SHELF_ERROR:", e);
-    const errorMessage = e instanceof Error ? e.message : "UNKNOWN_ERROR";
-    return { 
-      error: errorMessage === "UNAUTHORIZED" 
-        ? "Sessione scaduta. Ricarica la pagina." 
-        : `Errore: ${errorMessage}` 
-    };
+  } catch (e: any) {
+    console.error(">>> [TOGGLE_CRITICAL_FAIL]", e);
+    return { error: `Errore Critico: ${e.message || 'Unknown'}` };
   }
 }
 
