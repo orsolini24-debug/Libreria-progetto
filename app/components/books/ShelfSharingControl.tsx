@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { togglePublicShelf } from "@/app/lib/user-actions";
-import { Globe, Lock, Copy, Check } from "lucide-react";
+import { Globe, Lock, Copy, Check, AlertCircle } from "lucide-react";
 
 interface Props {
   userId: string;
@@ -13,16 +13,30 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
 
-  const publicUrl = `${window.location.origin}/scaffale/${userId}`;
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const publicUrl = `${origin}/scaffale/${userId}`;
 
   async function handleToggle() {
     setLoading(true);
-    const res = await togglePublicShelf(!isPublic);
-    if (res.success) {
-      setIsPublic(!isPublic);
+    setError(null);
+    try {
+      const res = await togglePublicShelf(!isPublic);
+      if (res.success) {
+        setIsPublic(!isPublic);
+      } else {
+        setError(res.error || "Errore imprevisto");
+      }
+    } catch (e) {
+      setError("Errore di connessione");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function copyToClipboard() {
@@ -56,6 +70,13 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
           {loading ? "..." : isPublic ? "Rendi Privata" : "Rendi Pubblica"}
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-[10px] font-bold uppercase tracking-wider animate-shake">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
 
       {isPublic && (
         <div className="mt-4 flex gap-2 animate-fade-in">

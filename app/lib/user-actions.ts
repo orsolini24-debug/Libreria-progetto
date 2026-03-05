@@ -11,11 +11,16 @@ import { logger } from "./logger";
 export async function togglePublicShelf(isPublic: boolean) {
   try {
     const userId = await requireAuth();
+    
     await prisma.user.update({
       where: { id: userId },
       data: { isPublicShelf: isPublic }
     });
+    
+    // Revalida sia la dashboard che lo scaffale pubblico
     revalidatePath("/dashboard");
+    revalidatePath(`/scaffale/${userId}`);
+    
     return { success: true };
   } catch (e) {
     logger.error("TOGGLE_PUBLIC_SHELF_ERROR", e);
