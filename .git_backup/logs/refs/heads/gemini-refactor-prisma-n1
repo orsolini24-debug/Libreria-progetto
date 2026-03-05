@@ -1,0 +1,2 @@
+0000000000000000000000000000000000000000 8cd66eed7e4464b0130c07ff02460764298055ab Giorgio Orsolini <orsolini24@gmail.com> 1772013972 +0100	branch: Created from HEAD
+8cd66eed7e4464b0130c07ff02460764298055ab 3f4f88758040bd07daba616381cb6edb7d8eb915 Giorgio Orsolini <orsolini24@gmail.com> 1772014006 +0100	commit: perf(prisma): risoluzione N+1 e consolidamento query atomiche [GEMINI-ARCH]

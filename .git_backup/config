@@ -1,0 +1,35 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+	hooksPath = C:\\Users\\g.orsolini\\Desktop\\Giorgio\\Libreria-progetto\\.git\\hooks
+[remote "origin"]
+	url = https://github.com/orsolini24-debug/Libreria-progetto.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+[branch "worktree-agent-a809aaf7"]
+	remote = origin
+	merge = refs/heads/main
+	vscode-merge-base = origin/main
+[user]
+	email = orsolini24@gmail.com
+	name = Giorgio Orsolini
+[branch "gemini-refactor-series"]
+	vscode-merge-base = origin/main
+	remote = origin
+	merge = refs/heads/gemini-refactor-series
+[branch "gemini-refactor-prisma-n1"]
+	vscode-merge-base = origin/main
+[branch "gemini-remove-room-feature"]
+	vscode-merge-base = origin/main
+[branch "feature-core-consolidation"]
+	vscode-merge-base = origin/main
+[branch "fix-search-and-duplicates"]
+	vscode-merge-base = origin/main
+[branch "cleanup-technical-debt-final"]
+	vscode-merge-base = origin/main

@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  password    String
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  displayName String?
+  isPublicShelf Boolean    @default(false) // #164: Opt-in per condivisione
+  books                Book[]
+  suggestions          Suggestion[]
+  dailyCheckIns        DailyCheckIn[]
+  profile              UserProfile?
+  conversationSummaries ConversationSummary[]
+  chatMessages         ChatMessage[]
+  notifications        Notification[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // "LOAN" | "GOAL" | "SYSTEM"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   // "user" | "assistant" | "system"
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Book {
+  id              String           @id @default(cuid())
+  userId          String
+  status          BookStatus       @default(TO_READ)
+  rating          Float?
+  comment         String?
+  tags            String?
+  formats         String?
+  googleId        String?
+  title           String
+  author          String?
+  isbn            String?
+  publisher       String?
+  publishedDate   String?
+  language        String?
+  pageCount       Int?
+  coverUrl        String?
+  description     String?
+  aiAnalysis      String?          @db.Text
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  finishedAt      DateTime?
+  purchasedAt     DateTime?
+  startedAt       DateTime?
+  currentPage     Int?
+  series          String?
+  seriesOrder     Int?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loans           Loan[]
+  quotes          Quote[]
+  readingSessions ReadingSession[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status]) // Indice composto per filtri dashboard
+  @@index([series])        // Indice per pannello serie
+}
+
+model Quote {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  text      String
+  page      Int?
+  chapter   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  type      NoteType @default(QUOTE)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+  @@index([bookId, createdAt]) // Indice per ordinamento citazioni per libro
+}
+
+model Loan {
+  id         String    @id @default(cuid())
+  bookId     String
+  userId     String
+  borrower   String
+  loanedAt   DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  returnedAt DateTime?
+  note       String?
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model ReadingSession {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  date      DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startPage Int?
+  endPage   Int?
+  pagesRead Int?
+  duration  Int?
+  note      String?
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+  @@index([bookId, date]) // Indice per ordinamento sessioni
+}
+
+model Suggestion {
+  id          String             @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  category    SuggestionCategory @default(OTHER)
+  status      SuggestionStatus   @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookStatus {
+  TO_READ
+  READING
+  READ
+  WISHLIST
+  ABANDONED
+}
+
+enum SuggestionCategory {
+  FEATURE
+  UI_UX
+  BUG
+  PERFORMANCE
+  OTHER
+}
+
+enum NoteType {
+  QUOTE
+  NOTE
+}
+
+enum SuggestionStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  IMPLEMENTED
+}
+
+// --- AI MEMORY & PROFILE LAYER ---
+
+model UserProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // JSON: ThematicAxis[] — { name, evidence[], bookIds[], trend, weight }
+  thematicAxes     Json      @default("[]")
+  // JSON: { genres[], avgPagesPerDay, preferredFormat, languages[] }
+  readingPrefs     Json      @default("{}")
+  // Sintesi AI degli stati emotivi recenti
+  emotionalSummary String?   @db.Text
+  // Ultima sintesi completa del profilo generata dall'AI
+  lastSynthesis    String?   @db.Text
+  lastSynthesisAt  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model ConversationSummary {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  summary   String   @db.Text
+  intent    String?
+  bookIds   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model DailyCheckIn {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  moodScore   Int?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

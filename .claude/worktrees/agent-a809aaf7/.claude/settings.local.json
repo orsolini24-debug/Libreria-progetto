@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npx create-next-app@14:*)",
+      "Bash(npm i:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsc:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si procedi\" npx prisma db push:*)",
+      "Bash(npx next build:*)",
+      "Bash(curl:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git rm:*)",
+      "Bash(npx vercel --version)",
+      "WebFetch(domain:libreria-progetto.vercel.app)",
+      "WebFetch(domain:libreria-progetto-orsolini24-debugs-projects.vercel.app)",
+      "Bash(npx vercel inspect:*)",
+      "Bash(npx vercel logs:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel:*)",
+      "Bash(cd:*)",
+      "Bash(cd \"C:\\\\Users\\\\g.orsolini\\\\Desktop\\\\Giorgio\\\\Libreria-progetto\" && git push origin main 2>&1)",
+      "Bash(grep AUTH_URL:*)",
+      "WebSearch",
+      "Bash(cd \"C:\\\\Users\\\\g.orsolini\\\\Desktop\\\\Giorgio\\\\Libreria-progetto\" && git add app/globals.css \"app/\\(protected\\)/layout.tsx\" app/components/DashboardClient.tsx app/components/ConfettiCelebration.tsx app/components/books/StatsBar.tsx app/components/books/ReadingChallenge.tsx app/components/books/EditBookForm.tsx app/components/books/BookCard.tsx && git commit -m \"$\\(cat <<'EOF'\nfeat: Tier 2 — palette calda, StatsBar, ReadingChallenge, confetti completamento\n\nPalette:\n- Background: #17110c \\(marrone caldo profondo vs grigio freddo\\)\n- Layout: radial-gradient ellipse warm amber-950 → #17110c\n- Topbar: bordo amber-900/35, bg #140d07/92 semitrasparente\n- Cards stat: bg-[#1f1710], bordi amber-900/20 invece di stone freddo\n- BookCard info: bg-[#221810], bordo amber-900/25\n- EditBookForm: campi con border amber-900/20, tag chip amber-tinted\n\nStatsBar \\(nuovo componente\\):\n- Riga metrica: totale libri, letti, autori unici, media voti, pagine lette\n- Font Playfair per i numeri, palette amber-300\n\nReadingChallenge \\(nuovo componente\\):\n- Obiettivo annuale configurabile \\(localStorage\\)\n- Barra progresso amber con gradient + shimmer animato\n- Messaggio motivazionale dinamico basato sulla percentuale\n- Idration-safe \\(mounted check\\)\n\nConfettiCelebration \\(nuovo componente\\):\n- 50 particelle pure CSS \\(rect + circle\\), colori amber/gold/orange\n- z-index 200, pointer-events-none, auto-dismiss dopo 4s\n- Trigger: DashboardClient.handleCelebrate\\(\\) → EditBookForm.onCelebrate\\(\\)\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push origin main 2>&1)"
+    ]
+  }
+}

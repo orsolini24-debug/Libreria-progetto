@@ -1,0 +1,2 @@
+0000000000000000000000000000000000000000 f20f67762a7d82a9f83655f8f0a0144590fd2f8c Giorgio Orsolini <orsolini24@gmail.com> 1772027000 +0100	branch: Created from HEAD
+f20f67762a7d82a9f83655f8f0a0144590fd2f8c 556f178c0250a60d131dedcb87996b8bf8d5489e Giorgio Orsolini <orsolini24@gmail.com> 1772028037 +0100	commit: feat(core): consolidate library CRUD, tracking, filters and data lifecycle [GEMINI-ARCH]

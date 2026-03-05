@@ -1,0 +1,70 @@
+import { auth, signOut } from "@/auth";
+import { ThemeSwitcher } from "@/app/components/ThemeSwitcher";
+import { NavLinks } from "@/app/components/ui/NavLinks";
+import { NotificationCenter } from "@/app/components/ui/NotificationCenter";
+import { GentleCheckIn } from "@/app/components/ai/GentleCheckIn";
+
+export default async function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth();
+
+  return (
+    <div
+      className="min-h-screen"
+      style={{ background: "radial-gradient(ellipse at 50% 0%, var(--glow) 0%, var(--bg-page) 60%)" }}
+    >
+      {/* Topbar */}
+      <header
+        className="backdrop-blur-md border-b sticky top-0 z-10"
+        style={{ background: "color-mix(in srgb, var(--bg-page) 92%, transparent)", borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)" }}
+      >
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          {/* Brand + Theme */}
+          <div className="flex items-center gap-3">
+            <span className="font-display font-bold text-xl tracking-tight" style={{ color: "var(--accent)" }}>
+              Librer<em className="italic">IA</em>
+            </span>
+            <ThemeSwitcher />
+          </div>
+
+          {/* Nav links */}
+          <NavLinks />
+
+          {/* User + Notifications + Logout */}
+          <div className="flex items-center gap-2">
+            <NotificationCenter />
+            <span className="text-xs hidden md:block truncate max-w-[160px]" style={{ color: "var(--fg-subtle)" }}>
+              {session?.user?.email}
+            </span>
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
+            >
+              <button
+                type="submit"
+                className="text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
+                style={{
+                  color: "var(--fg-subtle)",
+                  borderColor: "color-mix(in srgb, var(--fg-subtle) 30%, transparent)",
+                }}
+              >
+                Logout
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      {/* Page content */}
+      <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+
+      {/* AI Components */}
+      <GentleCheckIn />
+    </div>
+  );
+}
