@@ -1,6 +1,6 @@
 import { PrismaClient } from "@/app/generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { Pool } from "@neondatabase/serverless";
 
 // #133: Configurazione necessaria per Neon in ambiente Serverless/Edge
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
