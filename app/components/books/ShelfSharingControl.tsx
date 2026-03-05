@@ -32,7 +32,7 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
       } else {
         setError(res.error || "Errore imprevisto");
       }
-    } catch (e) {
+    } catch {
       setError("Errore di connessione");
     } finally {
       setLoading(false);

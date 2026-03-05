@@ -27,10 +27,11 @@ export async function togglePublicShelf(isPublic: boolean) {
     }
     
     return { success: true };
-  } catch (e: any) {
+  } catch (e: unknown) {
     logger.error("TOGGLE_PUBLIC_SHELF_ERROR", e);
+    const errorMessage = e instanceof Error ? e.message : "";
     return { 
-      error: e.message === "UNAUTHORIZED" 
+      error: errorMessage === "UNAUTHORIZED" 
         ? "Sessione scaduta. Ricarica la pagina." 
         : "Errore durante l'aggiornamento della privacy" 
     };
