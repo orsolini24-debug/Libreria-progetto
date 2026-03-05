@@ -1,7 +1,7 @@
 "use server";
 
 import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
 import { requireAuth } from "../auth-utils";
 import { logger } from "../logger";
 
@@ -11,13 +11,17 @@ import { logger } from "../logger";
 export async function suggestBookTags(description: string): Promise<string[]> {
   if (!description || description.length < 20) return [];
 
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return [];
+
   try {
     await requireAuth();
 
+    const groq = createGroq({ apiKey: apiKey.trim() });
     const { text } = await generateText({
-      model: google("gemini-2.0-flash"),
-      prompt: `Analizza questa trama di un libro e restituisci ESATTAMENTE 5 tag (parole chiave singole) 
-        che lo descrivano meglio (es. genere, atmosfera, temi). 
+      model: groq("llama-3.3-70b-versatile"),
+      prompt: `Analizza questa trama di un libro e restituisci ESATTAMENTE 5 tag (parole chiave singole)
+        che lo descrivano meglio (es. genere, atmosfera, temi).
         Rispondi solo con i tag separati da virgola, senza altro testo.
         Trama: "${description}"`,
     });

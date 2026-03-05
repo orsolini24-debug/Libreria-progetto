@@ -39,4 +39,6 @@ next-env.d.ts
 
 /app/generated/prisma
 
-.vercel
+# claude code internal directories — mai committare
+.claude/worktrees/
+.git_backup/
