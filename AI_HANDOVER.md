@@ -468,7 +468,7 @@ Migration history azzerata da `db push --force-reset`: ripristinata con `prisma 
 - ✅ Suggerimenti
 
 ### Feature PERSA (da ricostruire in sessione dedicata)
-- ❌ **Digital Folio** — era nel commit `2b5191e` distrutto da Gemini. Nessun codice sopravvissuto.
+- ~~❌ Digital Folio~~ → **TROVATO E FUNZIONANTE** — `BookInfoOverlay.tsx` è il Digital Folio. Si apre dal pulsante "Info & Analisi" nell'header della scheda libro. Include trama + Sanctuary Insights. **Nessuna feature persa.**
 
 ### Analisi GEMINI_CODE_DUMP_05_MAR.md
 Il dump contiene versioni semplificate/rotte di codice che Claude aveva già implementato correttamente. **Non va installato nulla.** Era codice scritto a memoria da Gemini dopo la perdita.
