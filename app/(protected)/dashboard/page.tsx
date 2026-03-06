@@ -40,9 +40,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const orderBy: Prisma.BookOrderByWithRelationInput = {};
   if (sort === "title")  orderBy.title = "asc";
   else if (sort === "rating") orderBy.rating = "desc";
+  else if (sort === "createdAt") orderBy.createdAt = "desc";
   else orderBy.updatedAt = "desc";
 
-  const [books, totalCount, user] = await Promise.all([
+  const [books, totalCount, user, statusCountsRaw] = await Promise.all([
     prisma.book.findMany({
       where,
       orderBy,
@@ -54,7 +55,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       where:  { id: userId },
       select: { displayName: true, isPublicShelf: true },
     }),
+    prisma.book.groupBy({ by: ["status"], where: { userId }, _count: { _all: true } }),
   ]);
+
+  const statusCounts = statusCountsRaw.reduce<Record<string, number>>((acc, row) => {
+    acc[row.status] = row._count._all;
+    return acc;
+  }, {});
 
   const totalPages = Math.ceil(totalCount / LIMIT);
 
@@ -71,11 +78,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <DashboardClient 
-        initialBooks={books} 
+      <DashboardClient
+        initialBooks={books}
         totalPages={totalPages}
         currentPage={currentPage}
         totalCount={totalCount}
+        statusCounts={statusCounts}
         userPrivacy={{
           userId,
           isPublic: user?.isPublicShelf ?? false

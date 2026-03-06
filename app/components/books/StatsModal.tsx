@@ -48,14 +48,14 @@ export function StatsModal({ books, filter, onClose, onBookClick }: Props) {
   if (filter === "year") {
     filtered = books.filter((b) => {
       if (b.status !== "READ") return false;
-      const d = b.finishedAt ?? b.updatedAt;
+      const d = b.finishedAt ?? b.createdAt;
       return new Date(d).getFullYear() === YEAR;
     });
     title    = `Libri letti nel ${YEAR}`;
   } else if (targetYear) {
     filtered = books.filter((b) => {
       if (b.status !== targetStatus) return false;
-      const d = b.finishedAt ?? b.updatedAt;
+      const d = b.finishedAt ?? b.createdAt;
       return new Date(d).getFullYear() === targetYear;
     });
     title = `Libri ${STATUS_LABELS[targetStatus] || targetStatus} nel ${targetYear}`;

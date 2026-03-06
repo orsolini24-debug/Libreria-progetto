@@ -22,12 +22,25 @@ export function BookInfoOverlay({ isOpen, onClose, title, author, description, a
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
+  // Chiudi con Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const hasBoth = description && aiAnalysis;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-6 animate-in fade-in duration-500">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center sm:p-6 animate-in fade-in duration-500"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
       {/* Backdrop Immersivo */}
       <div 
         className="absolute inset-0 bg-[#050505]/95 backdrop-blur-xl" 

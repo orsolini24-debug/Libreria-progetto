@@ -63,6 +63,10 @@ export default function ImportPage() {
 
   async function handleImport() {
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setResults({ success: 0, skipped: 0, error: "File troppo grande. Massimo 10 MB." });
+      return;
+    }
     setImporting(true);
     setResults(null);
     setProgress(10);
@@ -99,7 +103,7 @@ export default function ImportPage() {
           title: row[titleIdx],
           author: row[authorIdx],
           isbn: col.isbn !== -1 ? row[col.isbn]?.replace(/[^0-9]/g, "") : null,
-          rating: col.rating !== -1 ? parseFloat(row[col.rating]) : null,
+          rating: (() => { const r = col.rating !== -1 ? parseFloat(row[col.rating]) : NaN; return !isNaN(r) && r > 0 ? Math.min(r * 2, 10) : null; })(),
           pageCount: col.pages !== -1 ? parseInt(row[col.pages]) : null,
           status,
         };

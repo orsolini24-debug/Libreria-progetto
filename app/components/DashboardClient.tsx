@@ -90,10 +90,11 @@ interface DashboardClientProps {
   totalPages: number;
   currentPage: number;
   totalCount: number;
+  statusCounts?: Record<string, number>;
   userPrivacy: { userId: string; isPublic: boolean };
 }
 
-export function DashboardClient({ initialBooks, totalPages, currentPage, userPrivacy }: DashboardClientProps) {
+export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, userPrivacy }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -141,14 +142,14 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, userPri
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  // #34: Counts calcolati (server-side passerebbe i totali, ma initialBooks qui è limitato. Per i counts corretti servirebbe un'altra query server, ma per ora usiamo i totali della pagina)
-  const counts = useMemo(() =>
-    Object.keys(STATUS_LABELS).reduce((acc, s) => {
+  // Counts totali per stato — usa i dati server-side se disponibili, altrimenti fallback sulla pagina corrente
+  const counts = useMemo(() => {
+    if (statusCounts) return statusCounts;
+    return Object.keys(STATUS_LABELS).reduce((acc, s) => {
       acc[s] = initialBooks.filter(b => b.status === s).length;
       return acc;
-    }, {} as Record<string, number>),
-    [initialBooks]
-  );
+    }, {} as Record<string, number>);
+  }, [statusCounts, initialBooks]);
 
   const closePanel = () => setPanel(null);
 
@@ -189,6 +190,7 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, userPri
         </div>
         <select value={sort} onChange={(e) => updateFilters({ sort: e.target.value })} className="rounded-xl px-3 py-2 text-xs border bg-transparent font-bold uppercase" style={{ borderColor: "var(--bg-input)", color: "var(--fg-muted)" }}>
           <option value="updatedAt">Recenti</option>
+          <option value="createdAt">Data aggiunta</option>
           <option value="title">Titolo</option>
           <option value="rating">Voto</option>
         </select>

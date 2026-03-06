@@ -15,7 +15,7 @@ export function YearWrapped({ books, onStatClick }: Props) {
     const years = new Set<number>();
     books.forEach(b => {
       if (b.status === "READ") {
-        years.add(new Date(b.finishedAt ?? b.updatedAt).getFullYear());
+        years.add(new Date(b.finishedAt ?? b.createdAt).getFullYear());
       }
     });
     return Array.from(years).sort((a, b) => b - a);
@@ -28,7 +28,7 @@ export function YearWrapped({ books, onStatClick }: Props) {
 
   const stats = useMemo(() => {
     const readThisYear = books.filter(
-      (b) => b.status === "READ" && new Date(b.finishedAt ?? b.updatedAt).getFullYear() === selectedYear
+      (b) => b.status === "READ" && new Date(b.finishedAt ?? b.createdAt).getFullYear() === selectedYear
     );
 
     if (readThisYear.length === 0) return null;
