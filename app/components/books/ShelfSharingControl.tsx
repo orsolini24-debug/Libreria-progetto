@@ -42,11 +42,15 @@ export function ShelfSharingControl({ userId, isPublic: initialIsPublic }: Props
     }
   }
 
-  function copyToClipboard() {
+  async function copyToClipboard() {
     if (typeof navigator !== "undefined") {
-      navigator.clipboard.writeText(publicUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(publicUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        // Clipboard non disponibile (contesto non-secure o permesso negato)
+      }
     }
   }
 

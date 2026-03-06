@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchBooks } from "@/app/lib/api/google-books";
 import { auth } from "@/auth";
+import { logger } from "@/app/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
     const results = await searchBooks(q, maxResults);
     return NextResponse.json(results);
   } catch (error) {
-    console.error("[SEARCH_ROUTE_ERROR]", error);
+    logger.error("SEARCH_ROUTE_ERROR", error);
     return NextResponse.json({ error: "Errore durante la ricerca" }, { status: 500 });
   }
 }

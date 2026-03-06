@@ -39,6 +39,7 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
   const [loading,         setLoading]        = useState(false);
   const [sharing,         setSharing]        = useState<QuoteItem | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [error,           setError]          = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createQuote, null);
 
@@ -62,8 +63,13 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
   }, [state?.success, open, loadItems]);
 
   async function handleDelete(id: string) {
-    await deleteQuote(id);
-    setItems((prev) => prev.filter((q) => q.id !== id));
+    setError(null);
+    try {
+      await deleteQuote(id);
+      setItems((prev) => prev.filter((q) => q.id !== id));
+    } catch {
+      setError("Impossibile eliminare. Riprova.");
+    }
     setDeleteConfirmId(null);
   }
 
@@ -119,7 +125,10 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
                 </div>
               </div>
             ))}
-            {!loading && visible.length === 0 && (
+            {error && (
+              <p className="text-xs p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">{error}</p>
+            )}
+          {!loading && visible.length === 0 && (
               <p className="text-xs text-center py-4 opacity-40 italic">Nessun elemento presente.</p>
             )}
           </div>

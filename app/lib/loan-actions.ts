@@ -67,20 +67,19 @@ export async function createLoan(
   }
 }
 
-export async function returnLoan(id: string): Promise<void> {
+export async function returnLoan(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const userId = await requireAuth();
-    
-    // #35: Verifica esistenza prestito prima dell'update
+
     const loan = await prisma.loan.findFirst({
       where: { id, userId },
-      include: { book: true }
+      include: { book: true },
     });
 
-    if (!loan) throw new Error("LOAN_NOT_FOUND");
+    if (!loan) return { success: false, error: "Prestito non trovato." };
 
     await prisma.loan.update({
-      where: { id },
+      where: { id, userId },
       data:  { returnedAt: new Date() },
     });
 
@@ -92,8 +91,10 @@ export async function returnLoan(id: string): Promise<void> {
     );
 
     revalidatePath("/dashboard");
+    return { success: true };
   } catch (e) {
     logger.error("RETURN_LOAN_ERROR", e);
+    return { success: false, error: "Impossibile registrare la restituzione." };
   }
 }
 

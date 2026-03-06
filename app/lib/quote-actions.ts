@@ -5,6 +5,7 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { QuoteSchema } from "./validation/schemas";
 import { mapZodError } from "./validation/errors";
+import { logger } from "./logger";
 
 export type QuoteActionState = { error?: string; success?: string; fieldErrors?: Record<string, string[]> } | null;
 
@@ -60,7 +61,7 @@ export async function createQuote(
     revalidatePath("/citazioni");
     return { success: "Citazione salvata!" };
   } catch (e) {
-    console.error("[createQuote]", e);
+    logger.error("CREATE_QUOTE_ERROR", e);
     return { error: "Errore durante il salvataggio." };
   }
 }

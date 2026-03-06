@@ -41,6 +41,7 @@ export function ReadingSessionSection({
   const [sessions,        setSessions]        = useState<RSession[]>([]);
   const [loading,         setLoading]         = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [error,           setError]           = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createReadingSession, null);
 
@@ -66,8 +67,13 @@ export function ReadingSessionSection({
   }, [state?.success, open, loadSessions]);
 
   async function handleDelete(id: string) {
-    await deleteReadingSession(id);
-    setSessions((prev) => prev.filter((s) => s.id !== id));
+    setError(null);
+    try {
+      await deleteReadingSession(id);
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+    } catch {
+      setError("Impossibile eliminare la sessione.");
+    }
     setDeleteConfirmId(null);
   }
 
@@ -90,6 +96,9 @@ export function ReadingSessionSection({
       {open && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {loading && <p className="text-[10px] text-center opacity-50 uppercase">Caricamento…</p>}
+          {error && (
+            <p className="text-xs p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">{error}</p>
+          )}
 
           {!loading && sessions.length > 0 && (
             <div className="grid grid-cols-2 gap-3">

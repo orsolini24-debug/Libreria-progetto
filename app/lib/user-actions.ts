@@ -24,9 +24,8 @@ export async function togglePublicShelf(isPublic: boolean) {
     
     return { success: true };
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : "unknown";
-    console.error("CRITICAL_ACTION_ERROR:", e);
-    return { error: `DB_OR_SERVER_ERROR: ${msg}` };
+    logger.error("TOGGLE_PUBLIC_SHELF_ERROR", e);
+    return { error: "Errore di sistema. Riprova." };
   }
 }
 

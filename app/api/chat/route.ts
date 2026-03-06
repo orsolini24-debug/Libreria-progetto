@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      console.error("[CRITICAL] GROQ_API_KEY is missing.");
+      logger.error("GROQ_API_KEY_MISSING", null);
       return new Response("Errore di configurazione del server AI.", { status: 500 });
     }
 
@@ -56,13 +56,17 @@ export async function POST(req: Request) {
     // #58, #163: Salviamo l'ultimo messaggio dell'utente nel DB
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "user") {
-      await prisma.chatMessage.create({
-        data: {
-          userId,
-          role: "user",
-          content: lastMessage.content,
-        }
-      });
+      try {
+        await prisma.chatMessage.create({
+          data: {
+            userId,
+            role: "user",
+            content: lastMessage.content,
+          }
+        });
+      } catch (e) {
+        logger.error("SAVE_USER_MESSAGE_ERROR", e);
+      }
     }
 
     const lastUserMessageContent =

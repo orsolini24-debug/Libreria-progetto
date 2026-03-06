@@ -32,6 +32,7 @@ export function LoanSection({ bookId }: { bookId: string }) {
   const [loans,           setLoans]          = useState<Loan[]>([]);
   const [loading,         setLoading]        = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [error,           setError]          = useState<string | null>(null);
 
   const [state, formAction] = useActionState(createLoan, null);
 
@@ -55,15 +56,25 @@ export function LoanSection({ bookId }: { bookId: string }) {
   }, [state?.success, open, loadLoans]);
 
   async function handleReturn(id: string) {
-    await returnLoan(id);
-    setLoans((prev) =>
-      prev.map((l) => l.id === id ? { ...l, returnedAt: new Date().toISOString() } : l)
-    );
+    setError(null);
+    const res = await returnLoan(id);
+    if (res.success) {
+      setLoans((prev) =>
+        prev.map((l) => l.id === id ? { ...l, returnedAt: new Date().toISOString() } : l)
+      );
+    } else {
+      setError(res.error ?? "Impossibile registrare la restituzione.");
+    }
   }
 
   async function handleDelete(id: string) {
-    await deleteLoan(id);
-    setLoans((prev) => prev.filter((l) => l.id !== id));
+    setError(null);
+    try {
+      await deleteLoan(id);
+      setLoans((prev) => prev.filter((l) => l.id !== id));
+    } catch {
+      setError("Impossibile eliminare il prestito.");
+    }
     setDeleteConfirmId(null);
   }
 
@@ -132,6 +143,9 @@ export function LoanSection({ bookId }: { bookId: string }) {
             </div>
           )}
 
+          {error && (
+            <p className="text-xs p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">{error}</p>
+          )}
           {!loading && loans.length === 0 && (
             <p className="text-xs text-center py-4 opacity-40 italic">Nessun prestito registrato.</p>
           )}

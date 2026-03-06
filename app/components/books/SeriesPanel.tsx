@@ -14,10 +14,11 @@ type SeriesBook = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  TO_READ:  "Da leggere",
-  READING:  "In lettura",
-  READ:     "Letto",
-  WISHLIST: "Wishlist",
+  TO_READ:   "Da leggere",
+  READING:   "In lettura",
+  READ:      "Letto",
+  WISHLIST:  "Wishlist",
+  ABANDONED: "Abbandonato",
 };
 
 const STATUS_DOT: Record<string, string> = {

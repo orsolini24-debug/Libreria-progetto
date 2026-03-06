@@ -135,19 +135,27 @@ export function QuotesClient({ quotes: initialQuotes, booksWithQuotes, userBooks
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   async function handleDelete(id: string) {
-    await deleteQuote(id);
-    setQuotes((prev) => prev.filter((q) => q.id !== id));
+    try {
+      await deleteQuote(id);
+      setQuotes((prev) => prev.filter((q) => q.id !== id));
+      if (expandedId === id) setExpandedId(null);
+    } catch {
+      // Errore loggato server-side
+    }
     setDeleteConfirmId(null);
-    if (expandedId === id) setExpandedId(null);
   }
 
-  function handleCopy(quote: QuoteWithBook) {
+  async function handleCopy(quote: QuoteWithBook) {
     let text = `"${quote.text}" — ${quote.book.title}`;
     if (quote.book.author) text += `, ${quote.book.author}`;
     if (quote.page) text += ` (p. ${quote.page})`;
-    navigator.clipboard.writeText(text);
-    setCopiedId(quote.id);
-    setTimeout(() => setCopiedId(null), 1500);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(quote.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch {
+      // Clipboard non disponibile
+    }
   }
 
   function handleRandom() {

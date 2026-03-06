@@ -178,16 +178,12 @@ export async function updateBook(
   );
 
   try {
-    const result = await prisma.book.update({
+    await prisma.book.update({
       where: { id, userId },
       data,
     });
 
-    if (!result) return { error: "Libro non trovato o non autorizzato." };
-
     revalidatePath("/dashboard");
-    revalidatePath(`/books/${id}`); 
-    
     return { success: "Libro aggiornato!" };
   } catch (e) {
     logger.error("UPDATE_BOOK_ERROR", e);

@@ -11,7 +11,7 @@ export async function saveDailyCheckIn(content: string) {
   await prisma.dailyCheckIn.create({
     data: { userId, content }
   });
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
