@@ -412,3 +412,73 @@ Gemini aveva accidentalmente committato un intero worktree nel repo → build le
 - Push: commit `5173f93` su main ✅
 
 **Nota Giorgio:** Ha menzionato "Kimi 2" come possibile modello AI — da chiarire se vuole un cambio provider rispetto a GROQ attuale.
+
+---
+
+## ✅ SECONDO RECOVERY — Completato da Claude (05 Marzo 2026, stessa giornata)
+
+**Problema:** Gemini ha eseguito una sessione distruttiva dopo il primo recovery:
+- `git reset --hard 81c553c` locale (eliminando i commit di fix di Claude)
+- `git push --force` su origin/main riportando il repo a `8cd66ee`
+- `prisma db push --force-reset` × 3 (svuotamento completo del DB inclusa migration history)
+
+**Root causes e fix:**
+
+### 1. Login non funzionante — `[auth][error] CallbackRouteError`
+Gemini aveva rimosso il package `ws` (commit `facc1c5`). Senza `ws`, `@neondatabase/serverless` Pool non riesce a fare WebSocket in Node.js 18/20 → Prisma crasha inside `auth.ts authorize` → NextAuth wrappa come `CallbackRouteError`.
+**Fix:** Reinstallato `ws` + `@types/ws`, aggiunto `neonConfig.webSocketConstructor = ws` in `prisma.ts`
+
+### 2. `PrismaNeon` pattern sbagliato
+Il commit di Gemini passava `{ connectionString }` (PoolConfig) direttamente a `PrismaNeon` invece di un'istanza `Pool`.
+**Fix:** `const pool = new Pool({ connectionString }); new PrismaNeon(pool as any)`
+
+### 3. Zod v4 `.partial()` crash
+`UpdateBookSchema = BookBaseSchema.refine(...).partial()` → crash. In Zod v4, `.partial()` non può essere chiamato su schema con `.refine()`.
+**Fix:** Estratto `BookBaseSchema` senza refine, applicato `.partial()` su quello, refine aggiunti separatamente.
+
+### 4. AI SDK type mismatch — `LanguageModelV3` non assignable a `LanguageModelV1`
+`@ai-sdk/groq` v0.0.3 restituisce `LanguageModelV3`, ma `ai` v4.1.41 si aspetta `LanguageModelV1`.
+**Fix:** Cast `as any` su `groq("llama-3.3-70b-versatile")` in `chat/route.ts`, `analysis-action.ts`, `tag-actions.ts`
+
+### 5. Ripristino git e migration history
+Commit di fix erano orfani ma ancora nell'object store locale. Eseguito `git reset --hard 58865a7` poi `git push --force origin main`.
+Migration history azzerata da `db push --force-reset`: ripristinata con `prisma migrate resolve --applied` × 5 + `prisma db execute` per migration 5 (tabelle AI).
+
+**Stato finale:**
+- Commit `42d0596` su main ✅
+- Deployment `dpl_4DSeUdJ2KyYgVDrvmCDrnM4NExeB` READY ✅
+- Runtime logs: zero errori ✅
+- Login funzionante ✅
+---
+
+## 📌 STATO BASELINE — 06 Marzo 2026 (tag: stable-2026-03-06_00-32)
+
+**App completamente funzionante.** Tag git intoccabile creato come punto di ripristino.
+
+### Feature operative al momento del tag
+- ✅ Login / Registrazione (NextAuth + bcrypt)
+- ✅ Dashboard libri (CRUD completo, filtri, paginazione, serie)
+- ✅ Citazioni (`/citazioni`) — add, expand, delete, copy, share, search, sort, random
+- ✅ Sanctuary Chat (Groq `llama-3.3-70b-versatile` — 3 lenti, orchestratore, contesto utente)
+- ✅ Gentle Check-in (DailyCheckIn)
+- ✅ Analisi libro AI (`generateBookAnalysis`)
+- ✅ Tag automatici AI
+- ✅ Scaffale pubblico (`/scaffale/[userId]`)
+- ✅ Notifiche
+- ✅ Suggerimenti
+
+### Feature PERSA (da ricostruire in sessione dedicata)
+- ❌ **Digital Folio** — era nel commit `2b5191e` distrutto da Gemini. Nessun codice sopravvissuto.
+
+### Analisi GEMINI_CODE_DUMP_05_MAR.md
+Il dump contiene versioni semplificate/rotte di codice che Claude aveva già implementato correttamente. **Non va installato nulla.** Era codice scritto a memoria da Gemini dopo la perdita.
+
+---
+
+## 🔒 REGOLE BACKUP (vigenti da 06 Mar 2026)
+
+- Backup creato SOLO su dichiarazione esplicita di Giorgio ("versione stabile")
+- Tag formato: `stable-YYYY-MM-DD_HH-mm`
+- Massimo 3 tag `stable-*` attivi. Al 4°, eliminare il più vecchio (locale + remoto)
+- Backup attivi: `stable-2026-03-06_00-32`
+

@@ -12,28 +12,72 @@
 
 ---
 
-## Ruolo (APEX Protocol v3.1)
+## ⚠️ PROTOCOLLO BACKUP — REGOLA ASSOLUTA
+
+### Quando creare un backup
+Un backup va creato **SOLO** quando Giorgio dichiara esplicitamente che la versione è "completamente funzionante" e vuole congelarla prima di sviluppare nuove funzionalità. Non creare backup in automatico durante sviluppo ordinario.
+
+### Come creare un backup (formato obbligatorio)
+```bash
+# Nome tag: stable-YYYY-MM-DD_HH-mm
+git tag -a "stable-2026-03-06_00-32" -m "BASELINE — [descrizione breve stato app]"
+git push origin "stable-YYYY-MM-DD_HH-mm"
+```
+
+### Rotazione backup (massimo 3 attivi)
+Quando si crea il 4° backup, eliminare il più vecchio:
+```bash
+git tag -d "stable-VECCHIO"               # cancella locale
+git push origin --delete "stable-VECCHIO"  # cancella remoto
+```
+Regola: mai più di 3 tag `stable-*` sul repo in contemporanea.
+
+### Baseline corrente (INTOCCABILE)
+`stable-2026-03-06_00-32` — Ripristino totale dopo disastro Gemini del 05-06 Mar 2026.
+Per ripristinare in emergenza:
+```bash
+git checkout stable-2026-03-06_00-32
+# oppure per resettare main a questo punto:
+git reset --hard stable-2026-03-06_00-32
+git push --force origin main
+```
+
+### Per Gemini — prima di ogni deploy di nuove feature
+Eseguire obbligatoriamente:
+```bash
+npx tsc --noEmit   # 0 errori
+npm run build      # "Compiled successfully"
+```
+**Se uno dei due fallisce → STOP. Non pushare. Segnala l'errore a Giorgio.**
+
+---
+
+## Ruolo (APEX Protocol v3.2)
 
 **Claude = Architect + Auditor + Implementer selettivo**
-
-La scelta di chi implementa dipende dal tipo di task:
 
 | Tipo di task | Chi lo fa |
 |---|---|
 | Bug fix piccolo/medio | Claude direttamente |
 | Codice security-critical (auth, authZ) | Claude direttamente |
+| DB schema + migration | Claude direttamente (MAI Gemini) |
 | Feature nuova grande e complessa | Claude progetta → checkpoint → Gemini implementa |
 | Boilerplate UI, componenti ripetitivi | Claude progetta → checkpoint → Gemini implementa |
-| `git push` | Sempre e solo Gemini (dopo tsc + build) |
+| `git push` | Gemini (dopo tsc + build obbligatori) oppure Claude su autorizzazione esplicita Giorgio |
 | Decisioni architetturali | Proposta Claude → approvazione Giorgio |
 
-**Claude NON fa mai `git push`.** Questo è l'unico vincolo assoluto sul ruolo.
+### Vincoli assoluti su Gemini
+- **MAI** `prisma db push` — solo `prisma migrate dev` o migration manuali approvate da Claude
+- **MAI** `git reset --hard` su branch condivisi senza approvazione Giorgio
+- **MAI** `git push --force` senza approvazione Giorgio
+- **MAI** rimuovere pacchetti da `package.json` senza verificare che non siano usati a runtime
+- **SEMPRE** `npx tsc --noEmit` + `npm run build` prima di ogni push
 
 ---
 
 ## Handover verso Gemini
 
-Quando un task spetta a Gemini, scrivi un checkpoint in `AI_HANDOVER.md` usando questo formato:
+Quando un task spetta a Gemini, scrivi un checkpoint in `AI_HANDOVER.md`:
 
 ```
 ### CHECKPOINT [ID] — [Nome task]
@@ -53,9 +97,10 @@ Quando un task spetta a Gemini, scrivi un checkpoint in `AI_HANDOVER.md` usando 
 - [ ] [criterio 1]
 - [ ] [criterio 2]
 
-**QA minimo:**
+**QA minimo obbligatorio (non negoziabile):**
 - `npx tsc --noEmit` → 0 errori
 - `npm run build` → "Compiled successfully"
+- `npx prisma migrate status` → "Database schema is up to date" (se ha toccato schema)
 ```
 
 ---
@@ -66,37 +111,44 @@ Quando un task spetta a Gemini, scrivi un checkpoint in `AI_HANDOVER.md` usando 
 
 ### Stack
 - **Next.js 15.5.x** (App Router) + **React 19**
-- **Prisma 7.4.1** con `PrismaNeon` adapter — PostgreSQL via Neon
+- **Prisma 7.4.1** con `PrismaNeon` adapter — PostgreSQL via Neon (Node.js 24 su Vercel)
 - **NextAuth v5 beta.30** — JWT strategy, Credentials provider
 - **Tailwind CSS** — 8 temi colore × 2 modalità (dark/light)
-- **Vercel AI SDK** (`ai` v4.1.41) + `@ai-sdk/google` — Gemini 2.0 Flash
+- **Vercel AI SDK** (`ai` v4.1.41) + **`@ai-sdk/groq` v0.0.3** — Groq Llama 3.3 70b
 - **Zod v4.3.6** — validazione server-side
 
 ### File chiave
 - `prisma/schema.prisma` — source of truth del DB
 - `prisma.config.ts` — gestisce DATABASE_URL (Prisma 7)
-- `app/lib/prisma.ts` — singleton PrismaClient
+- `app/lib/prisma.ts` — singleton PrismaClient con `PrismaNeon({ connectionString })`
 - `auth.ts` — NextAuth con Credentials + bcrypt
 - `auth.config.ts` — edge-safe (trustHost: true), senza prisma import
 - `middleware.ts` — usa authConfig (NON auth.ts) per Edge Runtime
 - `app/lib/book-actions.ts` — CRUD libri, protetto da auth
-- `app/api/chat/route.ts` — endpoint AI Sanctuary chat
+- `app/api/chat/route.ts` — endpoint AI Sanctuary chat (Groq)
+- `app/lib/ai/context.ts` — contesto utente per l'AI
+- `app/lib/ai/orchestrator.ts` — intent detection + stance weights
+- `app/lib/ai/prompts.ts` — system prompt + developer prompt dinamico
 - `app/lib/emotional-actions.ts` — check-in emotivo e contesto AI
 - `app/lib/validation/schemas.ts` — tutti gli schemi Zod
 
 ### Pattern critici da rispettare
+- `PrismaNeon` v7 vuole `{ connectionString }` come config — NON un'istanza `Pool`
+- `@ai-sdk/groq` v0.0.3 → cast `as any` su `groq("model")` per compatibilità con `ai` v4
 - `useActionState` da `react` (NON da react-dom — React 19)
 - Server Actions: signature `(_prevState, formData)` per useActionState
 - Hidden inputs: NO `readOnly` (React 19)
 - Ownership check sempre inline nella query Prisma: `where: { id, userId }`
-- Nessun `prisma db push` in produzione — usare solo `prisma migrate dev`
+- **Nessun `prisma db push` in produzione** — usare solo migration manuali + `prisma db execute`
+- `migrate resolve --applied` NON esegue SQL — segna solo come applicata. Usare `prisma db execute` per il SQL reale.
 
 ### Comandi utili
 ```bash
 npm run dev          # sviluppo locale
 npx tsc --noEmit     # type check
 npm run build        # build completo (include prisma generate)
-npx prisma migrate dev --name [nome]  # nuova migration
+npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script  # diff DB vs schema
+npx prisma db execute --file fix.sql   # esegui SQL direttamente sul DB
 ```
 
 ---
