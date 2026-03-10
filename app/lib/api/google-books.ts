@@ -89,33 +89,25 @@ export async function searchBooks(query: string, maxResults: number = 20): Promi
 
   try {
     const apiKey = process.env.GOOGLE_BOOKS_API_KEY || "";
-    const base = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&printType=books&key=${apiKey}`;
+    // Chiediamo sempre 20 risultati così abbiamo abbastanza materiale per sortare
+    const fetch20 = Math.max(maxResults, 20);
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&printType=books&maxResults=${fetch20}&key=${apiKey}`;
+    const data = await fetchWithRetry(url);
+    const items = data.items || [];
 
-    // Ricerca parallela: generale + italiana.
-    // Usiamo "inlanguage:it" come query operator (più affidabile di langRestrict=it per titoli ambigui)
-    const italianBase = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query + " inlanguage:it")}&printType=books&key=${apiKey}`;
-    const [generalRes, italianRes] = await Promise.allSettled([
-      fetchWithRetry(`${base}&maxResults=${maxResults}`),
-      fetchWithRetry(`${italianBase}&maxResults=8`),
-    ]);
+    const results = items
+      .map(mapGoogleBook)
+      .filter((b): b is GoogleBookResult => b !== null);
 
-    const generalItems = generalRes.status === "fulfilled" ? generalRes.value.items || [] : [];
-    const italianItems = italianRes.status === "fulfilled" ? italianRes.value.items || [] : [];
+    // Sort: edizioni italiane in cima, il resto invariato
+    results.sort((a, b) => {
+      if (a.language === "it" && b.language !== "it") return -1;
+      if (a.language !== "it" && b.language === "it") return 1;
+      return 0;
+    });
 
-    // Merge: edizioni italiane prima, poi le altre (deduplicato per googleId)
-    const seen = new Set<string>();
-    const merged: GoogleBookResult[] = [];
-    for (const item of italianItems) {
-      const book = mapGoogleBook(item);
-      if (book && !seen.has(book.googleId)) { seen.add(book.googleId); merged.push(book); }
-    }
-    for (const item of generalItems) {
-      const book = mapGoogleBook(item);
-      if (book && !seen.has(book.googleId)) { seen.add(book.googleId); merged.push(book); }
-    }
-
-    setToCache(query, merged);
-    return merged;
+    setToCache(query, results);
+    return results;
   } catch (err) {
     logger.error("GOOGLE_BOOKS_SEARCH_ERROR", err);
     return [];

@@ -93,7 +93,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
       setSearching(true);
       try {
         // #60: maxResults=10 per performance
-        const res = await fetch(`/api/search?q=${encodeURIComponent(val)}&maxResults=10`, { signal: controller.signal });
+        const res = await fetch(`/api/search?q=${encodeURIComponent(val)}&maxResults=20`, { signal: controller.signal });
         const data = await res.json();
         setResults(data);
         setShowResults(data.length > 0);
