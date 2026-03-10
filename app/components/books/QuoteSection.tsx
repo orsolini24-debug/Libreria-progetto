@@ -82,7 +82,7 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
       <button onClick={() => setOpen((p) => !p)} aria-expanded={open} className="flex items-center justify-between w-full mb-4 group">
         <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
           Citazioni & Appunti
-          {items.length > 0 && <span className="ml-2 text-amber-500">({items.length})</span>}
+          {items.length > 0 && <span className="ml-2" style={{ color: "var(--accent)" }}>({items.length})</span>}
         </p>
         <span className={`text-xs transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
@@ -113,7 +113,7 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
                 )}
                 <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover/item:opacity-100 transition-all">
                   {tab === "QUOTE" && deleteConfirmId !== q.id && (
-                    <button onClick={() => setSharing(q)} className="text-xs hover:text-amber-500"><Share2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setSharing(q)} className="text-xs opacity-60 hover:opacity-100 transition-opacity"><Share2 className="w-3.5 h-3.5" /></button>
                   )}
                   {deleteConfirmId === q.id ? (
                     <div className="flex gap-1.5">

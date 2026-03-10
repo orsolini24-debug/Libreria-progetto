@@ -42,7 +42,7 @@ export function Input({ error, className = "", ...props }: InputProps) {
     <input
       {...props}
       style={style}
-      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all ${className}`}
+      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-white/10 transition-all ${className}`}
     />
   );
 }
@@ -62,7 +62,7 @@ export function Select({ error, className = "", children, ...props }: SelectProp
     <select
       {...props}
       style={style}
-      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all appearance-none ${className}`}
+      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-white/10 transition-all appearance-none ${className}`}
     >
       {children}
     </select>
@@ -84,7 +84,7 @@ export function Textarea({ error, className = "", ...props }: TextareaProps) {
     <textarea
       {...props}
       style={style}
-      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all min-h-[80px] ${className}`}
+      className={`w-full rounded-xl px-4 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-white/10 transition-all min-h-[80px] ${className}`}
     />
   );
 }

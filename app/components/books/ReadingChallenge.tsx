@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Book } from "@/app/generated/prisma/client";
-
-const YEAR = new Date().getFullYear();
 
 function motivation(pct: number): string {
   if (pct === 0)  return "Inizia la tua avventura letteraria!";
@@ -15,6 +13,7 @@ function motivation(pct: number): string {
 }
 
 export function ReadingChallenge({ books, initialBooksThisYear }: { books: Book[]; initialBooksThisYear?: number }) {
+  const YEAR = useMemo(() => new Date().getFullYear(), []);
   const [goal,     setGoal]     = useState(12);
   const [editing,  setEditing]  = useState(false);
   const [inputVal, setInputVal] = useState("12");

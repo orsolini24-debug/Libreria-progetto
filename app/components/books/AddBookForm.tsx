@@ -173,7 +173,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
       <div ref={containerRef} className="relative p-6 rounded-[2rem] bg-white/5 border border-white/5 shadow-2xl">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Inserimento Rapido</p>
-          <button type="button" onClick={() => setShowScanner(true)} className="text-[10px] font-bold text-amber-500 uppercase border-b border-amber-500/20">Usa Scanner Barcode</button>
+          <button type="button" onClick={() => setShowScanner(true)} className="text-[10px] font-bold uppercase border-b" style={{ color: "var(--accent)", borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)" }}>Usa Scanner Barcode</button>
         </div>
         <div className="relative">
           <Input value={query} onChange={(e) => handleSearch(e.target.value)} placeholder="Cerca titolo o incolla ISBN..." className="!rounded-2xl" />
@@ -189,11 +189,11 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold truncate leading-tight" style={{ color: "var(--fg-primary)" }}>{b.title}</p>
-                    {b.language === "it" && <span className="text-[9px] font-black bg-emerald-500 text-black px-1 rounded-sm flex-shrink-0">IT</span>}
+                    {b.language === "it" && <span className="text-[9px] font-black px-1 rounded-sm flex-shrink-0" style={{ background: "var(--accent)", color: "var(--accent-on)" }}>IT</span>}
                   </div>
                   <p className="text-xs opacity-50 truncate">{b.author}</p>
                 </div>
-                <button type="button" onClick={(e) => { e.stopPropagation(); setBulkSelection(p => [...p, b]); setShowResults(false); }} className="text-[10px] font-black text-blue-400 uppercase p-2">+</button>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setBulkSelection(p => [...p, b]); setShowResults(false); }} className="text-[10px] font-black uppercase p-2" style={{ color: "var(--accent)" }}>+</button>
               </li>
             ))}
           </ul>
@@ -208,8 +208,8 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* 2. Selezione Bulk */}
       {bulkSelection.length > 0 && (
-        <div className="p-6 rounded-[2rem] bg-blue-500/5 border border-blue-500/20 shadow-xl space-y-4">
-          <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest text-center">Selezione Multipla ({bulkSelection.length})</p>
+        <div className="p-6 rounded-[2rem] shadow-xl space-y-4" style={{ background: "color-mix(in srgb, var(--accent) 5%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)" }}>
+          <p className="text-[10px] font-black uppercase tracking-widest text-center" style={{ color: "var(--accent)" }}>Selezione Multipla ({bulkSelection.length})</p>
           <div className="flex flex-wrap gap-2">
             {bulkSelection.map(s => (
               <div key={s.googleId} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-bold">
@@ -236,7 +236,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         <input type="hidden" name="description"   value={currentBook.description ?? ""} />
         <input type="hidden" name="formats"       value={formats.join(",")} />
 
-        <div className="flex gap-6 items-center p-6 rounded-[2rem] border border-amber-500/10 shadow-inner bg-white/[0.02]">
+        <div className="flex gap-6 items-center p-6 rounded-[2rem] shadow-inner bg-white/[0.02]" style={{ border: "1px solid color-mix(in srgb, var(--accent) 10%, transparent)" }}>
           {currentBook.coverUrl ? (
             <Image src={currentBook.coverUrl} alt="" width={50} height={70} unoptimized className="rounded-lg shadow-2xl" />
           ) : (
@@ -244,7 +244,7 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-black uppercase opacity-20 tracking-[0.2em] mb-1">Dettagli libro</p>
-            <p className="text-base font-bold text-amber-500 truncate leading-tight">{currentBook.title || "Inserisci Titolo..."}</p>
+            <p className="text-base font-bold truncate leading-tight" style={{ color: "var(--accent)" }}>{currentBook.title || "Inserisci Titolo..."}</p>
             <p className="text-xs opacity-50 truncate mt-1">{currentBook.author || "Autore sconosciuto"}</p>
           </div>
         </div>
@@ -302,7 +302,8 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
               {FORMAT_OPTIONS.map(({ value, label }) => (
                 <button key={value} type="button" onClick={() => toggleFormat(value)}
                   className={`text-[10px] px-4 py-2 rounded-full border font-black uppercase transition-all duration-300
-                    ${formats.includes(value) ? 'bg-amber-500 text-black border-amber-500 shadow-lg' : 'opacity-30 border-white/10 hover:opacity-100'}`}>
+                    ${formats.includes(value) ? 'shadow-lg' : 'opacity-30 border-white/10 hover:opacity-100'}`}
+                  style={formats.includes(value) ? { background: "var(--accent)", color: "var(--accent-on)", borderColor: "var(--accent)" } : undefined}>
                   {label}
                 </button>
               ))}

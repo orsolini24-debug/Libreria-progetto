@@ -78,7 +78,7 @@ export function YearWrapped({ books, yearStats, onStatClick }: Props) {
     <section className="mb-12 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-baseline gap-3">
-          <h2 className="font-display text-2xl font-black tracking-tighter text-amber-500">
+          <h2 className="font-display text-2xl font-black tracking-tighter" style={{ color: "var(--accent)" }}>
             Il tuo {selectedYear}
           </h2>
           <span className="font-reading text-xs italic opacity-40">riepilogo annuale</span>
@@ -92,7 +92,8 @@ export function YearWrapped({ books, yearStats, onStatClick }: Props) {
                 key={year}
                 onClick={() => setSelectedYear(year)}
                 className={`px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all
-                  ${selectedYear === year ? 'bg-amber-500 text-black' : 'opacity-40 hover:opacity-100'}`}
+                  ${selectedYear === year ? '' : 'opacity-40 hover:opacity-100'}`}
+                style={selectedYear === year ? { background: "var(--accent)", color: "var(--accent-on)" } : undefined}
               >
                 {year}
               </button>
@@ -101,7 +102,7 @@ export function YearWrapped({ books, yearStats, onStatClick }: Props) {
         )}
       </div>
 
-      <div className="p-1 rounded-[2.5rem] bg-gradient-to-br from-amber-500/20 via-transparent to-transparent shadow-2xl">
+      <div className="p-1 rounded-[2.5rem] shadow-2xl" style={{ background: "linear-gradient(to bottom right, color-mix(in srgb, var(--accent) 20%, transparent), transparent)" }}>
         <div className="glass rounded-[2.4rem] overflow-hidden bg-[#121212]/80 backdrop-blur-xl border border-white/5 p-6 flex flex-col gap-8">
           
           {/* Stat Grid Interattiva */}
@@ -110,7 +111,7 @@ export function YearWrapped({ books, yearStats, onStatClick }: Props) {
               <button
                 key={i}
                 onClick={() => onStatClick?.(filter, selectedYear)}
-                className="group p-5 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-amber-500/10 hover:border-amber-500/20 transition-all text-center relative"
+                className="group p-5 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all text-center relative"
               >
                 <p className={`font-display font-black leading-none text-3xl tracking-tighter mb-2 group-hover:scale-110 transition-transform ${italic ? "italic" : ""}`}
                    style={{ color: "var(--accent)" }}>
@@ -134,23 +135,24 @@ export function YearWrapped({ books, yearStats, onStatClick }: Props) {
                   {stats.bestBook.coverUrl ? (
                     <Image src={stats.bestBook.coverUrl} alt="" width={56} height={80} unoptimized className="rounded-xl shadow-2xl transition-transform group-hover:rotate-3" />
                   ) : (
-                    <div className="w-14 h-20 bg-amber-500/10 rounded-xl flex items-center justify-center text-[8px] opacity-30">IMG</div>
+                    <div className="w-14 h-20 bg-white/5 rounded-xl flex items-center justify-center text-[8px] opacity-30">IMG</div>
                   )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-1">Miglior Lettura</p>
-                  <p className="font-display text-base font-bold text-amber-500 truncate leading-tight">{stats.bestBook.title}</p>
+                  <p className="font-display text-base font-bold truncate leading-tight" style={{ color: "var(--accent)" }}>{stats.bestBook.title}</p>
                   <p className="text-xs opacity-50 italic truncate">{stats.bestBook.author}</p>
-                  <div className="mt-2 text-xs font-black text-amber-500/80">{stats.bestBook.rating}/10</div>
+                  <div className="mt-2 text-xs font-black" style={{ color: "color-mix(in srgb, var(--accent) 80%, transparent)" }}>{stats.bestBook.rating}/10</div>
                 </div>
               </div>
 
               {/* Prossimo obiettivo basato sui dati dell'anno */}
-              <div className="p-5 rounded-[2rem] bg-amber-500/5 border border-amber-500/10 flex flex-col justify-center">
-                <p className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-2 text-amber-500">Curiosità del {selectedYear}</p>
+              <div className="p-5 rounded-[2rem] flex flex-col justify-center"
+                   style={{ background: "color-mix(in srgb, var(--accent) 5%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 10%, transparent)" }}>
+                <p className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-2" style={{ color: "var(--accent)" }}>Curiosità del {selectedYear}</p>
                 <p className="text-xs leading-relaxed font-medium">
-                  Hai esplorato <span className="text-amber-500 font-bold">{stats?.authors}</span> universi narrativi differenti.
-                  {stats.topGenre && <> Il genere <span className="text-amber-500 font-bold uppercase tracking-tighter">{stats.topGenre}</span> è stato la tua bussola.</>}
+                  Hai esplorato <span className="font-bold" style={{ color: "var(--accent)" }}>{stats?.authors}</span> universi narrativi differenti.
+                  {stats.topGenre && <> Il genere <span className="font-bold uppercase tracking-tighter" style={{ color: "var(--accent)" }}>{stats.topGenre}</span> è stato la tua bussola.</>}
                 </p>
               </div>
             </div>
