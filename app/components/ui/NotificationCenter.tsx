@@ -65,7 +65,8 @@ export function NotificationCenter() {
                   {!n.isRead && (
                     <button 
                       onClick={() => handleRead(n.id)}
-                      className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"
+                      className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:opacity-80"
+                      style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}
                     >
                       <Check className="w-3 h-3" />
                     </button>

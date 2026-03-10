@@ -57,8 +57,8 @@ export function GentleCheckIn() {
         <>
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
-              <div className="bg-indigo-500/20 p-1.5 rounded-lg">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <div className="p-1.5 rounded-lg" style={{ background: "color-mix(in srgb, var(--accent) 20%, transparent)" }}>
+                <Sparkles className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
               </div>
               <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Check-in Emotivo</span>
             </div>

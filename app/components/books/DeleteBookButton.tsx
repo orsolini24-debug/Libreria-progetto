@@ -13,18 +13,19 @@ interface DeleteBookButtonProps {
 export function DeleteBookButton({ bookId, bookTitle, onDeleted }: DeleteBookButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleDelete() {
     setIsDeleting(true);
+    setError(null);
     try {
       await deleteBook(bookId);
       setShowConfirm(false);
       onDeleted?.();
       router.refresh();
-    } catch (e) {
-      console.error(e);
-      alert("Errore durante l'eliminazione.");
+    } catch {
+      setError("Impossibile eliminare il libro. Riprova.");
     } finally {
       setIsDeleting(false);
     }
@@ -37,6 +38,9 @@ export function DeleteBookButton({ bookId, bookTitle, onDeleted }: DeleteBookBut
           Sei sicuro di voler eliminare <strong>{bookTitle}</strong>?<br/>
           L&apos;azione è irreversibile.
         </p>
+        {error && (
+          <p className="text-xs text-red-400 mb-2 text-center font-medium">{error}</p>
+        )}
         <div className="flex gap-2">
           <button
             onClick={handleDelete}
@@ -46,7 +50,7 @@ export function DeleteBookButton({ bookId, bookTitle, onDeleted }: DeleteBookBut
             {isDeleting ? "Elimino..." : "Elimina"}
           </button>
           <button
-            onClick={() => setShowConfirm(false)}
+            onClick={() => { setShowConfirm(false); setError(null); }}
             disabled={isDeleting}
             className="flex-1 py-2 text-xs font-bold uppercase bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
           >

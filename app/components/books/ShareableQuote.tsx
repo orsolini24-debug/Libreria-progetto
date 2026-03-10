@@ -21,7 +21,7 @@ export function ShareableQuote({ text, author, bookTitle, bookCover, onClose }: 
           url: window.location.href,
         });
       } catch (err) {
-        console.error(err);
+        if (err instanceof Error && err.name !== "AbortError") console.error(err);
       }
     }
   };
