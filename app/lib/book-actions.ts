@@ -3,6 +3,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { BookStatus } from "@/app/generated/prisma/client";
 import { CreateBookSchema, UpdateBookSchema } from "./validation/schemas";
 import { mapZodError } from "./validation/errors";
 import { requireAuth } from "./auth-utils";
@@ -201,4 +202,28 @@ export async function deleteBook(id: string): Promise<void> {
     logger.error("DELETE_BOOK_ERROR", e);
     throw e;
   }
+}
+
+// ── getBooksForModal ──────────────────────────────────────────────────────────
+// Recupera tutti i libri per lo StatsModal (non paginati).
+// filter: status key (es. "READ"), "year", oppure "READ-2024"
+export async function getBooksForModal(filter: string) {
+  let userId: string;
+  try { userId = await requireAuth(); }
+  catch { return []; }
+
+  let statusFilter: BookStatus | null = null;
+  if (filter === "year") {
+    statusFilter = BookStatus.READ;
+  } else if (filter.includes("-")) {
+    const s = filter.split("-")[0];
+    if (Object.values(BookStatus).includes(s as BookStatus)) statusFilter = s as BookStatus;
+  } else if (Object.values(BookStatus).includes(filter as BookStatus)) {
+    statusFilter = filter as BookStatus;
+  }
+
+  return prisma.book.findMany({
+    where: { userId, ...(statusFilter ? { status: statusFilter } : {}) },
+    orderBy: { updatedAt: "desc" },
+  });
 }

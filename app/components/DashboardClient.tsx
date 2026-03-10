@@ -160,7 +160,7 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
   return (
     <>
       <ConfettiCelebration show={celebrate} />
-      {statsModal && <StatsModal books={initialBooks} filter={statsModal} onClose={() => setStatsModal(null)} onBookClick={(b) => { setStatsModal(null); setPanel({ type: "edit", book: b }); }} />}
+      {statsModal && <StatsModal filter={statsModal} onClose={() => setStatsModal(null)} onBookClick={(b) => { setStatsModal(null); setPanel({ type: "edit", book: b }); }} />}
 
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
       {serverStats && <StatsBar serverStats={serverStats} onStatClick={(f) => setStatsModal(f)} />}

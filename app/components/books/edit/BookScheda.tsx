@@ -65,9 +65,12 @@ export function BookScheda({
       </div>
 
       {/* Voto */}
-      <div className={`transition-all rounded-xl ${ratingPrompt ? "ring-2 ring-amber-500/60 p-2 -m-2" : ""}`}>
+      <div
+        className={`transition-all rounded-xl ${ratingPrompt ? "p-2 -m-2" : ""}`}
+        style={ratingPrompt ? { boxShadow: "0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent)" } : undefined}
+      >
         {ratingPrompt && (
-          <p className="text-[10px] font-bold text-amber-500 mb-1.5">Il libro è finito — dagli un voto! ⭐</p>
+          <p className="text-[10px] font-bold mb-1.5" style={{ color: "var(--accent)" }}>Il libro è finito — dagli un voto! ⭐</p>
         )}
         <FormField label="Voto" error={fieldErrors?.rating}>
           <div className="pt-1">

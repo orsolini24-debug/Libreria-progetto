@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { RatingDisplay } from "./StarRating";
 import { STATUS_LABELS } from "@/app/lib/constants";
 import type { Book } from "@/app/generated/prisma/client";
+import { getBooksForModal } from "@/app/lib/book-actions";
 
 const YEAR = new Date().getFullYear();
 
@@ -17,13 +18,24 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }
 };
 
 interface Props {
-  books: Book[];
   filter: string;         // status key o "year" per libri letti nell'anno
   onClose: () => void;
   onBookClick: (b: Book) => void;
 }
 
-export function StatsModal({ books, filter, onClose, onBookClick }: Props) {
+export function StatsModal({ filter, onClose, onBookClick }: Props) {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setBooks([]);
+    getBooksForModal(filter).then(data => {
+      setBooks(data as Book[]);
+      setLoading(false);
+    });
+  }, [filter]);
+
   // Chiude con Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -129,7 +141,11 @@ export function StatsModal({ books, filter, onClose, onBookClick }: Props) {
 
         {/* Lista libri */}
         <div className="overflow-y-auto flex-1 p-4 flex flex-col gap-2">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <p className="text-center py-8 italic text-sm" style={{ color: "var(--fg-subtle)" }}>
+              Caricamento…
+            </p>
+          ) : filtered.length === 0 ? (
             <p className="text-center py-8 italic text-sm" style={{ color: "var(--fg-subtle)" }}>
               Nessun libro in questa categoria.
             </p>
