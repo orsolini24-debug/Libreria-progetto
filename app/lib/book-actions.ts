@@ -204,6 +204,19 @@ export async function deleteBook(id: string): Promise<void> {
   }
 }
 
+// ── deleteBooksBulk ───────────────────────────────────────────────────────────
+export async function deleteBooksBulk(ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  try {
+    const userId = await requireAuth();
+    await prisma.book.deleteMany({ where: { id: { in: ids }, userId } });
+    revalidatePath("/dashboard");
+  } catch (e) {
+    logger.error("DELETE_BOOKS_BULK_ERROR", e);
+    throw e;
+  }
+}
+
 // ── getBooksForModal ──────────────────────────────────────────────────────────
 // Recupera tutti i libri per lo StatsModal (non paginati).
 // filter: status key (es. "READ"), "year", oppure "READ-2024"

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { updateBook } from "@/app/lib/book-actions";
+import { updateBook, deleteBook } from "@/app/lib/book-actions";
 import type { Book } from "@/app/generated/prisma/client";
 import { BookStatus } from "@/app/generated/prisma/client";
 import { BookInfoOverlay } from "./BookInfoOverlay";
@@ -53,6 +53,8 @@ export function EditBookForm({ book, onClose, onCelebrate, onNavigateToBook }: {
   const [isGenerating, setIsGenerating] = useState(false);
   const [localAiAnalysis, setLocalAiAnalysis] = useState(book.aiAnalysis ?? "");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const tagInputRef = useRef<HTMLInputElement>(null);
 
@@ -184,6 +186,33 @@ export function EditBookForm({ book, onClose, onCelebrate, onNavigateToBook }: {
         )}
 
         <button type="submit" className="w-full py-3 rounded-xl text-sm font-semibold shadow-xl transition-all active:scale-95 disabled:opacity-50 mt-6" style={{ background: "var(--accent)", color: "var(--accent-on)" }}>Salva modifiche</button>
+
+        <div className="mt-3 pt-4 border-t" style={{ borderColor: "color-mix(in srgb, var(--fg-subtle) 10%, transparent)" }}>
+          {deleteConfirm ? (
+            <div className="flex gap-2 animate-fade-in">
+              <button type="button" onClick={() => setDeleteConfirm(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-white/5" style={{ color: "var(--fg-muted)" }}>
+                Annulla
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try { await deleteBook(book.id); router.refresh(); onClose(); }
+                  catch { setDeleting(false); setDeleteConfirm(false); }
+                }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
+                style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}
+              >
+                {deleting ? "Eliminazione…" : "Conferma eliminazione"}
+              </button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setDeleteConfirm(true)} className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 opacity-40 hover:opacity-100" style={{ color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}>
+              Elimina libro
+            </button>
+          )}
+        </div>
       </form>
 
       {activeTab === "lettura" && (

@@ -33,7 +33,12 @@ const FORMAT_ICONS: Record<string, string> = {
   cartaceo: "📖", kindle: "📱", audible: "🎧",
 };
 
-export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => void }) {
+export function BookCard({ book, onClick, isSelected = false, selectionMode = false }: {
+  book: Book;
+  onClick: (b: Book) => void;
+  isSelected?: boolean;
+  selectionMode?: boolean;
+}) {
   const tags    = book.tags    ? book.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
   const formats = book.formats ? book.formats.split(",").map((f) => f.trim()).filter(Boolean) : [];
 
@@ -49,8 +54,18 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
         shadow-md shadow-black/40 hover:shadow-xl hover:shadow-black/60
         transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02]
         after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5
-        ${STATUS_ACCENT[book.status] ?? "after:bg-stone-600"}`}
+        ${STATUS_ACCENT[book.status] ?? "after:bg-stone-600"}
+        ${isSelected ? "ring-2 ring-white/80 scale-[0.97]" : ""}`}
     >
+      {/* Selection overlay */}
+      {selectionMode && (
+        <div className={`absolute top-2 right-2 z-20 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-150 shadow-lg
+          ${isSelected ? "bg-white border-white" : "bg-black/50 border-white/60 backdrop-blur-sm"}`}>
+          {isSelected && <span className="text-black text-xs font-black leading-none">✓</span>}
+        </div>
+      )}
+      {isSelected && <div className="absolute inset-0 bg-white/10 z-10 pointer-events-none rounded-xl" />}
+
       {/* Cover */}
       <div className="aspect-[2/3] relative overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
         {book.coverUrl ? (

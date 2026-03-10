@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { BookCard } from "./books/BookCard";
@@ -8,6 +8,7 @@ import { SlidePanel } from "./SlidePanel";
 import { EditBookForm } from "./books/EditBookForm";
 import AddBookForm from "./books/AddBookForm";
 import { StatsBar, type ServerStats } from "./books/StatsBar";
+import { deleteBooksBulk } from "@/app/lib/book-actions";
 import { ReadingChallenge } from "./books/ReadingChallenge";
 import { YearWrapped } from "./books/YearWrapped";
 import { ActivityHeatMap } from "./books/ActivityHeatMap";
@@ -105,6 +106,10 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
   const [panel, setPanel] = useState<PanelState>(null);
   const [celebrate, setCelebrate] = useState(false);
   const [statsModal, setStatsModal] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const query = searchParams.get("q") ?? "";
   const statusFilter = searchParams.get("status") ?? "";
@@ -157,14 +162,46 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
 
   const closePanel = () => setPanel(null);
 
+  const exitSelectionMode = useCallback(() => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    setBulkDeleteConfirm(false);
+  }, []);
+
+  function toggleSelection(bookId: string) {
+    setBulkDeleteConfirm(false);
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(bookId)) next.delete(bookId); else next.add(bookId);
+      return next;
+    });
+  }
+
+  async function handleBulkDelete() {
+    if (!bulkDeleteConfirm) { setBulkDeleteConfirm(true); return; }
+    setBulkDeleting(true);
+    try {
+      await deleteBooksBulk(Array.from(selectedIds));
+      router.refresh();
+      exitSelectionMode();
+    } finally { setBulkDeleting(false); }
+  }
+
   return (
     <>
       <ConfettiCelebration show={celebrate} />
       {statsModal && <StatsModal filter={statsModal} onClose={() => setStatsModal(null)} onBookClick={(b) => { setStatsModal(null); setPanel({ type: "edit", book: b }); }} />}
 
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end gap-2 mb-6">
         <button
-          onClick={() => setPanel({ type: "add" })}
+          onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all border"
+          style={{ borderColor: selectionMode ? "rgba(239,68,68,0.4)" : "color-mix(in srgb, var(--fg-subtle) 25%, transparent)", color: selectionMode ? "#f87171" : "var(--fg-muted)", background: selectionMode ? "rgba(239,68,68,0.08)" : "transparent" }}
+        >
+          {selectionMode ? "✕ Annulla selezione" : "☑ Selezione multipla"}
+        </button>
+        <button
+          onClick={() => { setPanel({ type: "add" }); exitSelectionMode(); }}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-lg"
           style={{ background: "var(--accent)", color: "var(--accent-on)", boxShadow: "0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)" }}
         >
@@ -221,7 +258,12 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 sm:gap-6 mb-8">
           {initialBooks.map((book) => (
             <div key={book.id} className="book-grid-item">
-              <BookCard book={book} onClick={(b) => setPanel({ type: "edit", book: b })} />
+              <BookCard
+                book={book}
+                selectionMode={selectionMode}
+                isSelected={selectedIds.has(book.id)}
+                onClick={selectionMode ? (b) => toggleSelection(b.id) : (b) => setPanel({ type: "edit", book: b })}
+              />
             </div>
           ))}
         </div>
@@ -233,6 +275,58 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
           <button disabled={currentPage <= 1} onClick={() => goToPage(currentPage - 1)} className="p-2 rounded-lg border border-white/10 disabled:opacity-20 transition-all hover:bg-white/5 active:scale-95">←</button>
           <span className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-white/5 border border-white/5">Pagina {currentPage} di {totalPages}</span>
           <button disabled={currentPage >= totalPages} onClick={() => goToPage(currentPage + 1)} className="p-2 rounded-lg border border-white/10 disabled:opacity-20 transition-all hover:bg-white/5 active:scale-95">→</button>
+        </div>
+      )}
+
+      {/* Barra flottante selezione multipla */}
+      {selectionMode && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl animate-fade-in"
+          style={{ background: "var(--bg-elevated)", borderColor: "color-mix(in srgb, var(--fg-subtle) 25%, transparent)" }}>
+          {/* Seleziona tutti */}
+          <button
+            onClick={() => {
+              setBulkDeleteConfirm(false);
+              if (selectedIds.size === initialBooks.length) setSelectedIds(new Set());
+              else setSelectedIds(new Set(initialBooks.map(b => b.id)));
+            }}
+            className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity"
+            style={{ color: "var(--fg-muted)" }}
+          >
+            {selectedIds.size === initialBooks.length ? "Deseleziona tutti" : "Tutti"}
+          </button>
+
+          <div className="w-px h-4 bg-white/15" />
+
+          <span className="text-sm font-bold tabular-nums" style={{ color: "var(--fg-primary)" }}>
+            {selectedIds.size === 0 ? "Nessuno selezionato" : `${selectedIds.size} selezionat${selectedIds.size === 1 ? "o" : "i"}`}
+          </span>
+
+          {selectedIds.size > 0 && (
+            <>
+              <div className="w-px h-4 bg-white/15" />
+              {bulkDeleteConfirm ? (
+                <div className="flex items-center gap-2 animate-fade-in">
+                  <span className="text-xs font-bold text-red-400">Sicuro?</span>
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleting}
+                    className="text-xs font-black text-red-400 uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    {bulkDeleting ? "…" : "Elimina"}
+                  </button>
+                  <button onClick={() => setBulkDeleteConfirm(false)} className="text-xs opacity-50 hover:opacity-100">Annulla</button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleBulkDelete}
+                  className="text-xs font-black uppercase tracking-widest active:scale-95 transition-all"
+                  style={{ color: "#f87171" }}
+                >
+                  🗑 Elimina
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
 
