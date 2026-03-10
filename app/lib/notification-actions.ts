@@ -32,7 +32,7 @@ export async function markAsRead(id: string) {
       where: { id, userId },
       data: { isRead: true }
     });
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     logger.error("MARK_READ_ERROR", e);
@@ -41,14 +41,19 @@ export async function markAsRead(id: string) {
 }
 
 /**
- * Crea una nuova notifica (interna)
+ * Crea una nuova notifica (interna — solo per l'utente autenticato)
  */
 export async function createNotification(userId: string, title: string, message: string, type: "LOAN" | "GOAL" | "SYSTEM") {
   try {
+    const authUserId = await requireAuth();
+    if (authUserId !== userId) {
+      logger.error("CREATE_NOTIFICATION_UNAUTHORIZED", { attempted: userId });
+      return;
+    }
     await prisma.notification.create({
       data: { userId, title, message, type }
     });
-    revalidatePath("/");
+    revalidatePath("/dashboard");
   } catch (e) {
     logger.error("CREATE_NOTIFICATION_ERROR", e);
   }

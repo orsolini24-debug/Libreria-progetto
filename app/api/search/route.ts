@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     const q = req.nextUrl.searchParams.get("q") || "";
-    const maxResults = parseInt(req.nextUrl.searchParams.get("maxResults") || "20");
+    const maxResults = Math.min(parseInt(req.nextUrl.searchParams.get("maxResults") || "20"), 20);
 
     // #108: Limitazione lunghezza query (max 200 caratteri)
     if (q.length > 200) {

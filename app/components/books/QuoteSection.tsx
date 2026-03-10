@@ -79,7 +79,7 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
 
   return (
     <div className="border-t pt-6" style={{ borderColor: "color-mix(in srgb, var(--accent) 12%, transparent)" }}>
-      <button onClick={() => setOpen((p) => !p)} className="flex items-center justify-between w-full mb-4 group">
+      <button onClick={() => setOpen((p) => !p)} aria-expanded={open} className="flex items-center justify-between w-full mb-4 group">
         <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
           Citazioni & Appunti
           {items.length > 0 && <span className="ml-2 text-amber-500">({items.length})</span>}

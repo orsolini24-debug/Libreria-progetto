@@ -26,6 +26,7 @@ export default async function PublicShelfPage({ params }: Props) {
   const books = await prisma.book.findMany({
     where: { userId: user.id },
     orderBy: { updatedAt: "desc" },
+    take: 200,
   });
 
   return (

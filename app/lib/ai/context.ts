@@ -23,7 +23,7 @@ export async function getUserFullContext(userId: string): Promise<UserContext> {
       }),
       prisma.book.findMany({
         where: { userId, status: "READ" },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ finishedAt: "desc" }, { createdAt: "desc" }],
         take: 5,
         select: { title: true, author: true },
       }),

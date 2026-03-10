@@ -105,5 +105,6 @@ export async function deleteLoan(id: string): Promise<void> {
     revalidatePath("/dashboard");
   } catch (e) {
     logger.error("DELETE_LOAN_ERROR", e);
+    throw e;
   }
 }

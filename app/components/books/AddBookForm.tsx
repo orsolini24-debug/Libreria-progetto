@@ -286,7 +286,8 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
                   type="button"
                   onClick={handleSuggestTags}
                   disabled={suggestingTags}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-500/10 text-indigo-400 text-[9px] font-bold uppercase hover:bg-indigo-500 hover:text-white transition-all disabled:opacity-50"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all disabled:opacity-50"
+                style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}
                 >
                   {suggestingTags ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                   Suggerisci

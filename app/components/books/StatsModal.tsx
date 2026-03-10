@@ -9,10 +9,11 @@ import type { Book } from "@/app/generated/prisma/client";
 const YEAR = new Date().getFullYear();
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  TO_READ:  { bg: "color-mix(in srgb,#78716c 12%,var(--bg-elevated))", text: "#a8a29e", border: "color-mix(in srgb,#78716c 30%,transparent)" },
-  READING:  { bg: "color-mix(in srgb,#3b82f6 12%,var(--bg-elevated))", text: "#93c5fd", border: "color-mix(in srgb,#3b82f6 30%,transparent)" },
-  READ:     { bg: "color-mix(in srgb,#10b981 12%,var(--bg-elevated))", text: "#6ee7b7", border: "color-mix(in srgb,#10b981 30%,transparent)" },
-  WISHLIST: { bg: "color-mix(in srgb,#8b5cf6 12%,var(--bg-elevated))", text: "#c4b5fd", border: "color-mix(in srgb,#8b5cf6 30%,transparent)" },
+  TO_READ:   { bg: "color-mix(in srgb,#78716c 12%,var(--bg-elevated))", text: "#a8a29e", border: "color-mix(in srgb,#78716c 30%,transparent)" },
+  READING:   { bg: "color-mix(in srgb,#3b82f6 12%,var(--bg-elevated))", text: "#93c5fd", border: "color-mix(in srgb,#3b82f6 30%,transparent)" },
+  READ:      { bg: "color-mix(in srgb,#10b981 12%,var(--bg-elevated))", text: "#6ee7b7", border: "color-mix(in srgb,#10b981 30%,transparent)" },
+  WISHLIST:  { bg: "color-mix(in srgb,#8b5cf6 12%,var(--bg-elevated))", text: "#c4b5fd", border: "color-mix(in srgb,#8b5cf6 30%,transparent)" },
+  ABANDONED: { bg: "color-mix(in srgb,#71717a 12%,var(--bg-elevated))", text: "#a1a1aa", border: "color-mix(in srgb,#71717a 30%,transparent)" },
 };
 
 interface Props {
