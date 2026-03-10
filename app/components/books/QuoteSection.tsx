@@ -93,7 +93,8 @@ export function QuoteSection({ bookId, bookTitle, author, coverUrl }: { bookId: 
             {(["QUOTE", "NOTE"] as NoteType[]).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-lg transition-all
-                  ${tab === t ? 'bg-amber-500 text-black' : 'opacity-40 hover:opacity-100'}`}>
+                  ${tab === t ? '' : 'opacity-40 hover:opacity-100'}`}
+                style={tab === t ? { background: "var(--accent)", color: "var(--accent-on)" } : undefined}>
                 {t === "QUOTE" ? `Citazioni (${quotes.length})` : `Appunti (${notes.length})`}
               </button>
             ))}

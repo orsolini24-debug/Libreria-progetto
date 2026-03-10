@@ -22,10 +22,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_DOT: Record<string, string> = {
-  TO_READ:  "#78716c",
-  READING:  "#3b82f6",
-  READ:     "#10b981",
-  WISHLIST: "#8b5cf6",
+  TO_READ:   "#78716c",
+  READING:   "#3b82f6",
+  READ:      "#10b981",
+  WISHLIST:  "#8b5cf6",
+  ABANDONED: "#71717a",
 };
 
 interface Props {

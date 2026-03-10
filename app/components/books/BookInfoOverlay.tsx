@@ -67,21 +67,23 @@ export function BookInfoOverlay({ isOpen, onClose, title, author, description, a
         {/* Tab di navigazione "a segnalibro" */}
         {hasBoth && (
           <div className="flex px-10 gap-8 border-b border-white/5">
-            <button 
+            <button
               onClick={() => setCurrentPage("plot")}
               className={`pb-4 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative
-                ${currentPage === "plot" ? "text-indigo-400" : "text-white/20 hover:text-white/40"}`}
+                ${currentPage === "plot" ? "" : "text-white/20 hover:text-white/40"}`}
+              style={currentPage === "plot" ? { color: "var(--accent)" } : undefined}
             >
               01. La Trama
-              {currentPage === "plot" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-400 animate-in slide-in-from-left-full duration-500" />}
+              {currentPage === "plot" && <div className="absolute bottom-0 left-0 right-0 h-0.5 animate-in slide-in-from-left-full duration-500" style={{ background: "var(--accent)" }} />}
             </button>
-            <button 
+            <button
               onClick={() => setCurrentPage("ai")}
               className={`pb-4 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative
-                ${currentPage === "ai" ? "text-indigo-400" : "text-white/20 hover:text-white/40"}`}
+                ${currentPage === "ai" ? "" : "text-white/20 hover:text-white/40"}`}
+              style={currentPage === "ai" ? { color: "var(--accent)" } : undefined}
             >
               02. Sanctuary Insights
-              {currentPage === "ai" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-400 animate-in slide-in-from-left-full duration-500" />}
+              {currentPage === "ai" && <div className="absolute bottom-0 left-0 right-0 h-0.5 animate-in slide-in-from-left-full duration-500" style={{ background: "var(--accent)" }} />}
             </button>
           </div>
         )}
@@ -109,14 +111,14 @@ export function BookInfoOverlay({ isOpen, onClose, title, author, description, a
             {currentPage === "ai" && aiAnalysis && (
               <div className="animate-in fade-in slide-in-from-right-8 duration-700">
                 <div className="flex items-center gap-3 mb-10">
-                  <Sparkles className="w-5 h-5 text-indigo-400" />
-                  <div className="h-px flex-1 bg-indigo-400/20" />
+                  <Sparkles className="w-5 h-5" style={{ color: "var(--accent)" }} />
+                  <div className="h-px flex-1" style={{ background: "color-mix(in srgb, var(--accent) 20%, transparent)" }} />
                 </div>
-                <div className="font-reading text-lg sm:text-xl leading-[1.8] text-indigo-100/90 space-y-8">
+                <div className="font-reading text-lg sm:text-xl leading-[1.8] text-white/80 space-y-8">
                   {aiAnalysis.split("\n").map((para, i) => (
                     para.trim() && (
                       <p key={i} className="relative pl-8">
-                        <span className="absolute left-0 top-3 w-1.5 h-1.5 rounded-full bg-indigo-500/40" />
+                        <span className="absolute left-0 top-3 w-1.5 h-1.5 rounded-full" style={{ background: "color-mix(in srgb, var(--accent) 40%, transparent)" }} />
                         {para}
                       </p>
                     )
