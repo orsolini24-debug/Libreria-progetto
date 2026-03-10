@@ -32,9 +32,9 @@ export default async function PublicShelfPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-slate-950 text-white pb-20">
       {/* Header Pubblico */}
-      <header className="py-16 px-4 text-center bg-gradient-to-b from-indigo-900/20 to-transparent">
+      <header className="py-16 px-4 text-center" style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--accent) 8%, transparent), transparent)" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl shadow-2xl shadow-indigo-500/20">
+          <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl shadow-2xl" style={{ background: "color-mix(in srgb, var(--accent) 20%, rgba(255,255,255,0.05))" }}>
             📚
           </div>
           <h1 className="text-4xl font-display font-black tracking-tight mb-2">

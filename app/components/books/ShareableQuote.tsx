@@ -33,11 +33,13 @@ export function ShareableQuote({ text, author, bookTitle, bookCover, onClose }: 
         {/* The Card */}
         <div id="quote-card" className="relative aspect-square w-full rounded-[3rem] overflow-hidden shadow-2xl bg-[#0a0a0a] border border-white/10 group">
           {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform group-hover:scale-110" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -ml-32 -mb-32 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform group-hover:scale-110"
+               style={{ background: "color-mix(in srgb, var(--accent) 10%, transparent)" }} />
+          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-[80px] -ml-32 -mb-32 transition-transform group-hover:scale-110"
+               style={{ background: "color-mix(in srgb, var(--accent) 8%, transparent)" }} />
 
           <div className="relative h-full p-10 flex flex-col justify-between items-center text-center">
-            <QuoteIcon className="w-12 h-12 text-amber-500/20 mb-4" />
+            <QuoteIcon className="w-12 h-12 mb-4" style={{ color: "color-mix(in srgb, var(--accent) 20%, transparent)" }} />
             
             <div className="flex-1 flex items-center">
               <p className="font-display text-2xl font-black italic tracking-tight leading-snug text-white/90">
@@ -51,7 +53,7 @@ export function ShareableQuote({ text, author, bookTitle, bookCover, onClose }: 
                   <Image src={bookCover} alt="" width={32} height={44} unoptimized className="rounded shadow-lg" />
                 )}
                 <div className="text-left">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-500">{bookTitle}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--accent)" }}>{bookTitle}</p>
                   <p className="text-[9px] opacity-40 font-medium">{author || "Autore sconosciuto"}</p>
                 </div>
               </div>
@@ -62,9 +64,10 @@ export function ShareableQuote({ text, author, bookTitle, bookCover, onClose }: 
 
         {/* Actions */}
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={share}
-            className="flex-1 py-4 rounded-3xl bg-amber-500 text-black font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-amber-400 active:scale-95 transition-all shadow-xl shadow-amber-500/20"
+            className="flex-1 py-4 rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 active:scale-95 transition-all hover:opacity-90"
+            style={{ background: "var(--accent)", color: "var(--accent-on)", boxShadow: "0 8px 24px color-mix(in srgb, var(--accent) 25%, transparent)" }}
           >
             <Share2 className="w-4 h-4" /> Condividi
           </button>
