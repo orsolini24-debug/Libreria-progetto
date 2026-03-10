@@ -89,7 +89,7 @@ export function ReadingSessionSection({
       >
         <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
           Sessioni di lettura
-          {sessions.length > 0 && <span className="ml-2 text-amber-500">({sessions.length})</span>}
+          {sessions.length > 0 && <span className="ml-2" style={{ color: "var(--accent)" }}>({sessions.length})</span>}
         </p>
         <span className={`text-xs transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
@@ -104,11 +104,11 @@ export function ReadingSessionSection({
           {!loading && sessions.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl p-3 text-center border bg-white/5 border-white/5">
-                <p className="font-display text-xl font-bold text-amber-500">{totalPagesRead}</p>
+                <p className="font-display text-xl font-bold" style={{ color: "var(--accent)" }}>{totalPagesRead}</p>
                 <p className="text-[9px] font-bold uppercase opacity-40">pagine</p>
               </div>
               <div className="rounded-xl p-3 text-center border bg-white/5 border-white/5">
-                <p className="font-display text-xl font-bold text-amber-500">
+                <p className="font-display text-xl font-bold" style={{ color: "var(--accent)" }}>
                   {totalMinutes >= 60 ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` : `${totalMinutes}m`}
                 </p>
                 <p className="text-[9px] font-bold uppercase opacity-40">tempo totale</p>
@@ -122,7 +122,7 @@ export function ReadingSessionSection({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-xs font-bold">{new Date(s.date).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}</p>
-                    {s.pagesRead != null && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500">+{s.pagesRead}</span>}
+                    {s.pagesRead != null && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>+{s.pagesRead}</span>}
                   </div>
                   <p className="text-[10px] opacity-50 font-medium">
                     {s.startPage ?? "?"} → {s.endPage ?? "?"} · {s.duration ?? "?"} min

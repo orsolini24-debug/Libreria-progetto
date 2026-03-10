@@ -86,7 +86,7 @@ export function LoanSection({ bookId }: { bookId: string }) {
       <button onClick={() => setOpen((p) => !p)} aria-expanded={open} className="flex items-center justify-between w-full mb-4 group">
         <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 transition-opacity">
           Gestione Prestiti
-          {active.length > 0 && <span className="ml-2 text-amber-500">({active.length} attivi)</span>}
+          {active.length > 0 && <span className="ml-2" style={{ color: "var(--accent)" }}>({active.length} attivi)</span>}
         </p>
         <span className={`text-xs transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
@@ -97,14 +97,15 @@ export function LoanSection({ bookId }: { bookId: string }) {
             <div className="space-y-3">
               <p className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Attivi</p>
               {active.map((loan) => (
-                <div key={loan.id} className="flex items-start gap-4 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                <div key={loan.id} className="flex items-start gap-4 p-4 rounded-xl border transition-all"
+                  style={{ borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)", background: "color-mix(in srgb, var(--accent) 5%, transparent)" }}>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-amber-500">{loan.borrower}</p>
+                    <p className="text-sm font-bold" style={{ color: "var(--accent)" }}>{loan.borrower}</p>
                     <p className="text-[10px] opacity-50 mt-0.5">dal {new Date(loan.loanedAt).toLocaleDateString("it-IT")}</p>
-                    {loan.note && <p className="text-xs mt-2 italic opacity-70 border-l-2 border-amber-500/20 pl-2">{loan.note}</p>}
+                    {loan.note && <p className="text-xs mt-2 italic opacity-70 border-l-2 pl-2" style={{ borderColor: "color-mix(in srgb, var(--accent) 20%, transparent)" }}>{loan.note}</p>}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button onClick={() => handleReturn(loan.id)} className="text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg bg-amber-500 text-black hover:bg-amber-400 transition-all">Restituito</button>
+                    <button onClick={() => handleReturn(loan.id)} className="text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg transition-all hover:opacity-90" style={{ background: "var(--accent)", color: "var(--accent-on)" }}>Restituito</button>
                     {deleteConfirmId === loan.id ? (
                       <div className="flex flex-col gap-1 items-end">
                         <button onClick={() => handleDelete(loan.id)} className="text-[10px] font-bold text-red-400 whitespace-nowrap">Conferma</button>
