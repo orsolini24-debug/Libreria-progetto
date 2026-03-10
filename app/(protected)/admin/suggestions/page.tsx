@@ -15,6 +15,7 @@ export default async function AdminSuggestionsPage() {
 
   const suggestions = await prisma.suggestion.findMany({
     orderBy: { createdAt: "desc" },
+    take: 200,
     include: { user: { select: { email: true } } },
   });
 

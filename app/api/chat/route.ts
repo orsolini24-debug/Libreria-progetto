@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { streamText } from "ai";
+import { streamText, generateText } from "ai";
 import { createGroq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { orchestrate } from "@/app/lib/ai/orchestrator";
@@ -107,12 +107,51 @@ export async function POST(req: Request) {
       onFinish: async ({ text }) => {
         try {
           await prisma.chatMessage.create({
-            data: {
-              userId,
-              role: "assistant",
-              content: text,
-            }
+            data: { userId, role: "assistant", content: text },
           });
+
+          // Genera un ConversationSummary ogni SUMMARY_INTERVAL messaggi
+          const SUMMARY_INTERVAL = 20;
+          const msgCount = await prisma.chatMessage.count({ where: { userId } });
+          if (msgCount > 0 && msgCount % SUMMARY_INTERVAL === 0) {
+            const recentMsgs = await prisma.chatMessage.findMany({
+              where: { userId },
+              orderBy: { createdAt: "desc" },
+              take: SUMMARY_INTERVAL,
+              select: { role: true, content: true },
+            });
+            recentMsgs.reverse();
+
+            const summaryGroq = createGroq({ apiKey: apiKey!.trim() });
+            const { text: summaryText } = await generateText({
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              model: summaryGroq("llama-3.3-70b-versatile") as any,
+              messages: [{
+                role: "user",
+                content: `Riassumi in 2-3 frasi concise i temi principali di questa conversazione (italiano, terza persona: "L'utente ha discusso di..."):\n\n${
+                  recentMsgs.map(m => `${m.role === "user" ? "Utente" : "AI"}: ${m.content.slice(0, 300)}`).join("\n")
+                }`,
+              }],
+              maxTokens: 150,
+            });
+
+            if (summaryText.trim().length > 10) {
+              await prisma.conversationSummary.create({
+                data: { userId, summary: summaryText },
+              });
+
+              // Mantieni al massimo 10 summary per utente (FIFO)
+              const allSummaries = await prisma.conversationSummary.findMany({
+                where: { userId },
+                orderBy: { createdAt: "asc" },
+                select: { id: true },
+              });
+              if (allSummaries.length > 10) {
+                const toDelete = allSummaries.slice(0, allSummaries.length - 10).map(s => s.id);
+                await prisma.conversationSummary.deleteMany({ where: { id: { in: toDelete } } });
+              }
+            }
+          }
         } catch (e) {
           logger.error("SAVE_CHAT_RESPONSE_ERROR", e);
         }

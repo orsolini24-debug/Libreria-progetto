@@ -94,10 +94,11 @@ interface DashboardClientProps {
   serverStats?: ServerStats;
   booksReadThisYear?: number;
   allBookCreatedDates?: string[];
+  yearStats?: Record<string, { count: number; pages: number; authors: number; topGenre: string | null; bestBook: { title: string; author: string | null; rating: number; coverUrl: string | null } | null }>;
   userPrivacy: { userId: string; isPublic: boolean };
 }
 
-export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, serverStats, booksReadThisYear, allBookCreatedDates, userPrivacy }: DashboardClientProps) {
+export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, serverStats, booksReadThisYear, allBookCreatedDates, yearStats, userPrivacy }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -163,7 +164,7 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
 
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
       {serverStats && <StatsBar serverStats={serverStats} onStatClick={(f) => setStatsModal(f)} />}
-      <YearWrapped books={initialBooks} onStatClick={(filter, year) => { if (year) setStatsModal(`${filter}-${year}`); else updateFilters({ status: filter }); }} />
+      <YearWrapped books={initialBooks} yearStats={yearStats} onStatClick={(filter, year) => { if (year) setStatsModal(`${filter}-${year}`); else updateFilters({ status: filter }); }} />
       <ReadingChallenge books={initialBooks} initialBooksThisYear={booksReadThisYear} />
       <ActivityHeatMap books={initialBooks} allBookDates={allBookCreatedDates} />
 

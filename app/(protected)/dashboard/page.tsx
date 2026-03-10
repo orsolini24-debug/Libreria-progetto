@@ -58,7 +58,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     prisma.book.groupBy({ by: ["status"], where: { userId }, _count: { _all: true } }),
     prisma.book.findMany({
       where:  { userId },
-      select: { author: true, status: true, rating: true, pageCount: true, currentPage: true, finishedAt: true, createdAt: true },
+      select: { author: true, status: true, rating: true, pageCount: true, currentPage: true, finishedAt: true, createdAt: true, title: true, coverUrl: true, tags: true },
     }),
   ]);
 
@@ -92,6 +92,35 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const allBookCreatedDates = allBooksStats.map(b => b.createdAt.toISOString());
 
+  // Stats per anno (YearWrapped) — calcolate su TUTTI i libri
+  type BestBook = { title: string; author: string | null; rating: number; coverUrl: string | null };
+  type YearStatData = { count: number; pages: number; authors: number; topGenre: string | null; bestBook: BestBook | null };
+  const yearAccMap: Record<number, { count: number; pages: number; authorSet: Set<string>; tagCounts: Record<string, number>; bestBook: BestBook | null }> = {};
+
+  for (const b of allBooksStats) {
+    if (b.status !== "READ") continue;
+    const year = new Date(b.finishedAt ?? b.createdAt).getFullYear();
+    if (!yearAccMap[year]) yearAccMap[year] = { count: 0, pages: 0, authorSet: new Set(), tagCounts: {}, bestBook: null };
+    const acc = yearAccMap[year];
+    acc.count++;
+    if (b.pageCount) acc.pages += b.pageCount;
+    if (b.author?.trim()) acc.authorSet.add(b.author.trim());
+    if (b.tags) {
+      for (const tag of b.tags.split(",").map(t => t.trim()).filter(Boolean)) {
+        acc.tagCounts[tag] = (acc.tagCounts[tag] ?? 0) + 1;
+      }
+    }
+    if (b.rating != null && b.rating > 0 && (!acc.bestBook || b.rating > acc.bestBook.rating)) {
+      acc.bestBook = { title: b.title, author: b.author ?? null, rating: b.rating, coverUrl: b.coverUrl ?? null };
+    }
+  }
+
+  const yearStats: Record<string, YearStatData> = {};
+  for (const [year, acc] of Object.entries(yearAccMap)) {
+    const topGenre = Object.entries(acc.tagCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    yearStats[year] = { count: acc.count, pages: acc.pages, authors: acc.authorSet.size, topGenre, bestBook: acc.bestBook };
+  }
+
   const totalPages = Math.ceil(totalCount / LIMIT);
 
   return (
@@ -116,6 +145,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         serverStats={serverStats}
         booksReadThisYear={booksReadThisYear}
         allBookCreatedDates={allBookCreatedDates}
+        yearStats={yearStats}
         userPrivacy={{
           userId,
           isPublic: user?.isPublicShelf ?? false

@@ -4,14 +4,26 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { Book } from "@/app/generated/prisma/client";
 
+type YearStatData = {
+  count: number;
+  pages: number;
+  authors: number;
+  topGenre: string | null;
+  bestBook: { title: string; author: string | null; rating: number; coverUrl: string | null } | null;
+};
+
 interface Props {
   books: Book[];
+  yearStats?: Record<string, YearStatData>;
   onStatClick?: (filter: string, year?: number) => void;
 }
 
-export function YearWrapped({ books, onStatClick }: Props) {
-  // Anni disponibili (quelli in cui l'utente ha finito almeno un libro)
+export function YearWrapped({ books, yearStats, onStatClick }: Props) {
+  // Anni disponibili — usa yearStats (tutti i libri) se disponibile, altrimenti pagina corrente
   const availableYears = useMemo(() => {
+    if (yearStats) {
+      return Object.keys(yearStats).map(Number).sort((a, b) => b - a);
+    }
     const years = new Set<number>();
     books.forEach(b => {
       if (b.status === "READ") {
@@ -19,28 +31,28 @@ export function YearWrapped({ books, onStatClick }: Props) {
       }
     });
     return Array.from(years).sort((a, b) => b - a);
-  }, [books]);
+  }, [books, yearStats]);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(
     availableYears.includes(currentYear) ? currentYear : availableYears[0] || currentYear
   );
 
-  const stats = useMemo(() => {
+  type StatsShape = { count: number; pages: number; authors: number; topGenre: string | null; bestBook: YearStatData["bestBook"] | Book | null };
+
+  const stats = useMemo((): StatsShape | null => {
+    if (yearStats) {
+      const ys = yearStats[String(selectedYear)];
+      if (!ys || ys.count === 0) return null;
+      return { count: ys.count, pages: ys.pages, authors: ys.authors, topGenre: ys.topGenre, bestBook: ys.bestBook };
+    }
+    // Fallback client-side (solo libri paginati)
     const readThisYear = books.filter(
       (b) => b.status === "READ" && new Date(b.finishedAt ?? b.createdAt).getFullYear() === selectedYear
     );
-
     if (readThisYear.length === 0) return null;
-
-    const pages = readThisYear
-      .filter((b) => b.pageCount != null)
-      .reduce((s, b) => s + (b.pageCount ?? 0), 0);
-
-    const authors = new Set(
-      readThisYear.map((b) => b.author?.trim()).filter(Boolean)
-    ).size;
-
+    const pages = readThisYear.filter((b) => b.pageCount != null).reduce((s, b) => s + (b.pageCount ?? 0), 0);
+    const authors = new Set(readThisYear.map((b) => b.author?.trim()).filter(Boolean)).size;
     const tagCounts: Record<string, number> = {};
     for (const book of readThisYear) {
       if (!book.tags) continue;
@@ -49,18 +61,14 @@ export function YearWrapped({ books, onStatClick }: Props) {
       }
     }
     const topGenre = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-
-    const bestBook = readThisYear
-      .filter((b) => b.rating != null && b.rating > 0)
-      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
-
-    return { readThisYear, pages, authors, topGenre, bestBook };
-  }, [books, selectedYear]);
+    const bestBook = readThisYear.filter((b) => b.rating != null && b.rating > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
+    return { count: readThisYear.length, pages, authors, topGenre, bestBook };
+  }, [books, yearStats, selectedYear]);
 
   if (!stats && availableYears.length === 0) return null;
 
   const statCards = stats ? [
-    { value: stats.readThisYear.length, label: "libri letti", filter: "READ" },
+    { value: stats.count, label: "libri letti", filter: "READ" },
     { value: `~${stats.pages.toLocaleString("it")}`, label: "pagine", filter: "READ" },
     { value: stats.authors, label: "autori", filter: "READ" },
     { value: stats.topGenre || "-", label: "genere top", filter: "READ", italic: true },
@@ -141,7 +149,7 @@ export function YearWrapped({ books, onStatClick }: Props) {
               <div className="p-5 rounded-[2rem] bg-amber-500/5 border border-amber-500/10 flex flex-col justify-center">
                 <p className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-2 text-amber-500">Curiosità del {selectedYear}</p>
                 <p className="text-xs leading-relaxed font-medium">
-                  Hai esplorato <span className="text-amber-500 font-bold">{stats.authors}</span> universi narrativi differenti. 
+                  Hai esplorato <span className="text-amber-500 font-bold">{stats?.authors}</span> universi narrativi differenti.
                   {stats.topGenre && <> Il genere <span className="text-amber-500 font-bold uppercase tracking-tighter">{stats.topGenre}</span> è stato la tua bussola.</>}
                 </p>
               </div>
