@@ -90,6 +90,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     bookPagesTotal,
   };
 
+  const allBookCreatedDates = allBooksStats.map(b => b.createdAt.toISOString());
+
   const totalPages = Math.ceil(totalCount / LIMIT);
 
   return (
@@ -113,6 +115,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         statusCounts={statusCounts}
         serverStats={serverStats}
         booksReadThisYear={booksReadThisYear}
+        allBookCreatedDates={allBookCreatedDates}
         userPrivacy={{
           userId,
           isPublic: user?.isPublicShelf ?? false

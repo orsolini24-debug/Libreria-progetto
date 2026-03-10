@@ -18,12 +18,13 @@ function cellColor(count: number, max: number): string {
   return "var(--accent)";
 }
 
-export function ActivityHeatMap({ books }: { books: Book[] }) {
+export function ActivityHeatMap({ books, allBookDates }: { books: Book[]; allBookDates?: string[] }) {
   const { weeks, max, total } = useMemo(() => {
-    // Count books added per day
+    // Count books added per day — usa le date server-side (tutti i libri) se disponibili
     const counts: Record<string, number> = {};
-    for (const book of books) {
-      const key = toYMD(new Date(book.createdAt));
+    const dates = allBookDates ?? books.map(b => b.createdAt instanceof Date ? b.createdAt.toISOString() : String(b.createdAt));
+    for (const dateStr of dates) {
+      const key = toYMD(new Date(dateStr));
       counts[key] = (counts[key] ?? 0) + 1;
     }
 
@@ -50,7 +51,7 @@ export function ActivityHeatMap({ books }: { books: Book[] }) {
     const max  = Math.max(1, ...flat.map((c) => c.count));
     const total = flat.reduce((s, c) => s + c.count, 0);
     return { weeks, max, total };
-  }, [books]);
+  }, [books, allBookDates]);
 
   if (total === 0) return null;
 

@@ -78,5 +78,6 @@ export async function getQuotesForBook(bookId: string) {
   return prisma.quote.findMany({
     where: { bookId, userId },
     orderBy: { createdAt: "asc" },
+    take: 200,
   });
 }

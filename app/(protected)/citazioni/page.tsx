@@ -11,6 +11,7 @@ export default async function CitazioniPage() {
     prisma.quote.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
+      take: 500,
       include: {
         book: { select: { id: true, title: true, author: true, coverUrl: true } },
       },
@@ -18,6 +19,7 @@ export default async function CitazioniPage() {
     prisma.book.findMany({
       where: { userId: session.user.id },
       orderBy: { title: "asc" },
+      take: 1000,
       select: { id: true, title: true, author: true, status: true },
     }),
   ]);

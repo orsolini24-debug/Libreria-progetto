@@ -93,10 +93,11 @@ interface DashboardClientProps {
   statusCounts?: Record<string, number>;
   serverStats?: ServerStats;
   booksReadThisYear?: number;
+  allBookCreatedDates?: string[];
   userPrivacy: { userId: string; isPublic: boolean };
 }
 
-export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, serverStats, booksReadThisYear, userPrivacy }: DashboardClientProps) {
+export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, serverStats, booksReadThisYear, allBookCreatedDates, userPrivacy }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -164,7 +165,7 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
       {serverStats && <StatsBar serverStats={serverStats} onStatClick={(f) => setStatsModal(f)} />}
       <YearWrapped books={initialBooks} onStatClick={(filter, year) => { if (year) setStatsModal(`${filter}-${year}`); else updateFilters({ status: filter }); }} />
       <ReadingChallenge books={initialBooks} initialBooksThisYear={booksReadThisYear} />
-      <ActivityHeatMap books={initialBooks} />
+      <ActivityHeatMap books={initialBooks} allBookDates={allBookCreatedDates} />
 
       {/* #164: Controllo condivisione */}
       <ShelfSharingControl userId={userPrivacy.userId} isPublic={userPrivacy.isPublic} />
