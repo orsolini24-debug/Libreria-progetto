@@ -42,9 +42,10 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
     : null;
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onClick(book)}
-      className={`group cursor-pointer relative rounded-xl overflow-hidden
+      className={`group cursor-pointer relative rounded-xl overflow-hidden w-full text-left
         shadow-md shadow-black/40 hover:shadow-xl hover:shadow-black/60
         transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02]
         after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5
@@ -138,6 +139,6 @@ export function BookCard({ book, onClick }: { book: Book; onClick: (b: Book) => 
           </p>
         )}
       </div>
-    </div>
+    </button>
   );
 }

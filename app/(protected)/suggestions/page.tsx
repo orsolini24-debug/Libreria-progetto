@@ -23,7 +23,7 @@ export default async function SuggestionsPage() {
   const [allSuggestions, user] = await Promise.all([
     prisma.suggestion.findMany({
       orderBy: { createdAt: "desc" },
-      include: { user: { select: { email: true } } },
+      take: 100,
     }),
     prisma.user.findUnique({
       where: { id: session.user.id },

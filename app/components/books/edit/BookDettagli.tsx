@@ -46,7 +46,8 @@ export function BookDettagli({
           />
           <button
             type="button" disabled={isGenerating} onClick={onGenerate}
-            className="absolute top-2 right-2 p-2 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all disabled:opacity-50"
+            className="absolute top-2 right-2 p-2 rounded-lg transition-all disabled:opacity-50"
+            style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}
             title="Genera analisi"
           >
             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
