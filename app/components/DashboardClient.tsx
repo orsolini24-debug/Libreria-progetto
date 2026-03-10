@@ -7,7 +7,7 @@ import { BookCard } from "./books/BookCard";
 import { SlidePanel } from "./SlidePanel";
 import { EditBookForm } from "./books/EditBookForm";
 import AddBookForm from "./books/AddBookForm";
-import { StatsBar } from "./books/StatsBar";
+import { StatsBar, type ServerStats } from "./books/StatsBar";
 import { ReadingChallenge } from "./books/ReadingChallenge";
 import { YearWrapped } from "./books/YearWrapped";
 import { ActivityHeatMap } from "./books/ActivityHeatMap";
@@ -91,10 +91,12 @@ interface DashboardClientProps {
   currentPage: number;
   totalCount: number;
   statusCounts?: Record<string, number>;
+  serverStats?: ServerStats;
+  booksReadThisYear?: number;
   userPrivacy: { userId: string; isPublic: boolean };
 }
 
-export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, userPrivacy }: DashboardClientProps) {
+export function DashboardClient({ initialBooks, totalPages, currentPage, statusCounts, serverStats, booksReadThisYear, userPrivacy }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -159,9 +161,9 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
       {statsModal && <StatsModal books={initialBooks} filter={statsModal} onClose={() => setStatsModal(null)} onBookClick={(b) => { setStatsModal(null); setPanel({ type: "edit", book: b }); }} />}
 
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
-      <StatsBar books={initialBooks} onStatClick={(f) => setStatsModal(f)} />
+      {serverStats && <StatsBar serverStats={serverStats} onStatClick={(f) => setStatsModal(f)} />}
       <YearWrapped books={initialBooks} onStatClick={(filter, year) => { if (year) setStatsModal(`${filter}-${year}`); else updateFilters({ status: filter }); }} />
-      <ReadingChallenge books={initialBooks} />
+      <ReadingChallenge books={initialBooks} initialBooksThisYear={booksReadThisYear} />
       <ActivityHeatMap books={initialBooks} />
 
       {/* #164: Controllo condivisione */}

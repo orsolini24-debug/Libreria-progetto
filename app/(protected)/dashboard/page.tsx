@@ -43,7 +43,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   else if (sort === "createdAt") orderBy.createdAt = "desc";
   else orderBy.updatedAt = "desc";
 
-  const [books, totalCount, user, statusCountsRaw] = await Promise.all([
+  const [books, totalCount, user, statusCountsRaw, allBooksStats] = await Promise.all([
     prisma.book.findMany({
       where,
       orderBy,
@@ -56,12 +56,39 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       select: { displayName: true, isPublicShelf: true },
     }),
     prisma.book.groupBy({ by: ["status"], where: { userId }, _count: { _all: true } }),
+    prisma.book.findMany({
+      where:  { userId },
+      select: { author: true, status: true, rating: true, pageCount: true, currentPage: true, finishedAt: true, createdAt: true },
+    }),
   ]);
 
   const statusCounts = statusCountsRaw.reduce<Record<string, number>>((acc, row) => {
     acc[row.status] = row._count._all;
     return acc;
   }, {});
+
+  // Stats calcolate su TUTTI i libri (non solo la pagina corrente)
+  const currentYear = new Date().getFullYear();
+  const uniqueAuthors = new Set(allBooksStats.map(b => b.author?.trim()).filter(Boolean)).size;
+  const ratedBooks = allBooksStats.filter(b => b.status === "READ" && b.rating != null && (b.rating ?? 0) > 0);
+  const avgRating = ratedBooks.length > 0
+    ? ratedBooks.reduce((s, b) => s + (b.rating ?? 0), 0) / ratedBooks.length
+    : null;
+  const bookPagesTotal =
+    allBooksStats.filter(b => b.status === "READ" && b.pageCount != null).reduce((s, b) => s + (b.pageCount ?? 0), 0) +
+    allBooksStats.filter(b => b.status === "READING" && b.currentPage != null).reduce((s, b) => s + (b.currentPage ?? 0), 0);
+  const booksReadThisYear = allBooksStats.filter(b =>
+    b.status === "READ" && new Date(b.finishedAt ?? b.createdAt).getFullYear() === currentYear
+  ).length;
+
+  const serverStats = {
+    totalCount,
+    readCount:    statusCounts.READ     ?? 0,
+    readingCount: statusCounts.READING  ?? 0,
+    uniqueAuthors,
+    avgRating,
+    bookPagesTotal,
+  };
 
   const totalPages = Math.ceil(totalCount / LIMIT);
 
@@ -84,6 +111,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         currentPage={currentPage}
         totalCount={totalCount}
         statusCounts={statusCounts}
+        serverStats={serverStats}
+        booksReadThisYear={booksReadThisYear}
         userPrivacy={{
           userId,
           isPublic: user?.isPublicShelf ?? false

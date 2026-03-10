@@ -31,7 +31,7 @@ export async function getUserEmotionalContext(userIdParam: string) {
     prisma.dailyCheckIn.findMany({ where: { userId: currentUserId }, orderBy: { createdAt: "desc" }, take: 3 }),
     prisma.quote.findMany({ where: { userId: currentUserId }, orderBy: { createdAt: "desc" }, take: 5, include: { book: true } }),
     prisma.book.findMany({ where: { userId: currentUserId, status: "READING" }, take: 3 }),
-    prisma.book.findMany({ where: { userId: currentUserId, status: "READ" }, orderBy: { updatedAt: "desc" }, take: 5 })
+    prisma.book.findMany({ where: { userId: currentUserId, status: "READ" }, orderBy: [{ finishedAt: "desc" }, { createdAt: "desc" }], take: 5 })
   ]);
   
   // #40: Struttura JSON (qui ritorniamo una stringa per il prompt AI, ma i dati sono fetchati in modo sicuro)

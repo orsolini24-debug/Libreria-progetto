@@ -14,7 +14,7 @@ function motivation(pct: number): string {
   return "Obiettivo raggiunto! 🎉";
 }
 
-export function ReadingChallenge({ books }: { books: Book[] }) {
+export function ReadingChallenge({ books, initialBooksThisYear }: { books: Book[]; initialBooksThisYear?: number }) {
   const [goal,     setGoal]     = useState(12);
   const [editing,  setEditing]  = useState(false);
   const [inputVal, setInputVal] = useState("12");
@@ -29,7 +29,8 @@ export function ReadingChallenge({ books }: { books: Book[] }) {
     }
   }, []);
 
-  const booksThisYear = books.filter(
+  // Usa il conteggio server-side se disponibile (tutti i libri, non solo la pagina corrente)
+  const booksThisYear = initialBooksThisYear ?? books.filter(
     (b) => b.status === "READ" && new Date(b.finishedAt ?? b.createdAt).getFullYear() === YEAR
   ).length;
 

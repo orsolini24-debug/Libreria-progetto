@@ -1,51 +1,36 @@
 "use client";
 
-import type { Book } from "@/app/generated/prisma/client";
+export interface ServerStats {
+  totalCount: number;
+  readCount: number;
+  readingCount: number;
+  uniqueAuthors: number;
+  avgRating: number | null;
+  bookPagesTotal: number;
+}
 
 interface Props {
-  books: Book[];
+  serverStats: ServerStats;
   onStatClick?: (filter: string) => void;
 }
 
-export function StatsBar({ books, onStatClick }: Props) {
-  if (books.length === 0) return null;
+export function StatsBar({ serverStats, onStatClick }: Props) {
+  if (serverStats.totalCount === 0) return null;
 
-  const readBooks  = books.filter((b) => b.status === "READ");
-  const ratedBooks = readBooks.filter((b) => b.rating != null && b.rating > 0);
-
-  const uniqueAuthors = new Set(
-    books.map((b) => b.author?.trim()).filter(Boolean)
-  ).size;
-
-  const avgRating =
-    ratedBooks.length > 0
-      ? (ratedBooks.reduce((s, b) => s + (b.rating ?? 0), 0) / ratedBooks.length).toFixed(1)
-      : null;
-
-  // Pagine lette: libri finiti (pageCount) + libri in corso (currentPage)
-  const pagesRead = readBooks
-    .filter((b) => b.pageCount != null)
-    .reduce((s, b) => s + (b.pageCount ?? 0), 0);
-
-  const pagesInProgress = books
-    .filter((b) => b.status === "READING" && b.currentPage != null)
-    .reduce((s, b) => s + (b.currentPage ?? 0), 0);
-
-  const totalPages   = pagesRead + pagesInProgress;
-  const readingBooks = books.filter((b) => b.status === "READING");
+  const { totalCount, readCount, readingCount, uniqueAuthors, avgRating, bookPagesTotal } = serverStats;
 
   const stats: { icon: string; value: number | string; label: string; filter?: string }[] = [
-    { icon: "📚", value: books.length,          label: "nella libreria" },
-    { icon: "✅", value: readBooks.length,       label: "letti",        filter: "READ" },
-    ...(readingBooks.length > 0
-      ? [{ icon: "📖", value: readingBooks.length, label: "in lettura", filter: "READING" }]
+    { icon: "📚", value: totalCount,      label: "nella libreria" },
+    { icon: "✅", value: readCount,        label: "letti",         filter: "READ" },
+    ...(readingCount > 0
+      ? [{ icon: "📖", value: readingCount, label: "in lettura",   filter: "READING" }]
       : []),
-    { icon: "✍️", value: uniqueAuthors,          label: "autori" },
-    ...(avgRating
-      ? [{ icon: "⭐", value: `${avgRating}/10`, label: "media voti",   filter: "READ" }]
+    { icon: "✍️", value: uniqueAuthors,   label: "autori" },
+    ...(avgRating != null
+      ? [{ icon: "⭐", value: `${avgRating.toFixed(1)}/10`, label: "media voti", filter: "READ" }]
       : []),
-    ...(totalPages > 0
-      ? [{ icon: "📄", value: `~${totalPages.toLocaleString("it")}`, label: "pagine totali", filter: "READ" }]
+    ...(bookPagesTotal > 0
+      ? [{ icon: "📄", value: `~${bookPagesTotal.toLocaleString("it")}`, label: "pagine totali", filter: "READ" }]
       : []),
   ];
 
