@@ -51,6 +51,9 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [suggestingTags, setSuggestingTags] = useState(false);
+  const [showEditions, setShowEditions] = useState(false);
+  const [editions, setEditions] = useState<GoogleBookResult[]>([]);
+  const [loadingEditions, setLoadingEditions] = useState(false);
 
   const [currentBook, setCurrentBook] = useState<Partial<GoogleBookResult>>({
     title: "", author: "", googleId: "", isbn: "", publisher: "", publishedDate: "", language: "", pageCount: 0, coverUrl: "", description: "", categories: []
@@ -110,6 +113,22 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
     setManualTags(book.categories?.join(", ") || "");
     setShowResults(false);
     setNoResults(false);
+    setShowEditions(false);
+    setEditions([]);
+  };
+
+  const loadEditions = async () => {
+    if (!currentBook.title) return;
+    setLoadingEditions(true);
+    setShowEditions(true);
+    try {
+      const q = `intitle:"${currentBook.title}"${currentBook.author ? ` inauthor:"${currentBook.author}"` : ""}`;
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&maxResults=15`);
+      const data = await res.json();
+      setEditions(Array.isArray(data) ? data : []);
+    } finally {
+      setLoadingEditions(false);
+    }
   };
 
   const handleBulkAdd = async () => {
@@ -190,6 +209,9 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
                     {b.language === "it" && <span className="text-[9px] font-black px-1 rounded-sm flex-shrink-0" style={{ background: "var(--accent)", color: "var(--accent-on)" }}>IT</span>}
                   </div>
                   <p className="text-xs opacity-50 truncate">{b.author}</p>
+                  {(b.publisher || b.publishedDate) && (
+                    <p className="text-[10px] opacity-30 truncate">{[b.publisher, b.publishedDate?.slice(0, 4)].filter(Boolean).join(" · ")}</p>
+                  )}
                 </div>
                 <button type="button" onClick={(e) => { e.stopPropagation(); setBulkSelection(p => [...p, b]); setShowResults(false); }} className="text-[10px] font-black uppercase p-2" style={{ color: "var(--accent)" }}>+</button>
               </li>
@@ -234,17 +256,79 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
         <input type="hidden" name="description"   value={currentBook.description ?? ""} />
         <input type="hidden" name="formats"       value={formats.join(",")} />
 
-        <div className="flex gap-6 items-center p-6 rounded-[2rem] shadow-inner bg-white/[0.02]" style={{ border: "1px solid color-mix(in srgb, var(--accent) 10%, transparent)" }}>
-          {currentBook.coverUrl ? (
-            <Image src={currentBook.coverUrl} alt="" width={50} height={70} unoptimized className="rounded-lg shadow-2xl" />
-          ) : (
-            <div className="w-12 h-16 rounded-lg bg-white/5 border border-dashed border-white/10 flex items-center justify-center text-[8px] opacity-20">COPERTINA</div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase opacity-20 tracking-[0.2em] mb-1">Dettagli libro</p>
-            <p className="text-base font-bold truncate leading-tight" style={{ color: "var(--accent)" }}>{currentBook.title || "Inserisci Titolo..."}</p>
-            <p className="text-xs opacity-50 truncate mt-1">{currentBook.author || "Autore sconosciuto"}</p>
+        <div className="flex flex-col gap-3 p-5 rounded-[2rem] shadow-inner bg-white/[0.02]" style={{ border: "1px solid color-mix(in srgb, var(--accent) 10%, transparent)" }}>
+          <div className="flex gap-4 items-center">
+            {currentBook.coverUrl ? (
+              <Image src={currentBook.coverUrl} alt="" width={50} height={70} unoptimized className="rounded-lg shadow-2xl shrink-0" />
+            ) : (
+              <div className="w-12 h-16 rounded-lg bg-white/5 border border-dashed border-white/10 flex items-center justify-center text-[8px] opacity-20 shrink-0">COPERTINA</div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase opacity-20 tracking-[0.2em] mb-1">Edizione selezionata</p>
+              <p className="text-base font-bold truncate leading-tight" style={{ color: "var(--accent)" }}>{currentBook.title || "Inserisci Titolo..."}</p>
+              <p className="text-xs opacity-50 truncate mt-0.5">{currentBook.author || "Autore sconosciuto"}</p>
+              {(currentBook.publisher || currentBook.publishedDate) && (
+                <p className="text-[10px] opacity-40 mt-0.5">{[currentBook.publisher, currentBook.publishedDate?.slice(0, 4)].filter(Boolean).join(" · ")}</p>
+              )}
+              {currentBook.language && (
+                <span className="inline-block mt-1 text-[9px] font-black px-1.5 py-0.5 rounded" style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}>
+                  {currentBook.language.toUpperCase()}
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Cerca altre edizioni */}
+          {currentBook.title && (
+            <div>
+              <button
+                type="button"
+                onClick={() => showEditions ? setShowEditions(false) : loadEditions()}
+                className="text-[10px] font-bold uppercase tracking-widest transition-all opacity-50 hover:opacity-100 flex items-center gap-1"
+                style={{ color: "var(--fg-muted)" }}
+              >
+                {loadingEditions ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                {showEditions ? "▲ Nascondi edizioni" : "▾ Cerca altre edizioni / casa editrice"}
+              </button>
+
+              {showEditions && (
+                <div className="mt-2 max-h-52 overflow-y-auto rounded-xl border border-white/5 divide-y divide-white/5" style={{ background: "var(--bg-elevated)" }}>
+                  {loadingEditions ? (
+                    <p className="text-xs text-center py-4 opacity-40">Ricerca edizioni…</p>
+                  ) : editions.length === 0 ? (
+                    <p className="text-xs text-center py-4 opacity-40">Nessuna edizione trovata.</p>
+                  ) : editions.map((ed) => (
+                    <button
+                      key={ed.googleId}
+                      type="button"
+                      onClick={() => selectBook(ed)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-all text-left"
+                    >
+                      {ed.coverUrl
+                        ? <Image src={ed.coverUrl} alt="" width={28} height={40} unoptimized className="rounded shadow-sm shrink-0" />
+                        : <div className="w-7 h-10 bg-white/10 rounded shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold truncate leading-tight" style={{ color: "var(--fg-primary)" }}>{ed.title}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          {ed.publisher && <span className="text-[10px] opacity-50 truncate">{ed.publisher}</span>}
+                          {ed.publishedDate && <span className="text-[10px] opacity-40">{ed.publishedDate.slice(0, 4)}</span>}
+                          {ed.pageCount && <span className="text-[10px] opacity-30">{ed.pageCount}p</span>}
+                          {ed.language && (
+                            <span className="text-[9px] font-black px-1 rounded" style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}>
+                              {ed.language.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {ed.googleId === currentBook.googleId && (
+                        <span className="text-[10px] opacity-50 shrink-0">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

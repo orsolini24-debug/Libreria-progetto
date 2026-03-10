@@ -91,10 +91,12 @@ export async function searchBooks(query: string, maxResults: number = 20): Promi
     const apiKey = process.env.GOOGLE_BOOKS_API_KEY || "";
     const base = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&printType=books&key=${apiKey}`;
 
-    // Ricerca parallela: generale + specifica in italiano (per mettere le edizioni italiane in cima)
+    // Ricerca parallela: generale + italiana.
+    // Usiamo "inlanguage:it" come query operator (più affidabile di langRestrict=it per titoli ambigui)
+    const italianBase = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query + " inlanguage:it")}&printType=books&key=${apiKey}`;
     const [generalRes, italianRes] = await Promise.allSettled([
       fetchWithRetry(`${base}&maxResults=${maxResults}`),
-      fetchWithRetry(`${base}&maxResults=5&langRestrict=it`),
+      fetchWithRetry(`${italianBase}&maxResults=8`),
     ]);
 
     const generalItems = generalRes.status === "fulfilled" ? generalRes.value.items || [] : [];
