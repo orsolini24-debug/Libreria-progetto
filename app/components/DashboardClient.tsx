@@ -162,6 +162,16 @@ export function DashboardClient({ initialBooks, totalPages, currentPage, statusC
       <ConfettiCelebration show={celebrate} />
       {statsModal && <StatsModal filter={statsModal} onClose={() => setStatsModal(null)} onBookClick={(b) => { setStatsModal(null); setPanel({ type: "edit", book: b }); }} />}
 
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={() => setPanel({ type: "add" })}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-lg"
+          style={{ background: "var(--accent)", color: "var(--accent-on)", boxShadow: "0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)" }}
+        >
+          <span className="text-base leading-none">+</span> Aggiungi libro
+        </button>
+      </div>
+
       <TopTenSection books={initialBooks} onBookClick={(b) => setPanel({ type: "edit", book: b })} />
       {serverStats && <StatsBar serverStats={serverStats} onStatClick={(f) => setStatsModal(f)} />}
       <YearWrapped books={initialBooks} yearStats={yearStats} onStatClick={(filter, year) => { if (year) setStatsModal(`${filter}-${year}`); else updateFilters({ status: filter }); }} />

@@ -61,13 +61,11 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleSuggestTags = async () => {
     if (!currentBook.description) return;
     setSuggestingTags(true);
-    const suggested = await suggestBookTags(currentBook.description);
+    const existing = manualTags.split(",").map(t => t.trim()).filter(Boolean);
+    const suggested = await suggestBookTags(currentBook.description, existing);
     if (suggested.length > 0) {
-      setManualTags(prev => {
-        const existing = prev.split(",").map(t => t.trim()).filter(Boolean);
-        const combined = Array.from(new Set([...existing, ...suggested]));
-        return combined.join(", ");
-      });
+      const combined = Array.from(new Set([...existing, ...suggested]));
+      setManualTags(combined.join(", "));
     }
     setSuggestingTags(false);
   };
@@ -274,26 +272,25 @@ export default function AddBookForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
 
           <FormField label="Tag / Categorie" error={state?.fieldErrors?.tags}>
-            <div className="relative">
-              <Input 
-                name="tags" 
-                value={manualTags} 
-                onChange={(e) => setManualTags(e.target.value)} 
-                placeholder="Es. narrativa, storico..." 
-              />
-              {currentBook.description && (
-                <button
-                  type="button"
-                  onClick={handleSuggestTags}
-                  disabled={suggestingTags}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all disabled:opacity-50"
+            <Textarea
+              name="tags"
+              value={manualTags}
+              onChange={(e) => setManualTags(e.target.value)}
+              placeholder="Es. narrativa, storico, fantasy..."
+              className="!min-h-[60px]"
+            />
+            {currentBook.description && (
+              <button
+                type="button"
+                onClick={handleSuggestTags}
+                disabled={suggestingTags}
+                className="self-start flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all disabled:opacity-50 active:scale-95"
                 style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)", color: "var(--accent)" }}
-                >
-                  {suggestingTags ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  Suggerisci
-                </button>
-              )}
-            </div>
+              >
+                {suggestingTags ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                Suggerisci tag AI
+              </button>
+            )}
           </FormField>
 
 

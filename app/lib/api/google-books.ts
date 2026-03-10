@@ -61,20 +61,18 @@ export async function searchBooks(query: string, maxResults: number = 20): Promi
   const TIMEOUT_MS = 3000;
   const RETRIES = 2;
 
-  async function fetchWithRetry(q: string, attempt: number = 0): Promise<GoogleApiResponse> {
+  async function fetchWithRetry(url: string, attempt: number = 0): Promise<GoogleApiResponse> {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     try {
-      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=${maxResults}&printType=books&key=${process.env.GOOGLE_BOOKS_API_KEY || ""}`;
-      
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(id);
 
       if (!response.ok) {
         if (response.status === 429 && attempt < RETRIES) {
           await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-          return fetchWithRetry(q, attempt + 1);
+          return fetchWithRetry(url, attempt + 1);
         }
         throw new Error(`Google API Error: ${response.status}`);
       }
@@ -83,19 +81,39 @@ export async function searchBooks(query: string, maxResults: number = 20): Promi
     } catch (err: unknown) {
       clearTimeout(id);
       if (err instanceof Error && err.name === "AbortError" && attempt < RETRIES) {
-        return fetchWithRetry(q, attempt + 1);
+        return fetchWithRetry(url, attempt + 1);
       }
       throw err;
     }
   }
 
   try {
-    const data = await fetchWithRetry(query);
-    const items = data.items || [];
-    
-    const results = items.map(mapGoogleBook).filter((b): b is GoogleBookResult => b !== null);
-    setToCache(query, results);
-    return results;
+    const apiKey = process.env.GOOGLE_BOOKS_API_KEY || "";
+    const base = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&printType=books&key=${apiKey}`;
+
+    // Ricerca parallela: generale + specifica in italiano (per mettere le edizioni italiane in cima)
+    const [generalRes, italianRes] = await Promise.allSettled([
+      fetchWithRetry(`${base}&maxResults=${maxResults}`),
+      fetchWithRetry(`${base}&maxResults=5&langRestrict=it`),
+    ]);
+
+    const generalItems = generalRes.status === "fulfilled" ? generalRes.value.items || [] : [];
+    const italianItems = italianRes.status === "fulfilled" ? italianRes.value.items || [] : [];
+
+    // Merge: edizioni italiane prima, poi le altre (deduplicato per googleId)
+    const seen = new Set<string>();
+    const merged: GoogleBookResult[] = [];
+    for (const item of italianItems) {
+      const book = mapGoogleBook(item);
+      if (book && !seen.has(book.googleId)) { seen.add(book.googleId); merged.push(book); }
+    }
+    for (const item of generalItems) {
+      const book = mapGoogleBook(item);
+      if (book && !seen.has(book.googleId)) { seen.add(book.googleId); merged.push(book); }
+    }
+
+    setToCache(query, merged);
+    return merged;
   } catch (err) {
     logger.error("GOOGLE_BOOKS_SEARCH_ERROR", err);
     return [];
